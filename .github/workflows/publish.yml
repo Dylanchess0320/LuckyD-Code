@@ -1,0 +1,103 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - "v*.*.*"   # Trigger on any version tag: v1.0.0, v1.2.1, etc.
+
+permissions:
+  contents: write   # needed to create GitHub Releases
+
+jobs:
+  # -------------------------------------------------------------------------
+  # Build the distribution
+  # -------------------------------------------------------------------------
+  build:
+    name: Build distribution
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install build tools
+        run: pip install build
+
+      - name: Build sdist and wheel
+        run: python -m build
+
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  # -------------------------------------------------------------------------
+  # Create a GitHub Release with changelog notes and dist files attached
+  # -------------------------------------------------------------------------
+  github-release:
+    name: GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Extract changelog section for this release
+        run: |
+          python - <<'EOF'
+          import re
+          tag = "${{ github.ref_name }}"
+          ver = tag.lstrip("v")
+          text = open("CHANGELOG.md").read()
+          pattern = rf"## \[{re.escape(ver)}\].*?(?=\n## \[|\Z)"
+          m = re.search(pattern, text, re.DOTALL)
+          notes = m.group(0).strip() if m else f"Release {tag}"
+          with open("/tmp/release_notes.md", "w") as f:
+              f.write(notes)
+          EOF
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: LuckyD Code ${{ github.ref_name }}
+          body_path: /tmp/release_notes.md
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: dist/*
+
+  # -------------------------------------------------------------------------
+  # Publish to PyPI
+  # Set repository variable PYPI_ENABLED=true and secret PYPI_API_TOKEN
+  # in Settings > Environments > pypi to enable this step.
+  # -------------------------------------------------------------------------
+  pypi-publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    if: ${{ vars.PYPI_ENABLED == 'true' }}
+
+    steps:
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          skip-existing: true

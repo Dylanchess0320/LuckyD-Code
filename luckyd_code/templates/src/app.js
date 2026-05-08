@@ -1,0 +1,694 @@
+// Configure marked
+marked.setOptions({
+  highlight: function(code, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try { return hljs.highlight(code, { language: lang }).value; } catch(e) {}
+    }
+    try { return hljs.highlightAuto(code).value; } catch(e) {}
+    return code;
+  },
+  breaks: true,
+  gfm: true,
+});
+
+// State
+let ws = null;
+let isProcessing = false;
+let currentAssistantMsg = null;
+let currentAssistantDiv = null;
+let currentToolMsg = null;
+let reconnectTimer = null;
+let reconnectAttempts = 0;
+let lastSendTime = 0;
+let messageQueue = [];
+let renderTimeout = null;
+
+// DOM refs
+const messagesEl = document.getElementById('messages');
+const inputEl = document.getElementById('input');
+const sendBtn = document.getElementById('sendBtn');
+const voiceBtn = document.getElementById('voiceBtn');
+const statusDot = document.getElementById('statusDot');
+const fileList = document.getElementById('fileList');
+const filePath = document.getElementById('filePath');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebarOverlay');
+
+// Auto-resize textarea
+inputEl.addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+});
+
+// Enter to send, Shift+Enter for newline, Ctrl+Enter also sends
+inputEl.addEventListener('keydown', function(e) {
+  if ((e.key === 'Enter' && !e.shiftKey) || (e.key === 'Enter' && e.ctrlKey)) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+// WebSocket connection with exponential backoff
+function connect() {
+  if (ws && ws.readyState === WebSocket.OPEN) return;
+
+  statusDot.className = 'status-dot connecting';
+
+  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const url = `${protocol}//${location.host}/ws`;
+
+  ws = new WebSocket(url);
+
+  ws.onopen = function() {
+    statusDot.className = 'status-dot connected';
+    if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+    reconnectAttempts = 0;
+    removeSystemMessage('disconnected');
+    addSystemMessage('Connected');
+
+    // Flush queued messages
+    while (messageQueue.length > 0) {
+      var q = messageQueue.shift();
+      ws.send(q);
+    }
+    // Re-enable input if stuck
+    if (isProcessing) {
+      isProcessing = false;
+      setInputEnabled(true);
+      removeTyping();
+    }
+  };
+
+  ws.onclose = function() {
+    statusDot.className = 'status-dot disconnected';
+    if (!reconnectTimer) {
+      reconnectAttempts++;
+      var delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+      addSystemMessage('Reconnecting in ' + Math.round(delay / 1000) + 's...');
+      reconnectTimer = setTimeout(connect, delay);
+    }
+  };
+
+  ws.onerror = function() {
+    statusDot.className = 'status-dot disconnected';
+  };
+
+  ws.onmessage = function(event) {
+    try {
+      var msg = JSON.parse(event.data);
+      handleMessage(msg);
+    } catch (e) {
+      console.error('Parse error:', e);
+    }
+  };
+}
+
+// Message handler
+function handleMessage(msg) {
+  switch (msg.type) {
+    case 'text':
+      if (!currentAssistantMsg) {
+        currentAssistantDiv = createMessageDiv('assistant');
+        currentAssistantMsg = {div: currentAssistantDiv, text: ''};
+        removeTyping();
+      }
+      currentAssistantMsg.text += msg.content;
+      currentAssistantMsg.div.innerHTML = marked.parse(currentAssistantMsg.text);
+      // Debounced syntax highlighting
+      if (renderTimeout) clearTimeout(renderTimeout);
+      renderTimeout = setTimeout(function() {
+        currentAssistantMsg.div.querySelectorAll('pre code').forEach(function(b) {
+          hljs.highlightElement(b);
+        });
+      }, 200);
+      break;
+
+    case 'tool':
+      // Tool call start
+      removeTyping();
+      if (currentAssistantMsg) {
+        currentAssistantMsg.div.querySelectorAll('pre code').forEach(function(b) {
+          hljs.highlightElement(b);
+        });
+      }
+      currentToolMsg = createMessageDiv('tool-call');
+      currentToolMsg.innerHTML = `<span class="tool-name">[Tool: ${msg.name}]</span> Running...`;
+      break;
+
+    case 'tool_result':
+      if (currentToolMsg) {
+        currentToolMsg.innerHTML = `<span class="tool-name">[Tool: ${msg.name}]</span><div class="tool-result">${escapeHtml(msg.content)}</div>`;
+      }
+      break;
+
+    case 'error':
+      removeTyping();
+      createMessageDiv('error').textContent = msg.content;
+      break;
+
+    case 'done':
+      isProcessing = false;
+      // Speak the response and auto-loop
+      const spokenText = currentAssistantMsg ? currentAssistantMsg.text : '';
+      currentAssistantMsg = null;
+      currentAssistantDiv = null;
+      currentToolMsg = null;
+      setInputEnabled(true);
+      if (renderTimeout) clearTimeout(renderTimeout);
+      renderTimeout = null;
+      if (spokenText) {
+        speakText(spokenText).then(() => startAutoLoop());
+      } else {
+        startAutoLoop();
+      }
+      break;
+
+    case 'cleared':
+      messagesEl.innerHTML = '';
+      break;
+  }
+
+  scrollToBottom();
+}
+
+function createMessageDiv(role) {
+  const div = document.createElement('div');
+  div.className = `message ${role}`;
+  messagesEl.appendChild(div);
+  return div;
+}
+
+function renderAndScroll(el) {
+  const text = el.textContent || el.innerText;
+  el.innerHTML = marked.parse(text);
+  el.querySelectorAll('pre code').forEach(function(b) {
+    hljs.highlightElement(b);
+    // Add copy button
+    const pre = b.parentElement;
+    if (pre && !pre.querySelector('.copy-btn')) {
+      const btn = document.createElement('button');
+      btn.className = 'copy-btn';
+      btn.innerHTML = '<i class="fas fa-copy"></i>';
+      btn.onclick = function() {
+        navigator.clipboard.writeText(b.textContent).then(function() {
+          btn.innerHTML = '<i class="fas fa-check"></i>';
+          setTimeout(function() { btn.innerHTML = '<i class="fas fa-copy"></i>'; }, 2000);
+        });
+      };
+      pre.style.position = 'relative';
+      pre.appendChild(btn);
+    }
+  });
+}
+
+// Escape HTML for tool results
+function escapeHtml(text) {
+  const d = document.createElement('div');
+  d.textContent = text;
+  return d.innerHTML;
+}
+
+function removeTyping() {
+  const typing = document.querySelector('.typing');
+  if (typing) typing.remove();
+}
+
+function scrollToBottom() {
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function addSystemMessage(text) {
+  const div = document.createElement('div');
+  div.style.cssText = 'text-align:center;font-size:12px;color:var(--text-dim);padding:4px;';
+  div.textContent = text;
+  messagesEl.appendChild(div);
+  scrollToBottom();
+}
+
+// Send message
+function removeSystemMessage(id) {
+  var el = document.querySelector('.system-msg-' + id);
+  if (el) el.remove();
+}
+
+function sendMessage() {
+  var text = inputEl.value.trim();
+  if (!text || isProcessing) return;
+
+  // Rate limiting: max 1 message per 500ms
+  var now = Date.now();
+  if (now - lastSendTime < 500) {
+    addSystemMessage('Please wait...');
+    return;
+  }
+
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    addSystemMessage('Not connected. Message queued.', 'disconnected');
+    messageQueue.push(JSON.stringify({ type: 'message', content: text }));
+    connect();
+    return;
+  }
+
+  // Input length limit
+  if (text.length > 10000) {
+    addSystemMessage('Message too long (max 10000 characters)');
+    return;
+  }
+
+  // Add user message
+  var userDiv = createMessageDiv('user');
+  userDiv.textContent = text;
+  scrollToBottom();
+
+  inputEl.value = '';
+  inputEl.style.height = 'auto';
+
+  lastSendTime = now;
+  isProcessing = true;
+  setInputEnabled(false);
+
+  // Add typing indicator
+  var typing = document.createElement('div');
+  typing.className = 'typing';
+  typing.innerHTML = '<span></span><span></span><span></span>';
+  messagesEl.appendChild(typing);
+  scrollToBottom();
+
+  // Reset accumulators
+  currentAssistantMsg = null;
+  currentToolMsg = null;
+
+  ws.send(JSON.stringify({ type: 'message', content: text }));
+}
+
+function setInputEnabled(enabled) {
+  inputEl.disabled = !enabled;
+  sendBtn.disabled = !enabled;
+  if (enabled) inputEl.focus();
+}
+
+// Clear chat
+function clearChat() {
+  if (!ws || ws.readyState !== WebSocket.OPEN) return;
+  ws.send(JSON.stringify({ type: 'clear' }));
+}
+
+// Voice input
+let recognition = null;
+let isListening = false;
+
+function toggleVoice() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    addSystemMessage('Voice input not supported in this browser');
+    return;
+  }
+
+  if (isListening) {
+    recognition.stop();
+    return;
+  }
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  recognition.lang = 'en-US';
+  recognition.interimResults = true;
+  recognition.continuous = true;
+
+  recognition.onstart = function() {
+    isListening = true;
+    voiceBtn.classList.add('listening');
+    voiceBtn.title = 'Listening...';
+  };
+
+  recognition.onresult = function(e) {
+    let transcript = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      transcript += e.results[i][0].transcript;
+    }
+    inputEl.value = transcript;
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 150) + 'px';
+  };
+
+  recognition.onend = function() {
+    isListening = false;
+    voiceBtn.classList.remove('listening');
+    voiceBtn.title = 'Voice input';
+    // Auto-send if we got something
+    if (inputEl.value.trim()) {
+      sendMessage();
+    }
+  };
+
+  recognition.onerror = function(e) {
+    isListening = false;
+    voiceBtn.classList.remove('listening');
+    voiceBtn.title = 'Voice input';
+    if (e.error !== 'no-speech') {
+      addSystemMessage('Voice error: ' + e.error);
+    }
+  };
+
+  recognition.start();
+}
+
+// Voice output (TTS)
+let speakEnabled = true;
+let autoLoopEnabled = false;
+
+function toggleSpeak() {
+  speakEnabled = !speakEnabled;
+  const btn = document.getElementById('speakToggle');
+  if (speakEnabled) {
+    btn.innerHTML = '<i class="fas fa-volume-up"></i>';
+    btn.style.color = '';
+  } else {
+    btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+    btn.style.color = 'var(--danger)';
+    window.speechSynthesis.cancel();
+  }
+}
+
+function toggleAutoLoop() {
+  autoLoopEnabled = !autoLoopEnabled;
+  const btn = document.getElementById('autoLoopToggle');
+  if (autoLoopEnabled) {
+    btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i>';
+    btn.style.color = 'var(--accent)';
+    speakEnabled = true;
+    document.getElementById('speakToggle').innerHTML = '<i class="fas fa-volume-up"></i>';
+    document.getElementById('speakToggle').style.color = '';
+  } else {
+    btn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+    btn.style.color = '';
+  }
+}
+
+function speakText(text) {
+  if (!speakEnabled || !window.speechSynthesis) return Promise.resolve();
+  // Clean text for speech: remove markdown, code blocks, etc.
+  let clean = text
+    .replace(/```[\s\S]*?```/g, ' code block omitted ')
+    .replace(/`([^`]+)`/g, ' $1 ')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/#{1,6}\s*/g, '')
+    .replace(/[-*]\s/g, '')
+    .replace(/\n{2}/g, '. ')
+    .replace(/\n/g, ' ')
+    .trim();
+
+  if (!clean) return Promise.resolve();
+
+  return new Promise((resolve) => {
+    const utterance = new SpeechSynthesisUtterance(clean);
+    utterance.lang = 'en-US';
+    utterance.rate = 1.1;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+    utterance.onend = resolve;
+    utterance.onerror = resolve;
+    window.speechSynthesis.speak(utterance);
+  });
+}
+
+function startAutoLoop() {
+  if (!autoLoopEnabled) return;
+  // Small delay then re-activate mic
+  setTimeout(() => {
+    if (autoLoopEnabled && !isListening && document.visibilityState === 'visible') {
+      toggleVoice();
+    }
+  }, 800);
+}
+
+// Sidebar toggle
+function toggleSidebar() {
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('show');
+}
+
+overlay.addEventListener('click', function() {
+  sidebar.classList.remove('open');
+  overlay.classList.remove('show');
+});
+
+// File browser
+async function loadFiles(dir) {
+  if (!dir) dir = '.';
+  try {
+    fileList.innerHTML = '<div style="color:var(--text-dim);padding:16px;text-align:center;font-size:13px;">Loading...</div>';
+    const resp = await fetch(`/api/files?dir=${encodeURIComponent(dir)}`);
+    const data = await resp.json();
+
+    if (data.error) {
+      fileList.innerHTML = '<div style="color:var(--danger);padding:16px;">Error: ' + data.error + '</div>';
+      return;
+    }
+
+    filePath.textContent = data.path;
+    fileList.innerHTML = '';
+
+    // Parent dir link
+    if (dir !== '.') {
+      const parent = document.createElement('div');
+      parent.className = 'file-item dir';
+      parent.innerHTML = '<span class="icon">&#128193;</span> ..';
+      parent.onclick = function() {
+        const p = dir.split('/').slice(0, -1).join('/') || '.';
+        loadFiles(p);
+      };
+      fileList.appendChild(parent);
+    }
+
+    data.files.forEach(function(f) {
+      const item = document.createElement('div');
+      item.className = 'file-item' + (f.is_dir ? ' dir' : '');
+      const iconClass = getFileIcon(f.name, f.is_dir);
+      item.innerHTML = '<span class="icon"><i class="' + iconClass + '"></i></span> ' + f.name;
+      if (!f.is_dir) {
+        const size = f.size < 1024 ? f.size + ' B' : (f.size / 1024).toFixed(1) + ' KB';
+        item.title = size;
+      }
+      item.onclick = function() {
+        if (f.is_dir) {
+          loadFiles(dir + '/' + f.name);
+        } else {
+          openFile(dir + '/' + f.name);
+        }
+      };
+      fileList.appendChild(item);
+    });
+  } catch (e) {
+    fileList.innerHTML = '<div style="color:var(--danger);padding:16px;">Failed to load files</div>';
+  }
+}
+
+// File editor state
+let currentEditorFile = '';
+let editorOriginalContent = '';
+let isEditing = false;
+
+async function openFile(path) {
+  try {
+    const resp = await fetch(`/api/read-file?path=${encodeURIComponent(path)}`);
+    const data = await resp.json();
+    if (data.content !== undefined) {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('show');
+      openEditor(path, data.content);
+    } else if (data.error) {
+      addSystemMessage('Error: ' + data.error);
+    }
+  } catch(e) {
+    addSystemMessage('Error reading file');
+  }
+}
+
+function openEditor(path, content) {
+  currentEditorFile = path;
+  editorOriginalContent = content;
+  isEditing = false;
+
+  document.getElementById('editorTitle').textContent = path;
+  document.getElementById('editorFileInfo').textContent = (content.length) + ' chars';
+  document.getElementById('editorModified').style.display = 'none';
+
+  const readView = document.getElementById('editorReadView');
+  readView.textContent = content;
+  readView.style.display = 'block';
+
+  const textarea = document.getElementById('editorTextarea');
+  textarea.value = content;
+  textarea.style.display = 'none';
+  textarea.oninput = function() {
+    document.getElementById('editorModified').style.display = 'inline';
+    document.getElementById('editorSaveBtn').disabled = (textarea.value === editorOriginalContent);
+  };
+
+  document.getElementById('editorModeBtn').innerHTML = '<i class="fas fa-edit"></i> Edit';
+  document.getElementById('editorSaveBtn').disabled = true;
+
+  document.getElementById('editorOverlay').classList.add('show');
+}
+
+function closeEditor() {
+  document.getElementById('editorOverlay').classList.remove('show');
+  currentEditorFile = '';
+  editorOriginalContent = '';
+}
+
+function toggleEditorMode() {
+  const readView = document.getElementById('editorReadView');
+  const textarea = document.getElementById('editorTextarea');
+  const modeBtn = document.getElementById('editorModeBtn');
+
+  if (!isEditing) {
+    // Switch to edit mode
+    textarea.value = readView.textContent;
+    textarea.style.display = 'block';
+    readView.style.display = 'none';
+    textarea.focus();
+    isEditing = true;
+    modeBtn.innerHTML = '<i class="fas fa-eye"></i> View';
+    document.getElementById('editorSaveBtn').disabled = (textarea.value === editorOriginalContent);
+  } else {
+    // Switch back to view mode (discard unsaved changes)
+    readView.textContent = editorOriginalContent;
+    readView.style.display = 'block';
+    textarea.style.display = 'none';
+    isEditing = false;
+    modeBtn.innerHTML = '<i class="fas fa-edit"></i> Edit';
+    document.getElementById('editorSaveBtn').disabled = true;
+    document.getElementById('editorModified').style.display = 'none';
+  }
+}
+
+async function saveEditorFile() {
+  const textarea = document.getElementById('editorTextarea');
+  const content = textarea.value;
+  const path = currentEditorFile;
+
+  if (!path || content === editorOriginalContent) return;
+
+  const saveBtn = document.getElementById('editorSaveBtn');
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+  try {
+    const resp = await fetch('/api/write-file', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: path, content: content }),
+    });
+    const data = await resp.json();
+    if (data.status === 'written') {
+      editorOriginalContent = content;
+      isEditing = false;
+      document.getElementById('editorReadView').textContent = content;
+      document.getElementById('editorReadView').style.display = 'block';
+      textarea.style.display = 'none';
+      document.getElementById('editorModeBtn').innerHTML = '<i class="fas fa-edit"></i> Edit';
+      document.getElementById('editorModified').style.display = 'none';
+      document.getElementById('editorFileInfo').textContent = content.length + ' chars (saved)';
+      addSystemMessage('File saved: ' + path);
+    } else {
+      addSystemMessage('Save failed: ' + (data.error || 'unknown error'));
+    }
+  } catch(e) {
+    addSystemMessage('Save error: ' + e.message);
+  } finally {
+    saveBtn.innerHTML = '<i class="fas fa-check"></i> Save';
+    saveBtn.disabled = true;
+  }
+}
+
+// Keyboard shortcut: Ctrl+S to save in editor
+document.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    const overlay = document.getElementById('editorOverlay');
+    if (overlay.classList.contains('show') && isEditing) {
+      e.preventDefault();
+      saveEditorFile();
+    }
+  }
+  // Escape to close editor
+  if (e.key === 'Escape') {
+    const overlay = document.getElementById('editorOverlay');
+    if (overlay.classList.contains('show')) {
+      closeEditor();
+    }
+  }
+});
+
+// Load tools + model info
+
+// Load tools + model info
+async function loadMeta() {
+  try {
+    const resp = await fetch('/api/tools');
+    const data = await resp.json();
+    if (data.tools) {
+      // Could show tool count somewhere
+    }
+  } catch(e) {}
+}
+
+// Theme toggle
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light');
+  const icon = document.querySelector('#themeToggle i');
+  icon.className = isLight ? 'fas fa-sun' : 'fas fa-moon';
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+}
+
+// Load saved theme
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme === 'light') {
+  document.body.classList.add('light');
+  document.querySelector('#themeToggle i').className = 'fas fa-sun';
+}
+
+// Improve file item icons
+function getFileIcon(name, isDir) {
+  if (isDir) return 'fa-solid fa-folder';
+  const ext = name.split('.').pop().toLowerCase();
+  const iconMap = {
+    'js': 'fa-brands fa-js',
+    'ts': 'fa-brands fa-js',
+    'jsx': 'fa-brands fa-react',
+    'tsx': 'fa-brands fa-react',
+    'py': 'fa-brands fa-python',
+    'html': 'fa-brands fa-html5',
+    'css': 'fa-brands fa-css3-alt',
+    'json': 'fa-solid fa-code',
+    'md': 'fa-solid fa-file-lines',
+    'txt': 'fa-solid fa-file-lines',
+    'yaml': 'fa-solid fa-file',
+    'yml': 'fa-solid fa-file',
+    'toml': 'fa-solid fa-file',
+    'env': 'fa-solid fa-gear',
+    'gitignore': 'fa-solid fa-eye-slash',
+    'jpg': 'fa-solid fa-image',
+    'png': 'fa-solid fa-image',
+    'svg': 'fa-solid fa-image',
+    'ico': 'fa-solid fa-image',
+    'woff2': 'fa-solid fa-font',
+    'woff': 'fa-solid fa-font',
+    'ttf': 'fa-solid fa-font',
+  };
+  return iconMap[ext] || 'fa-solid fa-file';
+}
+
+// Connect on page load
+document.addEventListener('DOMContentLoaded', function() {
+  // Register service worker for PWA
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(function() {});
+  }
+  connect();
+  loadFiles();
+  loadMeta();
+  inputEl.focus();
+});

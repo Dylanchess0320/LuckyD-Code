@@ -1,0 +1,77 @@
+# Debug output files
+test_results.txt
+test_v.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment / secrets
+.env
+*.env
+venv/
+.venv/
+
+# Personal / runtime history (may contain sensitive data)
+.deepseek_history
+*.deepseek_history
+.luckyd_history
+*.luckyd_history
+
+# Coverage reports
+.coverage
+coverage.xml
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Project runtime files
+*.deepseek_history
+.claude/
+CLAUDE.md
+.audit_lock
+.audit_daemon_paused
+.deepseek-code/
+.luckyd-code/
+_build/
+
+# Temp / debug / output files
+out.txt
+fail_output.txt
+full_test_output.txt
+test_output.txt
+hs_test.txt
+test_debug.txt
+test_out.txt
+*.log
+debug_*
+_debug_*.py
+_cleanup_*.py
+
+# Stale root scripts
+fetch_models.py
+test_models.py
+run.bat
+DeepSeek Code Web.bat
+PUSH_TO_GITHUB.md
+
+# Scripts temp
+scripts/_*
+test_results.txt
+test_v.txt
+deepseek_code/metrics/time_series.jsonl

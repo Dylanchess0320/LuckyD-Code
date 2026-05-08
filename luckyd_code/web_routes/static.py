@@ -1,0 +1,70 @@
+"""Static / frontend routes."""
+
+import json
+from pathlib import Path
+
+from fastapi import APIRouter
+from fastapi.responses import HTMLResponse, JSONResponse
+
+router = APIRouter()
+
+TEMPLATES = Path(__file__).resolve().parent.parent / "templates"
+
+
+@router.get("/")
+async def index():
+    path = TEMPLATES / "index.html"
+    if path.exists():
+        return HTMLResponse(
+            path.read_text(encoding="utf-8"),
+            headers={
+                "Cache-Control": "no-store, no-cache, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0",
+            },
+        )
+    return HTMLResponse("<h1>DeepSeek Code Web UI</h1><p>Template not found.</p>")
+
+
+@router.get("/manifest.json")
+async def manifest():
+    path = TEMPLATES / "manifest.json"
+    if path.exists():
+        return JSONResponse(json.loads(path.read_text(encoding="utf-8")))
+    return JSONResponse({}, status_code=404)
+
+
+@router.get("/sw.js")
+async def service_worker():
+    path = TEMPLATES / "sw.js"
+    if path.exists():
+        from fastapi.responses import Response
+        return Response(path.read_bytes(), media_type="application/javascript")
+    return Response(status_code=404)
+
+
+@router.get("/icon-192.png")
+async def icon_192():
+    path = TEMPLATES / "icon-192.png"
+    if path.exists():
+        from fastapi.responses import Response
+        return Response(path.read_bytes(), media_type="image/png")
+    return Response(status_code=404)
+
+
+@router.get("/icon-512.png")
+async def icon_512():
+    path = TEMPLATES / "icon-512.png"
+    if path.exists():
+        from fastapi.responses import Response
+        return Response(path.read_bytes(), media_type="image/png")
+    return Response(status_code=404)
+
+
+@router.get("/favicon.ico")
+async def favicon():
+    path = TEMPLATES / "icon-192.png"
+    if path.exists():
+        from fastapi.responses import Response
+        return Response(path.read_bytes(), media_type="image/png")
+    return Response(status_code=404)

@@ -1,0 +1,18 @@
+# Sample URLs file for playlist_gen.py
+# Lines starting with # are ignored. Blank lines are ignored too.
+# Supports: full URLs, youtu.be short links, embed/shorts URLs, bare video IDs.
+
+# Full youtube.com URLs
+https://www.youtube.com/watch?v=dQw4w9WgXcQ
+https://www.youtube.com/watch?v=9bZkp7q19f0
+
+# youtu.be short links
+https://youtu.be/jNQXAC9IVRw
+https://youtu.be/oHg5SJYRHA0
+
+# Bare video IDs (11 characters)
+L_jWHffIx5E
+kJQP7kiw5Fk
+
+# YouTube Shorts
+https://www.youtube.com/shorts/cdiD8kGbBi0

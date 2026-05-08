@@ -1,0 +1,130 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "luckyd-code"
+version = "1.2.2"
+description = "LuckyD Code — AI coding assistant powered by DeepSeek"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+keywords = ["ai", "coding", "assistant", "luckyd", "cli"]
+authors = [
+    { name = "Dylan Kaye", email = "dylanchess0320@users.noreply.github.com" },
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Code Generators",
+]
+
+dependencies = [
+    "nest_asyncio>=1.5.0",
+    "openai>=1.0.0",
+    "rich>=13.0.0",
+    "prompt_toolkit>=3.0.0",
+    "httpx>=0.25.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+    "websockets>=11.0",
+    "pyyaml>=6.0",
+    "aiofiles>=23.0",
+    "beautifulsoup4>=4.12.0",
+    "tiktoken>=0.5.0",
+]
+
+[project.optional-dependencies]
+rag = ["sentence-transformers>=2.2.0", "numpy>=1.24.0"]
+rag-full = [
+    "sentence-transformers>=2.2.0",
+    "faiss-cpu>=1.7.0",
+    "numpy>=1.24.0",
+    "watchdog>=3.0.0",
+]
+browser = [
+    "playwright>=1.40.0",
+]
+game = [
+    "pygame>=2.5.0",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0",
+    "mypy>=1.0",
+    "types-PyYAML",
+    "types-aiofiles",
+    "types-beautifulsoup4",
+]
+
+[project.urls]
+Homepage = "https://github.com/Dylanchess0320/LuckyD-Code"
+BugTracker = "https://github.com/Dylanchess0320/LuckyD-Code/issues"
+
+[project.scripts]
+luckyd-code = "luckyd_code.cli_entry:main"
+ldc = "luckyd_code.cli_entry:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["luckyd_code"]
+
+[tool.hatch.build]
+include = [
+    "luckyd_code/**",
+    "luckyd_code/templates/**",
+    "luckyd_code/templates/src/**",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/luckyd_code",
+    "/tests",
+    "/scripts",
+    "/CHANGELOG.md",
+    "/CONTRIBUTING.md",
+    "/LICENSE",
+    "/MANIFEST.in",
+    "/README.md",
+    "/pyproject.toml",
+    "/requirements.txt",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short --cov=luckyd_code --cov-report=term --cov-fail-under=35"
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["luckyd_code"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
+
+[tool.mypy]
+python_version = "3.10"
+strict = false
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+ignore_missing_imports = true
+implicit_optional = true
+disable_error_code = ["override"]
+exclude = [
+    "tests/",
+    "__pycache__/",
+    ".venv/",
+]
