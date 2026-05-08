@@ -276,7 +276,7 @@ class TestWebSocketEndpoint:
     def test_websocket_message_roundtrip(self):
         """WebSocket should accept a message and stream text back."""
         with patch("luckyd_code.web_app.Config", return_value=_make_mock_config()):
-            with patch("luckyd_code.web_app.stream_chat", side_effect=_dummy_generator):
+            with patch("luckyd_code.api.stream_chat", side_effect=_dummy_generator):
                 with patch("luckyd_code.web_app.memory_module.load_claude_md", return_value=""):
                     with patch("luckyd_code.indexer.index_project", return_value=""):
                         with patch("luckyd_code.settings.load_settings", return_value={"auto_route": False}):
@@ -295,7 +295,7 @@ class TestWebSocketEndpoint:
     def test_websocket_clear(self):
         """WebSocket clear message should reset context."""
         with patch("luckyd_code.web_app.Config", return_value=_make_mock_config()):
-            with patch("luckyd_code.web_app.stream_chat", side_effect=_dummy_generator):
+            with patch("luckyd_code.api.stream_chat", side_effect=_dummy_generator):
                 with patch("luckyd_code.web_app.memory_module.load_claude_md", return_value=""):
                     with patch("luckyd_code.indexer.index_project", return_value=""):
                         with patch("luckyd_code.settings.load_settings", return_value={"auto_route": False}):
@@ -310,7 +310,7 @@ class TestWebSocketEndpoint:
     def test_websocket_tool_call_flow(self):
         """WebSocket should handle tool calls."""
         with patch("luckyd_code.web_app.Config", return_value=_make_mock_config()):
-            with patch("luckyd_code.web_app.stream_chat", side_effect=_tool_call_generator):
+            with patch("luckyd_code.api.stream_chat", side_effect=_tool_call_generator):
                 with patch("luckyd_code.web_app.memory_module.load_claude_md", return_value=""):
                     with patch("luckyd_code.indexer.index_project", return_value=""):
                         with patch("luckyd_code.settings.load_settings", return_value={"auto_route": False}):
@@ -334,7 +334,7 @@ class TestWebSocketEndpoint:
     def test_websocket_empty_message_skipped(self):
         """WebSocket should skip empty messages."""
         with patch("luckyd_code.web_app.Config", return_value=_make_mock_config()):
-            with patch("luckyd_code.web_app.stream_chat", side_effect=_dummy_generator):
+            with patch("luckyd_code.api.stream_chat", side_effect=_dummy_generator):
                 with patch("luckyd_code.web_app.memory_module.load_claude_md", return_value=""):
                     with patch("luckyd_code.indexer.index_project", return_value=""):
                         with patch("luckyd_code.settings.load_settings", return_value={"auto_route": False}):
@@ -352,7 +352,7 @@ class TestWebSocketEndpoint:
     def test_websocket_message_too_long(self):
         """WebSocket should reject messages exceeding max length."""
         with patch("luckyd_code.web_app.Config", return_value=_make_mock_config()):
-            with patch("luckyd_code.web_app.stream_chat", side_effect=_dummy_generator):
+            with patch("luckyd_code.api.stream_chat", side_effect=_dummy_generator):
                 with patch("luckyd_code.web_app.memory_module.load_claude_md", return_value=""):
                     with patch("luckyd_code.indexer.index_project", return_value=""):
                         with patch("luckyd_code.settings.load_settings", return_value={"auto_route": False}):
@@ -369,7 +369,7 @@ class TestWebSocketEndpoint:
     def test_websocket_invalid_json(self):
         """WebSocket should handle invalid JSON gracefully."""
         with patch("luckyd_code.web_app.Config", return_value=_make_mock_config()):
-            with patch("luckyd_code.web_app.stream_chat", side_effect=_dummy_generator):
+            with patch("luckyd_code.api.stream_chat", side_effect=_dummy_generator):
                 with patch("luckyd_code.web_app.memory_module.load_claude_md", return_value=""):
                     with patch("luckyd_code.indexer.index_project", return_value=""):
                         with patch("luckyd_code.settings.load_settings", return_value={"auto_route": False}):
