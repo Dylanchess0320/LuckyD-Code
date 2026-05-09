@@ -182,9 +182,9 @@ class ConversationContext:
             from openai import OpenAI
             import httpx
             # Use the configured model for compaction, falling back to Flash.
-            # Always prefer Flash if available — it's fast and cheap for summarisation.
+            # Always prefer Flash — it's fast and cheap for summarisation.
             flash_id = "deepseek-v4-flash"
-            compact_model = flash_id if getattr(config, "model", flash_id) != flash_id else flash_id
+            # FIX: removed dead duplicate assignment (previous line was always flash_id regardless)
             compact_model = getattr(config, "model", flash_id) or flash_id
             # Override with Flash when the configured model is a reasoner —
             # summarisation doesn't benefit from chain-of-thought.

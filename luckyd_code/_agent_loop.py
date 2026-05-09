@@ -447,7 +447,8 @@ def _stream_turn(
             if rc.on_text:
                 rc.on_text(data)
         elif event_type == "done":
-            turn_text = data[0]
+            # FIX: data is (content, reasoning) — capture both, not just data[0]
+            turn_text, tool_reasoning = data[0], data[1]
         elif event_type == "tool_calls":
             pending_tool_calls, tool_reasoning = data
         elif event_type in ("error", "model_not_found"):
