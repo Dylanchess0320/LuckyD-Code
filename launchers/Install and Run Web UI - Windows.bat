@@ -2,7 +2,7 @@
 chcp 65001 >nul
 setlocal EnableDelayedExpansion
 title LuckyD Code - Web UI
-cd /d "%~dp0"
+cd /d "%~dp0.."
 
 cls
 echo.

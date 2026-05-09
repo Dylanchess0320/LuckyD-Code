@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableDelayedExpansion
 title LuckyD Code
-cd /d "%~dp0"
+cd /d "%~dp0.."
 
 cls
 echo.
