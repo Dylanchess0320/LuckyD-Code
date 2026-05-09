@@ -1,0 +1,18 @@
+{
+  "theme": "dark",
+  "auto_route": true,
+  "auto_commit": true,
+  "verify_edits": true,
+  "verify_retries": 3,
+  "auto_test": false,
+  "max_context_messages": 100,
+  "allowed_tools": [
+    "Bash", "Write", "Read", "Edit", "Glob", "Grep",
+    "GitDiff", "GitStatus", "GitAdd", "GitCommit", "GitPush",
+    "BrowserNavigate", "BrowserSnapshot", "BrowserClick",
+    "SubAgent", "AgentHandoff",
+    "ProjectGen", "YouTubePlaylist",
+    "OpenInBrowser"
+  ],
+  "mcpServers": {}
+}
