@@ -16,7 +16,9 @@ echo   [1/3] Staging all changes...
 git add -A
 if %errorlevel% neq 0 (
     echo   ERROR: git add failed
-    pause >nul
+    echo   Check for Windows-reserved filenames (nul, con, prn, aux)
+    echo   or permission issues in the working tree.
+    pause
     exit /b 1
 )
 
@@ -31,11 +33,11 @@ git push origin main
 if %errorlevel% neq 0 (
     echo   ERROR: git push failed
     echo   Try: git pull --rebase origin main
-    pause >nul
+    pause
     exit /b 1
 )
 
 echo.
 echo   Done - pushed successfully!
 echo.
-pause >nul
+pause

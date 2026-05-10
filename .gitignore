@@ -43,6 +43,7 @@ Thumbs.db
 # Project runtime files
 *.deepseek_history
 .claude/
+nul
 CLAUDE.md
 .audit_lock
 .audit_daemon_paused
