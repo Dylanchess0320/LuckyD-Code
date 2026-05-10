@@ -45,10 +45,10 @@
 
 | OS | Script |
 |---|---|
-| **Windows** | Double-click `launchers/Install and Run - Windows.bat` |
-| **Windows (Web UI)** | Double-click `launchers/Install and Run Web UI - Windows.bat` |
-| **macOS** | Double-click `launchers/Install and Run - Mac.command` |
-| **Linux** | `chmod +x "launchers/Install and Run - Linux.sh" && "./launchers/Install and Run - Linux.sh"` |
+| **Windows** | Double-click `installers/Install and Run - Windows.bat` |
+| **Windows (Web UI)** | Double-click `installers/Install and Run Web UI - Windows.bat` |
+| **macOS** | Double-click `installers/Install and Run - Mac.command` |
+| **Linux** | `chmod +x "installers/Install and Run - Linux.sh" && "./installers/Install and Run - Linux.sh"` |
 
 The launcher creates a virtual environment, installs dependencies, prompts for your API key, and starts the assistant — **no terminal knowledge required**.
 
