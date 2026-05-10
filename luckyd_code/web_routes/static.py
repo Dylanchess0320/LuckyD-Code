@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from fastapi import APIRouter
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 
 router = APIRouter()
 
@@ -38,7 +38,6 @@ async def manifest():
 async def service_worker():
     path = TEMPLATES / "sw.js"
     if path.exists():
-        from fastapi.responses import Response
         return Response(path.read_bytes(), media_type="application/javascript")
     return Response(status_code=404)
 
@@ -47,7 +46,6 @@ async def service_worker():
 async def icon_192():
     path = TEMPLATES / "icon-192.png"
     if path.exists():
-        from fastapi.responses import Response
         return Response(path.read_bytes(), media_type="image/png")
     return Response(status_code=404)
 
@@ -56,7 +54,6 @@ async def icon_192():
 async def icon_512():
     path = TEMPLATES / "icon-512.png"
     if path.exists():
-        from fastapi.responses import Response
         return Response(path.read_bytes(), media_type="image/png")
     return Response(status_code=404)
 
@@ -65,6 +62,5 @@ async def icon_512():
 async def favicon():
     path = TEMPLATES / "icon-192.png"
     if path.exists():
-        from fastapi.responses import Response
         return Response(path.read_bytes(), media_type="image/png")
     return Response(status_code=404)
