@@ -9,6 +9,14 @@ from pathlib import Path
 
 # Force UTF-8 encoding for Windows console compatibility with Rich Unicode output
 if sys.platform == "win32":
+    # Set the console code page to UTF-8 so the terminal decodes bytes correctly.
+    # Without this, box-drawing characters (╔═╗║╚╝) render as mojibake (ΓòöΓòÉ...).
+    try:
+        import ctypes
+        ctypes.windll.kernel32.SetConsoleCP(65001)
+        ctypes.windll.kernel32.SetConsoleOutputCP(65001)
+    except Exception:
+        pass
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 

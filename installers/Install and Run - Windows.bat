@@ -3,6 +3,9 @@ setlocal EnableDelayedExpansion
 title LuckyD Code
 cd /d "%~dp0.."
 
+REM Force UTF-8 code page so Unicode box-drawing & Rich output work
+chcp 65001 >nul 2>&1
+
 cls
 echo.
 echo   ================================================
