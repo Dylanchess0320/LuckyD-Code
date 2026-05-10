@@ -7,6 +7,7 @@ from unittest.mock import patch
 import pytest
 
 from luckyd_code.tools.file_ops import ReadTool, WriteTool
+from luckyd_code.tools import path_validate
 
 
 # ---------------------------------------------------------------------------
@@ -29,6 +30,13 @@ def _write(tmp_path, name, content):
 # ===========================================================================
 
 class TestReadTool:
+    @pytest.fixture(autouse=True)
+    def _bypass_path_check(self, monkeypatch):
+        """Allow tmp_path (outside CWD) to pass validate_file_path."""
+        import luckyd_code.tools.file_ops as _fo
+        monkeypatch.setattr(_fo, "validate_file_path",
+                            lambda p, must_exist=False, *args, **kw: Path(p).resolve())
+
     @pytest.fixture(autouse=True)
     def setup(self):
         self.tool = ReadTool()
@@ -97,6 +105,13 @@ class TestReadTool:
 # ===========================================================================
 
 class TestWriteTool:
+    @pytest.fixture(autouse=True)
+    def _bypass_path_check(self, monkeypatch):
+        """Allow tmp_path (outside CWD) to pass validate_file_path."""
+        import luckyd_code.tools.file_ops as _fo
+        monkeypatch.setattr(_fo, "validate_file_path",
+                            lambda p, must_exist=False, *args, **kw: Path(p).resolve())
+
     @pytest.fixture(autouse=True)
     def setup(self):
         self.tool = WriteTool()
@@ -167,6 +182,12 @@ class TestWriteTool:
 
 class TestGlobTool:
     @pytest.fixture(autouse=True)
+    def _bypass_path_check(self, monkeypatch):
+        """Allow tmp_path (outside CWD) to pass safe_resolve."""
+        monkeypatch.setattr(path_validate, "safe_resolve",
+                            lambda p, *args, **kw: str(Path(p).resolve()))
+
+    @pytest.fixture(autouse=True)
     def setup(self):
         try:
             from luckyd_code.tools.file_ops import GlobTool
@@ -204,6 +225,12 @@ class TestGlobTool:
 # ===========================================================================
 
 class TestGrepTool:
+    @pytest.fixture(autouse=True)
+    def _bypass_path_check(self, monkeypatch):
+        """Allow tmp_path (outside CWD) to pass safe_resolve."""
+        monkeypatch.setattr(path_validate, "safe_resolve",
+                            lambda p, *args, **kw: str(Path(p).resolve()))
+
     @pytest.fixture(autouse=True)
     def setup(self):
         try:
@@ -247,6 +274,13 @@ class TestGrepTool:
 # ===========================================================================
 
 class TestEditTool:
+    @pytest.fixture(autouse=True)
+    def _bypass_path_check(self, monkeypatch):
+        """Allow tmp_path (outside CWD) to pass validate_file_path."""
+        import luckyd_code.tools.file_ops as _fo
+        monkeypatch.setattr(_fo, "validate_file_path",
+                            lambda p, must_exist=False, *args, **kw: Path(p).resolve())
+
     @pytest.fixture(autouse=True)
     def setup(self):
         try:
