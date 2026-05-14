@@ -64,6 +64,9 @@ debug_*
 _debug_*.py
 _cleanup_*.py
 
+# Binary installers (too large for GitHub)
+installers/*.exe
+
 # Stale root scripts
 fetch_models.py
 test_models.py
