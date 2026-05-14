@@ -69,15 +69,15 @@ _HEAVY_KEYWORDS = [
 _COMPLEX_TOOLS = {"Write", "Edit", "GitCommit", "GitPush", "GitPR", "Bash"}
 
 # Thresholds
-LONG_PROMPT_CHARS = 300
-VERY_LONG_PROMPT_CHARS = 800
-TOOL_CALL_THRESHOLD = 2        # After N tool calls, escalate to tier 3
-HEAVY_TOOL_CALL_THRESHOLD = 8  # After N tool calls, escalate to tier 4
+LONG_PROMPT_CHARS = 500
+VERY_LONG_PROMPT_CHARS = 1200
+TOOL_CALL_THRESHOLD = 5        # After N tool calls, escalate to tier 3
+HEAVY_TOOL_CALL_THRESHOLD = 15 # After N tool calls, escalate to tier 4
 
-# LLM classifier timeout — set to near-zero so we always use the fast
-# heuristic result immediately. The background thread still runs and caches
-# its result for future identical prompts, but the main thread never waits.
-_LLM_CLASSIFY_TIMEOUT = 0.01
+# LLM classifier timeout — set to zero to skip the background API call entirely.
+# The heuristic classifier is free and fast; the LLM classifier was a marginal
+# accuracy improvement at the cost of a full API round-trip per unique prompt.
+_LLM_CLASSIFY_TIMEOUT = 0.0
 
 # Shared thread pool for background LLM classification calls (daemon so it
 # doesn't block process exit).

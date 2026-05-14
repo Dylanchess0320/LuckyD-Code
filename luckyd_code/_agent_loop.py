@@ -36,11 +36,11 @@ _log = logging.getLogger(__name__)
 __all__ = ["run_agent_loop", "RunConfig", "LoopResult"]
 
 # ── tunables ──────────────────────────────────────────────────────────────────
-_MAX_VERIFY_RETRIES     = 3       # verify-retry cycles before giving up
+_MAX_VERIFY_RETRIES     = 1       # verify-retry cycles before giving up
 _MAX_PARALLEL_TOOLS     = 4       # max concurrent read-only tool threads
-_MAX_TOOL_RESULT_CHARS  = 8_000   # truncate tool results longer than this
+_MAX_TOOL_RESULT_CHARS  = 4_000   # truncate tool results longer than this
 _STUCK_WINDOW           = 3       # identical tool-call hashes in a row = stuck
-_TURN_BUDGET_WARN       = 2       # inject budget warning when ≤ N turns remain
+_TURN_BUDGET_WARN       = 3       # inject budget warning when ≤ N turns remain
 # Model escalation ladder — used when verify keeps failing.
 # Derived from model_registry models ordered by capability (cheapest first).
 from .model_registry import ALL_MODELS_FLAT as _ALL_MODELS_FLAT_ESC  # noqa: E402
@@ -64,7 +64,7 @@ class RunConfig:
 
     def __init__(
         self,
-        max_turns: int = 10,
+        max_turns: int = 8,
         label: str = "agent",
         verify_edits: bool = False,
         max_verify_retries: int = _MAX_VERIFY_RETRIES,
@@ -580,7 +580,7 @@ def run_agent_loop(
         try:
             if rc.memory_manager:
                 relevant = rc.memory_manager.get_relevant_memories(
-                    _context_text_for_memory(context), k=3,
+                    _context_text_for_memory(context), k=1,
                 )
                 if relevant and relevant != "<memories>\n</memories>":
                     context.add_user_message(
@@ -593,7 +593,7 @@ def run_agent_loop(
         try:
             if rc.user_memory:
                 user_relevant = rc.user_memory.get_relevant(
-                    _context_text_for_memory(context), k=3,
+                    _context_text_for_memory(context), k=1,
                 )
                 if user_relevant and "<memory name=" in user_relevant:
                     context.add_user_message(
@@ -616,10 +616,10 @@ def run_agent_loop(
         turns_remaining = rc.max_turns - turn
 
         # ── context-overflow protection ──────────────────────────────────────
-        if context.estimate_tokens() > context._token_compact_threshold * 0.85:
+        if context.estimate_tokens() > context._token_compact_threshold * 0.70:
             _log.info("[%s] Context near limit — auto-compacting before turn %d",
                       rc.label, turn + 1)
-            context.compact(config, active_model, keep_last=8)
+            context.compact(config, active_model, keep_last=5)
 
         # ── turn budget warning ──────────────────────────────────────────────
         if turns_remaining <= _TURN_BUDGET_WARN and not _budget_warning_sent:

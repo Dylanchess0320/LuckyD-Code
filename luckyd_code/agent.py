@@ -22,7 +22,7 @@ class SubAgent:
         self.tools = tools
         self.context = ConversationContext(
             config.system_prompt,
-            max_messages=20,
+            max_messages=10,
         )
         self.registry = get_default_registry()
 

@@ -186,7 +186,7 @@ class TestEscalateModel:
 class TestRunConfig:
     def test_defaults(self):
         rc = RunConfig()
-        assert rc.max_turns == 10
+        assert rc.max_turns == 8
         assert rc.label == "agent"
         assert rc.verify_edits is False
         assert rc.run_tests is False

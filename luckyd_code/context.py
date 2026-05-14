@@ -12,7 +12,7 @@ def _get_accurate_token_count(text: str) -> int:
     may be slightly off. We apply a 15% safety multiplier to avoid hitting
     the context window before compaction triggers.
     """
-    _DEEPSEEK_SAFETY_FACTOR = 1.15
+    _DEEPSEEK_SAFETY_FACTOR = 1.05
     try:
         import tiktoken
         enc = tiktoken.get_encoding("cl100k_base")
@@ -37,17 +37,16 @@ class ConversationContext:
         self._model = model
         # Auto-compact when estimated tokens exceed this threshold.
         # DeepSeek V4 Flash and V4 Pro both support 1M context windows.
-        # We compact at 800K to leave ~200K headroom for the response and
-        # any injected tool results. Users on older models with smaller
-        # context windows can lower this via config.
-        self._token_compact_threshold = 800_000
+        # Compacting much earlier (150K) keeps the context lean, reducing
+        # per-request token costs dramatically for long sessions.
+        self._token_compact_threshold = 150_000
 
     def add_user_message(self, content: str):
         self.messages.append({"role": "user", "content": content})
         self._maybe_trim()
         # Token-aware auto-compaction: prevent silent context window overflow
         if self._config is not None and self.estimate_tokens() > self._token_compact_threshold:
-            self.compact(self._config, self._model, keep_last=8)
+            self.compact(self._config, self._model, keep_last=5)
 
     def add_assistant_message(self, content: Optional[str] = None, tool_calls: Optional[List[Dict[str, Any]]] = None, reasoning_content: Optional[str] = None):
         msg: dict[str, Any] = {"role": "assistant"}
@@ -61,7 +60,10 @@ class ConversationContext:
         if tool_calls:
             msg["tool_calls"] = tool_calls
         if reasoning_content:
-            msg["reasoning_content"] = reasoning_content
+            # Truncate reasoning to first 800 chars to keep context lean.
+            # The API requires reasoning_content to be present, but it's
+            # rarely useful beyond the first few hundred characters.
+            msg["reasoning_content"] = str(reasoning_content)[:800]
         self.messages.append(msg)
         self._maybe_trim()
 
@@ -164,9 +166,9 @@ class ConversationContext:
         compact_targets = self.messages[1:-keep_last]
 
         summary_text = "\n".join(
-            f"{m['role']}: {str(m.get('content', ''))[:800]}"
+            f"{m['role']}: {str(m.get('content', ''))[:400]}"
             + (
-                f"\n[key reasoning]: {str(m['reasoning_content'])[:200]}"
+                f"\n[key reasoning]: {str(m['reasoning_content'])[:100]}"
                 if m.get("reasoning_content") else ""
             )
             for m in compact_targets
@@ -198,7 +200,7 @@ class ConversationContext:
             response = client.chat.completions.create(
                 model=compact_model,
                 messages=[{"role": "user", "content": summary_prompt}],
-                max_tokens=1500,
+                max_tokens=500,
             )
             summary = response.choices[0].message.content or ""
         except Exception as e:

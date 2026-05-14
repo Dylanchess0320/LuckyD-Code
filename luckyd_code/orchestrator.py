@@ -18,7 +18,7 @@ __all__ = ["AgentHandoff", "Coordinator"]
 _MAX_PARALLEL_WORKERS = 4  # cap on simultaneous API calls in parallel_orchestrate
 
 
-def _truncate_to_tokens(text: str, max_tokens: int = 1500) -> str:
+def _truncate_to_tokens(text: str, max_tokens: int = 600) -> str:
     """Truncate *text* to at most *max_tokens* tokens.
 
     Uses tiktoken (cl100k_base) when available for a precise token count;
@@ -87,7 +87,7 @@ class AgentHandoff:
         # sending two consecutive system turns, which the DeepSeek API
         # does not support.
         combined_system = f"{self.config.system_prompt}\n\n{ROLE_PROMPTS[role]}"
-        agent_ctx = ConversationContext(combined_system, max_messages=20)
+        agent_ctx = ConversationContext(combined_system, max_messages=12)
         registry = get_default_registry()
         agent_ctx.add_user_message(task)
 
