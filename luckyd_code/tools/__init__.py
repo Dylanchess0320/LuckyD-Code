@@ -23,6 +23,7 @@ from .game_gen import GameGenTool
 from .project_gen import ProjectGenTool
 from .readme_gen import ReadmeGenTool
 from .dockerfile_gen import DockerfileGenTool
+from .image import ImageAnalyzeTool
 
 __all__ = [
     "ToolRegistry", "Tool",
@@ -45,6 +46,7 @@ __all__ = [
     "ProjectGenTool",
     "ReadmeGenTool",
     "DockerfileGenTool",
+    "ImageAnalyzeTool",
     "get_default_registry",
 ]
 
@@ -91,6 +93,7 @@ def get_default_registry():
     registry.register(ProjectGenTool())
     registry.register(ReadmeGenTool())
     registry.register(DockerfileGenTool())
+    registry.register(ImageAnalyzeTool())
 
     # Load external plugins from ~/.claude/plugins/
     try:
