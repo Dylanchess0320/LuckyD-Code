@@ -231,7 +231,7 @@ def format_backup_list(backups: list[dict]) -> str:
         date_str = f"  {b['date']}" if b["date"] else ""
         tag_str = f"  [{b['tag']}]" if b["tag"] else ""
         lines.append(f"  [cyan]#{b['n']}[/cyan]  {b['hash']}{date_str}{tag_str}")
-        if b["subject"] and not b["subject"].startswith("dsc-backup/"):
+        if b["subject"] and not b["subject"].startswith(BACKUP_TAG_PREFIX):
             lines.append(f"       [dim]{b['subject'][:80]}[/dim]")
     lines.append("\n[dim]Use /backup restore <#> to restore any of these[/dim]")
     return "\n".join(lines)

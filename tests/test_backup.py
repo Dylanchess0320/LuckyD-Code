@@ -311,7 +311,7 @@ class TestRestoreBackup:
     def test_checkout_failure_recovers_stash(self):
         call_log = []
         def _fake_git(*args, cwd=None):
-            call_log.append(args[0])
+            call_log.extend(args)
             if args[0] == "checkout":
                 return (1, "", "pathspec did not match")
             return (0, "", "")
