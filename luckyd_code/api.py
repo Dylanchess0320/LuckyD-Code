@@ -83,6 +83,7 @@ def _open_stream(  # pragma: no cover
     base_url: str,
     max_tokens: int,
     temperature: float,
+    provider: str = "",
 ):
     """Open the streaming HTTP connection and validate the status code.
 
@@ -109,7 +110,7 @@ def _open_stream(  # pragma: no cover
     }
     body: Dict[str, Any] = {
         "model": model,
-        "messages": _filter_messages(messages),
+        "messages": _filter_messages(messages, provider),
         "max_tokens": max_tokens,
         "temperature": temperature,
         "stream": True,
@@ -187,24 +188,23 @@ def _parse_sse_line(line: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def _filter_messages(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Ensure DeepSeek reasoning_content is properly handled for thinking mode.
+def _filter_messages(messages: List[Dict[str, Any]], provider: str = "") -> List[Dict[str, Any]]:
+    """Normalise messages for the target provider.
 
-    DeepSeek requires that when an assistant response had reasoning_content,
-    subsequent requests must include BOTH content AND reasoning_content.
-    Sending reasoning_content without a content field (or with content=None)
-    causes the API to return "content or tool_calls must be set".
-
-    Fix: whenever reasoning_content is present, ensure content is at least an
-    empty string so the API always sees both fields together.
+    DeepSeek: keep reasoning_content, ensure content is always set alongside it.
+    Non-DeepSeek (Groq, Ollama, …): strip reasoning_content entirely — those
+    APIs don't understand it and will error or silently corrupt the request.
     """
+    is_deepseek = "deepseek" in provider.lower() if provider else True
     filtered = []
     for msg in messages:
         m = dict(msg)
         if m.get("role") == "assistant" and "reasoning_content" in m:
-            # Guarantee content is present and is a string (never None/missing)
-            if not m.get("content"):
-                m["content"] = ""
+            if is_deepseek:
+                if m.get("content") is None or "content" not in m:
+                    m["content"] = ""
+            else:
+                del m["reasoning_content"]
         filtered.append(m)
     return filtered
 
@@ -363,6 +363,7 @@ def _call_with_retry(
     base_url: str,
     max_tokens: int,
     temperature: float,
+    provider: str = "",
 ):
     """Open the streaming connection with exponential-backoff retry on retryable errors.
 
@@ -377,7 +378,7 @@ def _call_with_retry(
     for attempt in range(_RETRY_MAX + 1):
         try:
             return _open_stream(
-                messages, tools, model, api_key, base_url, max_tokens, temperature
+                messages, tools, model, api_key, base_url, max_tokens, temperature, provider
             )
         except ModelNotFoundError:
             raise  # never retry — model doesn't exist
@@ -413,6 +414,7 @@ def stream_chat(
     base_url: str = "https://api.deepseek.com/v1",
     max_tokens: int = 4096,
     temperature: float = 0.7,
+    provider: str = "",
 ) -> Generator[Event, None, None]:
     """Stream a chat completion, yielding text chunks and tool calls.
 
@@ -423,7 +425,7 @@ def stream_chat(
     try:
         client, response_cm, response = _call_with_retry(
             messages, tools, model, api_key, base_url,
-            max_tokens, temperature,
+            max_tokens, temperature, provider,
         )
     except ModelNotFoundError as e:
         yield ("model_not_found", str(e))

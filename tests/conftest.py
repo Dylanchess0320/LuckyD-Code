@@ -16,6 +16,16 @@ from unittest.mock import MagicMock
 
 import pytest
 
+# ---------------------------------------------------------------------------
+# Mock optional dependencies that may not be installed in this environment
+# ---------------------------------------------------------------------------
+# PIL (Pillow) is used by tools/image.py but is not required for most tests.
+# Mock it before any luckyd_code import so collection doesn't fail.
+for _pil_mod in ("PIL", "PIL.Image", "PIL.ImageDraw", "PIL.ImageFont",
+                  "PIL.ImageFilter", "PIL.ImageOps"):
+    if _pil_mod not in sys.modules:
+        sys.modules[_pil_mod] = MagicMock()
+
 # Ensure the project root is on sys.path
 PROJECT_ROOT = Path(__file__).parent.parent
 

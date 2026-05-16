@@ -3,6 +3,9 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
+from ..memory import MemoryManager
+from ..undo import undo_last
+
 router = APIRouter()
 
 
@@ -14,7 +17,6 @@ async def clear_context(request: Request):
         memory_module = state.memory_module
         context.reset()
         # Re-inject merged memory block
-        from ..memory import MemoryManager
         mgr = MemoryManager()
         md = memory_module.load_claude_md()
         session_memories = mgr.get_all_memories_formatted()
@@ -37,7 +39,6 @@ async def clear_context(request: Request):
 @router.post("/api/undo")
 async def undo():
     try:
-        from ..undo import undo_last
         result = undo_last()
         return {"status": result}
     except Exception as e:

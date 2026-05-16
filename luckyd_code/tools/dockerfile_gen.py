@@ -179,9 +179,9 @@ class DockerfileGenTool(Tool):
         try:
             result = self._call_model(context)
         except json.JSONDecodeError as e:
-            return f"Error: model returned invalid JSON — {e}"
+            return f"Error: model returned invalid JSON \u2014 {e}"
         except Exception as e:
-            return f"Error: model call failed — {e}"
+            return f"Error: model call failed \u2014 {e}"
 
         dockerfile = result.get("dockerfile", "").strip()
         compose = result.get("compose", "").strip()

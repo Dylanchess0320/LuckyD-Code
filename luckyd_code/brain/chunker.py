@@ -199,6 +199,9 @@ def _chunk_with_regex(filepath: Path, content: str, language: str) -> list[Chunk
     rel_path = str(filepath)
     patterns = STRUCTURE_PATTERNS.get(language, [])
 
+    if not patterns:
+        return []
+
     header_end = min(20, len(lines))
     for pattern, _type, _subtype in patterns:
         for m in re.finditer(pattern, content):
