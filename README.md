@@ -9,6 +9,7 @@
 
 <p align="center">
   <a href="https://github.com/Dylanchess0320/LuckyD-Code/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Dylanchess0320/LuckyD-Code/ci.yml?style=flat-square&label=CI&logo=github" alt="CI"></a>
+  <a href="https://codecov.io/gh/Dylanchess0320/LuckyD-Code"><img src="https://img.shields.io/codecov/c/github/Dylanchess0320/LuckyD-Code?style=flat-square&logo=codecov&label=Coverage" alt="Coverage"></a>
   <a href="https://pypi.org/project/luckyd-code/"><img src="https://img.shields.io/pypi/v/luckyd-code?style=flat-square&logo=pypi&label=PyPI&color=3775A9" alt="PyPI"></a>
   <a href="https://pypi.org/project/luckyd-code/"><img src="https://img.shields.io/pypi/pyversions/luckyd-code?style=flat-square&logo=python&label=Python&color=3776AB" alt="Python"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square&logo=opensourceinitiative" alt="License"></a>

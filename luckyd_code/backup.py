@@ -18,7 +18,7 @@ from typing import Optional
 
 
 # Tag prefix used to identify backup commits so we can list/restore them
-BACKUP_TAG_PREFIX = "dsc-backup/"
+BACKUP_TAG_PREFIX = "luckyd-backup/"
 
 
 def _git(*args: str, cwd: Optional[str] = None) -> tuple[int, str, str]:

@@ -6,6 +6,18 @@
 - **.gitignore** — added `.luckyd_history` and `.luckyd-code/` for project rename parity
 - **Docstring fix** (`_agent_loop.py`) — removed stale `/critique` reference in `run_config`
 
+## [1.2.3] — 2026-05-16
+
+### Fixed
+- **`backup.py`** — renamed `BACKUP_TAG_PREFIX` from `"dsc-backup/"` to `"luckyd-backup/"` to match the project rename. Existing tags with the old prefix remain in your repo history and are unaffected.
+
+### Removed
+- **`self_critique.py`** — deleted the empty tombstone file (contained only a comment noting it had already been removed).
+
+### Added
+- **Tests** — `tests/test_backup.py` (52 cases covering all public functions in `backup.py`) and `tests/test_file_watcher.py` (28 cases covering `FileWatcher` public API, start/stop lifecycle, pause/resume, status, and extension filtering).
+- **Coverage badge** — Codecov integration added to CI (`ci.yml`) and badge added to `README.md`. Coverage uploads only on Python 3.12 to avoid duplicate reports.
+
 All notable changes to LuckyD Code will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/),

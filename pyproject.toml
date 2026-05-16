@@ -132,6 +132,8 @@ omit = [
     "luckyd_code/permissions/manager.py",
     # Embedding model — requires sentence-transformers installed (optional dep)
     "luckyd_code/brain/embedder.py",
+    # Removed module — kept as empty tombstone until git rm is run
+    "luckyd_code/self_critique.py",
 ]
 
 [tool.coverage.report]
