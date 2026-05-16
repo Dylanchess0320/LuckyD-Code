@@ -22,6 +22,9 @@ from .sessions import handle_sessions_command
 from .brain import handle_brain_command
 from .config import handle_config_command
 from .audit import handle_audit_command
+from .plugins import handle_plugins_command
+from .effort import handle_effort_command
+from .budget import handle_budget_command
 from ..backup import create_backup, list_backups, restore_backup, format_backup_list
 
 
@@ -154,6 +157,10 @@ def handle_command(repl, cmd: str):
                 ("/models", "List available models by tier"),
                 ("/models set <id>", "Switch to a specific model"),
                 ("/route <text>", "Show routing decision for input"),
+                ("/effort", "Show current effort level"),
+                ("/effort low|normal|high|max", "Set effort level (affects tier floor, tokens, temp)"),
+                ("/budget", "Show current token budget"),
+                ("/budget <tokens>", "Set per-turn token cap (e.g. /budget 2000)"),
             ]),
             ("Agents & Automation", [
                 ("/debug", "Auto debug loop (test → fix → re-run)"),
@@ -187,6 +194,12 @@ def handle_command(repl, cmd: str):
                 ("/sandbox status", "Check Docker sandbox availability"),
                 ("/allow <tool>", "Allow a tool without confirmation"),
                 ("/update", "Update LuckyD Code"),
+            ]),
+            ("Plugins", [
+                ("/plugins", "List all loaded plugins"),
+                ("/plugins reload", "Hot-reload plugins without restarting"),
+                ("/plugins dir", "Show plugin directory path"),
+                ("/plugins new <name>", "Scaffold a new plugin file"),
             ]),
         ]
 
@@ -690,6 +703,15 @@ def handle_command(repl, cmd: str):
 
     elif command == "/audit":
         handle_audit_command(repl, args)
+
+    elif command == "/plugins":
+        handle_plugins_command(repl, args)
+
+    elif command == "/effort":
+        handle_effort_command(repl, args)
+
+    elif command == "/budget":
+        handle_budget_command(repl, args)
 
     else:
         console.print(f"[red]Unknown command: {command}. Type /help[/red]")

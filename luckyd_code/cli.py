@@ -123,7 +123,10 @@ class Repl:
 
         tool_count = len(self.registry.list_tools()) + len(self.mcp.get_all_tools())
         symbol_summary = f"{self.brain.stats.get('node_count', 0)} symbols" if self.brain.nodes else ""
-        console.print(f"[dim]LuckyD Code v{updater.get_version()} — {tool_count} tools{', ' + symbol_summary if symbol_summary else ''} — /help for commands[/dim]")
+        effort = getattr(self.config, "effort", "normal")
+        effort_icons = {"low": "⚡", "normal": "◎", "high": "◉", "max": "🔥"}
+        effort_str = f"{effort_icons.get(effort, '◎')} {effort}"
+        console.print(f"[dim]LuckyD Code v{updater.get_version()} — {tool_count} tools{', ' + symbol_summary if symbol_summary else ''} — effort: {effort_str} — /help for commands[/dim]")
 
         # Start background audit daemon if requested via --daemon flag
         if self._daemon_enabled:
@@ -308,9 +311,12 @@ class Repl:
                             preferred_model=self.config.model)
 
     def _chat_loop(self, user_prompt: str = ""):
-        max_iterations = 100
+        max_iterations = 20        # hard cap (was 100)
+        max_consecutive_errors = 3  # bail if tool calls keep failing
         iteration = 0
         tool_call_count = 0
+        consecutive_errors = 0
+        _budget_warning_sent = False
 
         # Per-turn state for auto-commit
         all_tool_calls: list[dict] = []
@@ -338,6 +344,25 @@ class Repl:
                 console.print("\n[dim]⏹ Stopped[/dim]")
                 self._stop_requested = False
                 return
+
+            # ── token budget warning ─────────────────────────────────────────
+            turns_remaining = max_iterations - iteration
+            if turns_remaining <= 3 and not _budget_warning_sent:
+                self.context.add_user_message(
+                    f"[System: {turns_remaining} turn(s) remaining in this session. "
+                    "Wrap up your work and give a final answer now.]"
+                )
+                _budget_warning_sent = True
+
+            # ── 75% token budget protection ──────────────────────────────────
+            est = self.context.estimate_tokens()
+            budget = getattr(self.config, "max_tokens", 4096)
+            if est > budget * 0.75 and not _budget_warning_sent:
+                console.print("[dim yellow]⚠ Approaching token limit — wrapping up[/dim yellow]")
+                self.context.add_user_message(
+                    "[System: context window is nearly full. Finish your current task and return a final answer now. Do not start new tool calls.]"
+                )
+                _budget_warning_sent = True
 
             iteration += 1
             messages = self.context.get_messages()
@@ -404,6 +429,24 @@ class Repl:
                 )
                 all_tool_calls.extend(pending_tool_calls)
 
+                # Track consecutive errors for bail-out
+                last_results = [
+                    m.get("content", "") for m in self.context.messages[-len(pending_tool_calls):]
+                    if m.get("role") == "tool"
+                ]
+                if all(str(r).startswith("Error") for r in last_results if r):
+                    consecutive_errors += 1
+                else:
+                    consecutive_errors = 0
+
+                if consecutive_errors >= max_consecutive_errors:
+                    console.print(f"[yellow]⚠ {consecutive_errors} consecutive tool errors — stopping to avoid wasting tokens[/yellow]")
+                    self.context.add_assistant_message(
+                        content=f"I encountered {consecutive_errors} consecutive tool failures and stopped to avoid wasting tokens. "
+                        "Here's what I tried and where I got stuck. Please review and let me know how to proceed."
+                    )
+                    break
+
                 # Track files modified by Write/Edit tools
                 for tc in pending_tool_calls:
                     if tc["function"]["name"] in ("Write", "Edit"):
@@ -436,7 +479,7 @@ class Repl:
             break
 
         if iteration >= max_iterations:
-            console.print(f"[red]Error: Maximum tool call iterations ({max_iterations}) reached. Use /clear to reset.[/red]")
+            console.print(f"[yellow]⚠ Reached the {max_iterations}-turn limit. The task may be too complex for one session. Try breaking it into smaller steps or use /orchestrate.[/yellow]")
             play_completion_sound(success=False)
         else:
             play_completion_sound(success=True)

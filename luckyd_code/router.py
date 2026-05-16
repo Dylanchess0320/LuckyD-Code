@@ -317,6 +317,52 @@ def get_tier_description(tier: int) -> str:
     return descriptions.get(tier, f"Tier {tier}")
 
 
+# ---------------------------------------------------------------------------
+# Effort-level helpers
+# ---------------------------------------------------------------------------
+
+# Effort level → (tier_floor, max_tokens, temperature)
+EFFORT_SETTINGS: dict[str, tuple[int, int, float]] = {
+    "low":    (1, 2048,  0.5),
+    "normal": (2, 4096,  0.3),
+    "high":   (3, 8192,  0.2),
+    "max":    (4, 16384, 0.1),
+}
+
+EFFORT_LABELS: dict[str, str] = {
+    "low":    "low    — fast & cheap, tier 1 floor",
+    "normal": "normal — balanced, tier 2 floor (default)",
+    "high":   "high   — reasoner, tier 3 floor, 8K tokens",
+    "max":    "max    — pro model always, tier 4, 16K tokens",
+}
+
+
+def apply_effort(config, effort: str) -> str:
+    """Apply an effort level to a Config object in-place.
+
+    Updates ``config.effort``, ``config.max_tokens``, and
+    ``config.temperature``, then saves the config.
+
+    Returns a human-readable confirmation string.
+    """
+    effort = effort.lower().strip()
+    if effort not in EFFORT_SETTINGS:
+        valid = ", ".join(EFFORT_SETTINGS)
+        return f"Unknown effort level '{effort}'. Valid: {valid}"
+
+    _, max_tokens, temperature = EFFORT_SETTINGS[effort]
+    config.effort = effort
+    config.max_tokens = max_tokens
+    config.temperature = temperature
+    config.save()
+    return EFFORT_LABELS[effort]
+
+
+def effort_tier_floor(effort: str) -> int:
+    """Return the minimum tier enforced by the current effort level."""
+    return EFFORT_SETTINGS.get(effort, EFFORT_SETTINGS["normal"])[0]
+
+
 def show_model_info() -> str:
     """Return a formatted string of all available models and tiers."""
     return format_model_list()
@@ -365,12 +411,7 @@ def resolve_initial_route(
     auto_route: bool = True,
     config=None,
 ) -> RoutingResult:
-    """Determine the initial model tier for a user message.
-
-    When *config* is provided the LLM-based classifier is used for higher
-    accuracy (with a short timeout so it never blocks the response).
-    Falls back to the heuristic ``classify_tier()`` on timeout or error.
-    """
+    """Determine the initial model tier for a user message."""
     if not auto_route:
         return RoutingResult(model=preferred_model, tier=2,
                              tier_description=get_tier_description(2))
@@ -379,6 +420,11 @@ def resolve_initial_route(
         base_tier = classify_tier_llm(user_text, config)
     else:
         base_tier = classify_tier(user_text, tool_call_count)
+
+    # Enforce effort floor — never route below the effort-level minimum
+    if config is not None:
+        floor = effort_tier_floor(getattr(config, "effort", "normal"))
+        base_tier = max(base_tier, floor)
 
     new_model = TIER_MODELS.get(base_tier, ALL_MODELS_FLAT[0].id)
 

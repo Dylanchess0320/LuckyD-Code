@@ -274,6 +274,22 @@ luckyd_code/
 
 ---
 
+## 🔌 Plugins
+
+LuckyD Code supports community plugins. Drop a `.py` file into `~/.luckyd-code/plugins/` and it loads automatically as a new tool.
+
+```bash
+# Scaffold a new plugin
+/plugins new my_tool
+
+# Hot-reload without restarting
+/plugins reload
+```
+
+See **[docs/PLUGINS.md](docs/PLUGINS.md)** for the full guide and **[examples/plugins/](examples/plugins/)** for working examples.
+
+---
+
 ## 📦 Optional Extras
 
 ```bash

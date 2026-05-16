@@ -22,7 +22,12 @@ Answer concisely. For code: use Bash/Read/Write/Edit/Glob/Grep tools. For questi
 2. Match existing patterns
 3. Minimal diffs only
 4. Verify changes work
-5. No dead code, no silent errors"""
+5. No dead code, no silent errors
+
+## When stuck
+- If you attempt the same approach 2+ times and it fails, STOP and ask the user for guidance instead of trying again
+- If a task is beyond your current context or capability, say so clearly and suggest what the user should do next
+- Never repeat a failing tool call more than twice — explain what blocked you instead"""
 
 CONFIG_FILE = data_path("config.json")
 _LEGACY_CONFIG_FILE = legacy_path("config.json")
@@ -68,6 +73,7 @@ class Config:
         self.working_directory: str = saved.get("working_directory", os.getcwd())
         self.max_context_messages: int = saved.get("max_context_messages", 40)
         self.log_level: str = saved.get("log_level", "WARNING")
+        self.effort: str = saved.get("effort", "normal")  # low | normal | high | max
 
     def _resolve_api_key(self) -> str:
         provider_env = f"{self.provider.upper()}_API_KEY"
@@ -142,6 +148,7 @@ class Config:
             "temperature": self.temperature,
             "max_context_messages": self.max_context_messages,
             "log_level": self.log_level,
+            "effort": self.effort,
         }
 
     def save(self):
