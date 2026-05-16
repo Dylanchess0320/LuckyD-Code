@@ -236,6 +236,27 @@ def _count_unquoted(text: str, open_ch: str, close_ch: str) -> tuple[int, int]:
     return opens, closes
 
 
+def _close_unclosed_string(text: str) -> str:
+    """If the text ends inside an unterminated string literal, close it.
+
+    This must run before bracket-counting so that closing brackets/braces
+    appended to fix an unclosed string are not themselves counted as
+    structural characters on a subsequent repair pass.
+    """
+    in_string = False
+    escape = False
+    for ch in text:
+        if escape:
+            escape = False
+            continue
+        if ch == "\\" and in_string:
+            escape = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+    return text + '"' if in_string else text
+
+
 def _repair_json(raw: str) -> str:
     """Attempt to repair common JSON issues in model-generated tool arguments.
 
@@ -244,13 +265,31 @@ def _repair_json(raw: str) -> str:
 
     All replacements are done *outside* string literals to avoid corrupting
     valid JSON that legitimately contains e.g. "}" inside a string value.
+
+    The function is idempotent: if the input already parses as valid JSON it
+    is returned unchanged, so calling it twice produces the same result.
     """
     raw = raw.strip()
     if not raw:
         return raw
 
+    # Fast path — already valid JSON, nothing to repair.
+    # This is also what makes the function idempotent: after one repair pass
+    # the output is valid JSON, so a second pass returns it immediately.
+    try:
+        json.loads(raw)
+        return raw
+    except json.JSONDecodeError:
+        pass
+
     # Remove trailing comma before closing brace/bracket (outside strings only)
     raw = _remove_trailing_commas(raw)
+
+    # Close any unterminated string literal before counting brackets.
+    # Without this, a bracket appended to close an open string would itself
+    # be invisible to _count_unquoted (it lands inside the string), causing
+    # the next repair pass to add yet another bracket.
+    raw = _close_unclosed_string(raw)
 
     # Close unmatched braces/brackets — count only characters outside strings
     # so that values like {"key": "template {var}"} are never corrupted.
