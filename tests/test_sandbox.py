@@ -245,6 +245,13 @@ class TestSandbox:
 
 
 class TestSandboxSingleton:
+    def setup_method(self):
+        """Reset the sandbox singleton before each test so cached instances
+        from earlier tests (or a live Docker daemon on the CI runner) don't
+        bleed through and make the patch on _check a no-op."""
+        import luckyd_code.sandbox as _sandbox_mod
+        _sandbox_mod._sandbox = None
+
     def test_get_sandbox_returns_instance(self):
         """get_sandbox should return a Sandbox instance."""
         with patch("luckyd_code.sandbox.Sandbox._check", lambda self: setattr(self, "available", False)):

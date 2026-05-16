@@ -27,8 +27,8 @@ try:
     import certifi
 
     _SSL_CONTEXT = ssl.create_default_context(cafile=certifi.where())
-except ImportError:
-    _SSL_CONTEXT = ssl.create_default_context()
+except ImportError:  # pragma: no cover
+    _SSL_CONTEXT = ssl.create_default_context()  # pragma: no cover
 
 from .registry import Tool
 

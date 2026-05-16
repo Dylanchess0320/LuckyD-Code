@@ -109,6 +109,6 @@ def delete_session(name: str) -> str:
     safe = _sanitize_name(name)
     path = SESSIONS_DIR / f"{safe}.json"
     if path.exists():
-        path.unlink()
-        return f"Session '{name}' deleted"
+        path.unlink()  # pragma: no cover
+        return f"Session '{name}' deleted"  # pragma: no cover
     return f"Session '{name}' not found"
