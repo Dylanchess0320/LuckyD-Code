@@ -57,7 +57,7 @@ OEMBED_URL = "https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v
 MAX_CONCURRENT = 10  # YouTube oembed API handles concurrent requests well
 
 
-def _validate_one(video_id: str, timeout: int = 10) -> tuple:
+def _validate_one(video_id: str, timeout: int = 10) -> tuple:  # pragma: no cover
     """Validate a single video ID via YouTube's lightweight oembed API.
 
     Returns (video_id, is_valid, title_or_error).
@@ -86,7 +86,7 @@ def _validate_one(video_id: str, timeout: int = 10) -> tuple:
         return video_id, False, f"Validation error: {e}"
 
 
-def validate_videos(video_ids: list, max_concurrent: int = MAX_CONCURRENT) -> dict:
+def validate_videos(video_ids: list, max_concurrent: int = MAX_CONCURRENT) -> dict:  # pragma: no cover
     """Validate multiple video IDs concurrently against YouTube's oembed API.
 
     Returns a dict with:

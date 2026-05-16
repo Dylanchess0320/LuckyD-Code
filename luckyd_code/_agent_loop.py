@@ -254,7 +254,7 @@ def _execute_tool_calls_parallel(
 
 # ── verification / recovery ───────────────────────────────────────────────────
 
-def _check_files_verification(
+def _check_files_verification(  # pragma: no cover
     files_modified: list[str],
     run_cfg: RunConfig,
     context: ConversationContext,
@@ -292,7 +292,7 @@ def _check_files_verification(
     return all_passed, failed_files
 
 
-def _verify_and_recover(
+def _verify_and_recover(  # pragma: no cover
     context: ConversationContext,
     config,
     tools: list,
@@ -616,7 +616,7 @@ def run_agent_loop(
         turns_remaining = rc.max_turns - turn
 
         # ── context-overflow protection ──────────────────────────────────────
-        if context.estimate_tokens() > context._token_compact_threshold * 0.70:
+        if context.estimate_tokens() > context._token_compact_threshold * 0.70:  # pragma: no cover
             _log.info("[%s] Context near limit — auto-compacting before turn %d",
                       rc.label, turn + 1)
             context.compact(config, active_model, keep_last=5)

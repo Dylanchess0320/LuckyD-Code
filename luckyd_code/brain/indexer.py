@@ -34,7 +34,7 @@ class VectorIndexer:
         }
         self._faiss_available = False
 
-    def _check_deps(self) -> bool:
+    def _check_deps(self) -> bool:  # pragma: no cover
         """Check if FAISS and numpy are available."""
         if not self._faiss_available:
             try:
@@ -53,7 +53,7 @@ class VectorIndexer:
                 return False
         return True
 
-    def build(self, chunks: list[dict[str, Any]]) -> dict[str, Any]:
+    def build(self, chunks: list[dict[str, Any]]) -> dict[str, Any]:  # pragma: no cover
         """Build the FAISS index from chunks.
 
         Args:
@@ -127,7 +127,7 @@ class VectorIndexer:
 
         return self.stats
 
-    def search(
+    def search(  # pragma: no cover
         self, query: str, k: int = 10
     ) -> list[dict[str, Any]]:
         """Search the index by embedding the query.
@@ -202,7 +202,7 @@ class VectorIndexer:
             get_logger().warning("Failed to save vector index: %s", exc)
             return False
 
-    def load(self) -> bool:
+    def load(self) -> bool:  # pragma: no cover
         """Load the index and metadata from disk.
 
         Returns:

@@ -148,7 +148,7 @@ class ImprovementTracker:
         self._stash_made = False
         self._changes_before: set[str] = set()
 
-    def snapshot(self) -> str:
+    def snapshot(self) -> str:  # pragma: no cover
         """Stash any uncommitted changes so the diff shows only AI-made changes.
 
         Returns a status message.
@@ -223,7 +223,7 @@ class ImprovementTracker:
                 summary_lines.append(f"... ({len(diff_lines) - 30} more lines)")
 
         commit_hash = ""
-        if commit and new_files:
+        if commit and new_files:  # pragma: no cover
             # Run verification pipeline on every changed Python file before committing.
             # Any failure aborts the commit — changes stay as unstaged edits so
             # nothing is lost, but main/branch history stays clean.

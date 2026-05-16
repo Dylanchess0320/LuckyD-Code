@@ -87,12 +87,13 @@ class TestModelRegistry:
 
     def test_get_models_by_tier_returns_list(self):
         """get_models_by_tier should return list of models for each tier."""
+        import luckyd_code.model_registry as _mr  # fresh ref avoids stale class after any reload
         for tier in range(1, 5):
             result = get_models_by_tier(tier)
             assert isinstance(result, list)
             assert len(result) > 0
             for m in result:
-                assert isinstance(m, ModelDef)
+                assert isinstance(m, _mr.ModelDef)
 
     def test_model_tiers_reverse_map(self):
         """_MODEL_TIERS should be the reverse of TIER_MODEL_MAP."""

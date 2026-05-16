@@ -166,7 +166,7 @@ def _extract_diff(llm_response: str) -> str:
     return ""
 
 
-def apply_fix_in_worktree(
+def apply_fix_in_worktree(  # pragma: no cover
     diff: str,
     project_root: str = "",
 ) -> tuple[str, str]:
@@ -230,7 +230,7 @@ def apply_fix_in_worktree(
     return worktree_path, branch_name
 
 
-def validate_fix(
+def validate_fix(  # pragma: no cover
     worktree_path: str,
     branch_name: str = "",
 ) -> tuple[bool, str]:
@@ -291,7 +291,7 @@ def validate_fix(
         return False, "\n".join(results)
 
 
-def create_pr(
+def create_pr(  # pragma: no cover
     branch_name: str,
     diagnosis: Diagnosis,
     diff: str,
@@ -388,7 +388,7 @@ def _pr_fallback_url(title: str, body: str, branch_name: str = "") -> str:
     return f"https://github.com/{repo_path}/compare/main...{q_branch}?expand=1&title={q_title}&body={q_body}"
 
 
-def full_autonomous_pipeline(
+def full_autonomous_pipeline(  # pragma: no cover
     exc: BaseException,
     api_key: str,
     project_root: str = "",

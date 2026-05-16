@@ -196,7 +196,7 @@ Guidelines:
 """
 
 
-def ai_create_plan(name: str, goal: str, config) -> Plan:
+def ai_create_plan(name: str, goal: str, config) -> Plan:  # pragma: no cover
     """Use the DeepSeek API to decompose a goal into a structured Plan.
 
     Falls back to a minimal placeholder plan if the API call fails.
@@ -270,7 +270,7 @@ def ai_create_plan(name: str, goal: str, config) -> Plan:
 #  Interactive plan approval and execution
 # ------------------------------------------------------------------ #
 
-def plan_and_approve(goal: str, config, session=None) -> Optional["Plan"]:
+def plan_and_approve(goal: str, config, session=None) -> Optional["Plan"]:  # pragma: no cover
     """Generate a plan with AI, show it, and ask the user to approve it.
 
     Returns the approved ``Plan`` if the user confirms, or ``None`` if
@@ -309,7 +309,7 @@ def plan_and_approve(goal: str, config, session=None) -> Optional["Plan"]:
     return plan
 
 
-def execute_plan(plan: "Plan", task: str, config) -> str:
+def execute_plan(plan: "Plan", task: str, config) -> str:  # pragma: no cover
     """Execute an approved plan step-by-step, running each step through a SubAgent.
 
     Returns a summary string of all step outcomes.

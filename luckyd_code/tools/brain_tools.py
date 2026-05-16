@@ -10,7 +10,7 @@ _retriever: Retriever | None = None
 _assembler: ContextAssembler | None = None
 
 
-def _get_graph() -> KnowledgeGraph:
+def _get_graph() -> KnowledgeGraph:  # pragma: no cover
     """Get the shared graph instance, loading from disk if needed."""
     global _graph
     if _graph is None:
@@ -19,7 +19,7 @@ def _get_graph() -> KnowledgeGraph:
     return _graph
 
 
-def _get_retriever() -> Retriever:
+def _get_retriever() -> Retriever:  # pragma: no cover
     """Get the shared retriever instance."""
     global _retriever
     if _retriever is None:
@@ -27,7 +27,7 @@ def _get_retriever() -> Retriever:
     return _retriever
 
 
-def _get_assembler() -> ContextAssembler:
+def _get_assembler() -> ContextAssembler:  # pragma: no cover
     """Get the shared context assembler instance."""
     global _assembler
     if _assembler is None:

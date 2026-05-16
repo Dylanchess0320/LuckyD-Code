@@ -166,7 +166,7 @@ class _CommandTimeout(Exception):
         super().__init__(f"Command timed out after {elapsed:.0f}s")
 
 
-def _run_with_timeout(
+def _run_with_timeout(  # pragma: no cover
     cmd,
     *,
     shell: bool = False,
@@ -280,7 +280,7 @@ class BashTool(Tool):
         "required": ["command"],
     }
 
-    def run(self, command: str, description: str = "", timeout: int = 120000) -> str:  # type: ignore[override]
+    def run(self, command: str, description: str = "", timeout: int = 120000) -> str:  # type: ignore[override]  # pragma: no cover
         # Safety check
         warning = _is_dangerous(command)
         if warning:

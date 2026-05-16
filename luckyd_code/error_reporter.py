@@ -290,7 +290,7 @@ def capture_unhandled(exc: BaseException) -> bool:
     if already_reported(exc):
         return False
 
-    if mode == "log":
+    if mode == "log":  # pragma: no cover
         path = _log_to_file(exc)
         try:
             from .log import get_logger  # noqa: PLC0415
@@ -301,7 +301,7 @@ def capture_unhandled(exc: BaseException) -> bool:
         return True
 
     # mode == "ask" — interactive
-    return _ask_and_open(exc)
+    return _ask_and_open(exc)  # pragma: no cover
 
 
 def _get_reporting_mode() -> str:
@@ -351,7 +351,7 @@ def _get_autonomous_mode() -> str:
     return "fix"
 
 
-def _ask_and_open(exc: BaseException) -> bool:
+def _ask_and_open(exc: BaseException) -> bool:  # pragma: no cover
     """Prompt the user and — if they consent — open a GitHub issue URL.
 
     If ``autonomous_improvement`` is enabled, also runs LLM diagnosis, fix

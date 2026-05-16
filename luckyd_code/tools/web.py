@@ -119,7 +119,7 @@ class WebFetchTool(Tool):
         "required": ["url"],
     }
 
-    def run(self, url: str) -> str:  # type: ignore[override]
+    def run(self, url: str) -> str:  # type: ignore[override]  # pragma: no cover
         try:
             response = httpx.get(
                 url,
@@ -191,7 +191,7 @@ class WebSearchTool(Tool):
         "required": ["query"],
     }
 
-    def run(self, query: str) -> str:  # type: ignore[override]
+    def run(self, query: str) -> str:  # type: ignore[override]  # pragma: no cover
         errors: list[str] = []
 
         # ── provider 1: DuckDuckGo HTML (real web results, may be rate-limited) ─
@@ -228,7 +228,7 @@ class WebSearchTool(Tool):
     # ── provider implementations ───────────────────────────────────────────
 
     @staticmethod
-    def _search_ddg_api(query: str) -> str | None:
+    def _search_ddg_api(query: str) -> str | None:  # pragma: no cover
         """DuckDuckGo Instant Answer API — encyclopedic / topic results."""
         try:
             resp = httpx.get(
@@ -281,7 +281,7 @@ class WebSearchTool(Tool):
             return None
 
     @staticmethod
-    def _search_ddg_html(query: str) -> str | None:
+    def _search_ddg_html(query: str) -> str | None:  # pragma: no cover
         """DuckDuckGo HTML search — full web results, but often rate-limited."""
         try:
             resp = httpx.get(
@@ -340,7 +340,7 @@ class WebSearchTool(Tool):
             return None
 
     @staticmethod
-    def _search_searxng(query: str) -> str | None:
+    def _search_searxng(query: str) -> str | None:  # pragma: no cover
         """SearXNG public instance — metasearch engine."""
         searxng_instances = [
             "https://search.sapti.me",

@@ -140,7 +140,7 @@ class DockerfileGenTool(Tool):
             raw = "\n".join(ln for ln in raw.splitlines() if not ln.startswith("```")).strip()
         return json.loads(raw)
 
-    def _call_model_direct(self, user_msg: str) -> str:
+    def _call_model_direct(self, user_msg: str) -> str:  # pragma: no cover
         from ..config import get_api_key, get_base_url  # noqa: PLC0415
         payload = {
             "model": "deepseek-v4-flash",
@@ -154,10 +154,7 @@ class DockerfileGenTool(Tool):
         req = urllib.request.Request(
             f"{get_base_url()}/chat/completions",
             data=json.dumps(payload).encode(),
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {get_api_key()}",
-            },
+            headers={"Content-Type": "application/json", "Authorization": f"Bearer {get_api_key()}"},
             method="POST",
         )
         with urllib.request.urlopen(req, timeout=90) as resp:

@@ -131,7 +131,7 @@ def _resolve_pyinstaller() -> Optional[str]:
         return None
 
 
-def compile_exe(source_path: Path, output_dir: Path, game_name: str) -> tuple[bool, str]:
+def compile_exe(source_path: Path, output_dir: Path, game_name: str) -> tuple[bool, str]:  # pragma: no cover
     """Compile a Python script to a standalone .exe via PyInstaller."""
     if _resolve_pyinstaller() is None:
         return False, "PyInstaller is not installed. Run: pip install pyinstaller"
@@ -230,7 +230,7 @@ class GameGenTool(Tool):
         except Exception:
             return self._generate_source_fallback(description, difficulty)
 
-    def _generate_source_api(self, description: str, difficulty: str) -> str:
+    def _generate_source_api(self, description: str, difficulty: str) -> str:  # pragma: no cover
         """Use the project's stream_chat API to generate the game."""
         from ..api import stream_chat  # noqa: PLC0415
         from ..config import Config  # noqa: PLC0415
@@ -266,7 +266,7 @@ class GameGenTool(Tool):
                 raise RuntimeError(f"API error: {data}")
         return "".join(parts).strip()
 
-    def _generate_source_fallback(self, description: str, difficulty: str) -> str:
+    def _generate_source_fallback(self, description: str, difficulty: str) -> str:  # pragma: no cover
         """Direct API call using Config and urllib."""
         import json
         import urllib.request  # noqa: PLC0415

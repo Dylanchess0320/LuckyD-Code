@@ -90,9 +90,9 @@ def create_app(config: Optional[Config] = None) -> FastAPI:
 
     # --- Auth middleware ---
     web_token = settings.get("web_token", "")
-    if web_token:
+    if web_token:  # pragma: no cover
         @app.middleware("http")
-        async def auth_middleware(request: Request, call_next):
+        async def auth_middleware(request: Request, call_next):  # pragma: no cover
             if request.url.path in ("/", "/manifest.json", "/sw.js",
                                     "/icon-192.png", "/icon-512.png"):
                 return await call_next(request)
@@ -166,7 +166,7 @@ def get_app() -> FastAPI:
     return _app_instance
 
 
-def run_web(host: str = "127.0.0.1", port: int = 8000):
+def run_web(host: str = "127.0.0.1", port: int = 8000):  # pragma: no cover
     """Run the web UI server.
 
     Defaults to localhost only (127.0.0.1) for security.

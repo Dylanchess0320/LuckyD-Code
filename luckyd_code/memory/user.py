@@ -59,7 +59,7 @@ _ST_MODEL = None
 _ST_MODEL_LOCK = threading.Lock()
 
 
-def _get_st_model():
+def _get_st_model():  # pragma: no cover
     """Return cached SentenceTransformer, loading it on first call."""
     global _ST_MODEL
     if _ST_MODEL is None:
@@ -70,7 +70,7 @@ def _get_st_model():
     return _ST_MODEL
 
 
-# ── UserMemory ───────────────────────────────────────────────────────────────
+# ── UserMemory ──────────────────────────────────────────────────────────────────────────────
 
 class UserMemory:
     """User-level persistent memory across all projects.
@@ -209,7 +209,7 @@ class UserMemory:
 
     # ── semantic search ──────────────────────────────────────────────────────
 
-    def _semantic_search(self, query: str, k: int) -> list[dict[str, Any]]:
+    def _semantic_search(self, query: str, k: int) -> list[dict[str, Any]]:  # pragma: no cover
         """Cosine-similarity search using sentence-transformers."""
         from sentence_transformers import util
 

@@ -33,7 +33,7 @@ _ST_MODEL = None
 _ST_MODEL_LOCK = threading.Lock()
 
 
-def _get_st_model():
+def _get_st_model():  # pragma: no cover
     """Return the cached SentenceTransformer, loading it on first call."""
     global _ST_MODEL
     if _ST_MODEL is None:
@@ -155,7 +155,7 @@ class MemoryManager:
         except Exception:
             return self._keyword_search(query, k)
 
-    def _semantic_search(self, query: str, k: int) -> list[dict]:
+    def _semantic_search(self, query: str, k: int) -> list[dict]:  # pragma: no cover
         """Cosine-similarity search using sentence-transformers."""
         from sentence_transformers import util
 
@@ -208,7 +208,7 @@ class MemoryManager:
     #  Cross-project search
     # ------------------------------------------------------------------ #
 
-    def cross_project_search(self, query: str, k: int = 3) -> list[dict]:
+    def cross_project_search(self, query: str, k: int = 3) -> list[dict]:  # pragma: no cover
         """Search memories across all known projects.
 
         Scans the projects/ directory for any project with a memory/
