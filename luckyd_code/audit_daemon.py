@@ -128,6 +128,11 @@ class AuditDaemon:
         self.last_audit_time: Optional[datetime.datetime] = None
         self.improvement_count: int = 0
 
+        # autoDream — lazy-initialised when a MemoryManager is available
+        self._memory_manager: Optional[object] = None
+        self._dream_idle_cycles: int = 0   # counts healthy cycles before dreaming
+        self._DREAM_EVERY_N_IDLE: int = 3  # dream after this many healthy cycles
+
         # Per-file cooldown: maps relative path -> last improvement timestamp
         self._file_last_improved: dict[str, float] = {}
 
@@ -260,6 +265,11 @@ class AuditDaemon:
             deltas = {k: metrics[k] - prev_metrics.get(k, metrics[k]) for k in metrics}
             self._append_metrics(metrics, deltas)
             self.last_audit_time = datetime.datetime.now()
+            # ── autoDream: consolidate memories during idle cycles ──────────
+            self._dream_idle_cycles += 1
+            if self._dream_idle_cycles >= self._DREAM_EVERY_N_IDLE:
+                self._dream_idle_cycles = 0
+                self._trigger_dream_cycle()
             return summary
 
         # Step 5: Find issues via analytics.smells (compose — do not reimplement)
@@ -349,6 +359,32 @@ class AuditDaemon:
         return summary
 
     # ------------------------------------------------------------------ #
+    #  autoDream — idle-time memory consolidation
+    # ------------------------------------------------------------------ #
+
+    def _get_memory_manager(self):
+        """Lazy-initialise and return the MemoryManager for this project."""
+        if self._memory_manager is None:
+            try:
+                from .memory.manager import MemoryManager
+                self._memory_manager = MemoryManager(str(self.project_root))
+            except Exception as exc:
+                _log.debug("MemoryManager unavailable: %s", exc)
+        return self._memory_manager
+
+    def _trigger_dream_cycle(self) -> None:
+        """Run one autoDream consolidation cycle if a MemoryManager is available."""
+        mm = self._get_memory_manager()
+        if mm is None:
+            return
+        try:
+            from .dream import run_dream_cycle
+            report = run_dream_cycle(mm, self.config)
+            _log.info("autoDream: %s", report.summary())
+        except Exception as exc:
+            _log.warning("autoDream cycle failed: %s", exc)
+
+    # ------------------------------------------------------------------ #
     #  Improvement orchestration
     # ------------------------------------------------------------------ #
 
@@ -382,6 +418,20 @@ class AuditDaemon:
             f"**Kind:** {kind}\n\n"
             f"Fix only this specific issue. Do not make unrelated changes."
         )
+
+        # ── Plan gate: generate a structured plan before handing to agent ──
+        plan_context = ""
+        try:
+            from .plan_gate import PlanGate
+            gate = PlanGate(task, self.config, interactive=False)
+            gate_result = gate.generate()
+            plan_context = gate.prompt_context()
+            if plan_context:
+                _log.info("Plan gate: %d-step plan generated for %s", len(
+                    getattr(gate_result.plan, 'steps', [])), kind)
+                task = task + "\n\n" + plan_context
+        except Exception as exc:
+            _log.debug("Plan gate skipped (non-fatal): %s", exc)
 
         tracker = ImprovementTracker(cwd=str(self.project_root))
         snap_msg = tracker.snapshot()
