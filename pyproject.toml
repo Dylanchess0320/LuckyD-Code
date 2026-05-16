@@ -65,6 +65,7 @@ dev = [
     "types-PyYAML",
     "types-aiofiles",
     "types-beautifulsoup4",
+    "hypothesis>=6.0",
 ]
 
 [project.urls]
@@ -102,7 +103,7 @@ include = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-addopts = "-v --tb=short --cov=luckyd_code --cov-report=term-missing --cov-fail-under=68"
+addopts = "-v --tb=short --cov=luckyd_code --cov-report=term-missing --cov-fail-under=90"
 asyncio_mode = "strict"
 
 [tool.coverage.run]
@@ -137,7 +138,7 @@ omit = [
 ]
 
 [tool.coverage.report]
-fail_under = 68
+fail_under = 90
 exclude_lines = [
     "pragma: no cover",
     "if TYPE_CHECKING:",
