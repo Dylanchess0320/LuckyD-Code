@@ -622,8 +622,8 @@ class TestWebRoutesFilesEndpoints:
             # Override stat to report a huge size
             orig_stat = Path.stat
 
-            def _fake_stat(self_):
-                orig_stat(self_)  # call real stat so we know file exists
+            def _fake_stat(self_, **kwargs):
+                orig_stat(self_, **kwargs)  # call real stat so we know file exists
                 # Return an object whose st_size exceeds limit.
                 # pathlib internally reads st_mode from stat results, so we
                 # must include it alongside st_size.
