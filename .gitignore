@@ -16,6 +16,9 @@ htmlcov/
 # Environment / secrets
 .env
 *.env
+
+# detect-secrets — baseline IS committed intentionally (tracks known false positives)
+# .secrets.baseline  ← do NOT add this here
 venv/
 .venv/
 

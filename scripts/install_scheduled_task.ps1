@@ -81,7 +81,7 @@ if ($exitCode -eq 0) {
     Write-Host ""
     Write-Host "✗ Failed to create scheduled task (exit code: $exitCode)" -ForegroundColor Red
     Write-Host $result
-    
+
     Write-Host ""
     Write-Host "Try running this script as Administrator." -ForegroundColor Yellow
     Write-Host "Or create the task manually via Task Scheduler GUI." -ForegroundColor Yellow

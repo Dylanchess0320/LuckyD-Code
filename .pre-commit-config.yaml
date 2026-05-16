@@ -1,0 +1,36 @@
+exclude: |
+  (?x)^(
+    \.testvenv/|
+    \.venv/|
+    venv/|
+    \.env\.example|
+    .*\.lock
+  )
+
+repos:
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ["--baseline", ".secrets.baseline"]
+        exclude: |
+          (?x)^(
+            \.testvenv/|
+            \.venv/|
+            venv/|
+            \.env\.example|
+            CHANGELOG\.md|
+            README\.md|
+            .*\.lock|
+            tests/.*\.py
+          )$
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace

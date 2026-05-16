@@ -79,4 +79,3 @@ def rebuild_project(project_root: str | None = None) -> dict:
         result["files_parsed"] = brain.stats.get("files_parsed", 0)
 
     return result
-

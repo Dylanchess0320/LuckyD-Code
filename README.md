@@ -68,8 +68,8 @@ source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -e .
 ```
 
-> ⚠️ If `pip install` fails with a Rust error, install Rust first:  
-> `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`  
+> ⚠️ If `pip install` fails with a Rust error, install Rust first:
+> `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
 > Then open a new terminal and retry.
 
 ### 🔑 Get your API key
