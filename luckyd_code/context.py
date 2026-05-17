@@ -90,7 +90,7 @@ class ConversationContext:
         self._maybe_trim()
         # Token-aware auto-compaction: prevent silent context window overflow
         if self._config is not None and self.estimate_tokens() > self._token_compact_threshold:
-            self.compact(self._config, keep_last=5)
+            self.compact(self._config, self._model, keep_last=5)
 
 
     def add_assistant_message(
@@ -234,6 +234,7 @@ class ConversationContext:
     def compact(
         self,
         config: _CompactConfig,
+        model: str | None = None,
         keep_last: int = 5,
         on_compact: Callable[[str, int], None] | None = None,
     ) -> str:

@@ -82,6 +82,7 @@ class KnowledgeGraph:
         self.stats["files_parsed"] = len(parsed_files)
         self.stats["errors"] = 0
         self._seed_builtins()
+        _builtin_count = len(self.nodes)
 
         for pf in parsed_files:
             if pf["errors"]:
@@ -165,7 +166,7 @@ class KnowledgeGraph:
                 for call in func["calls"]:
                     self.edges.append({"from": func_id, "to": f"func:??:{call}", "type": "calls"})
 
-        self.stats["node_count"] = len(self.nodes)
+        self.stats["node_count"] = len(self.nodes) - _builtin_count
         self.stats["edge_count"] = len(self.edges)
 
     # --- Persistence ---
@@ -246,7 +247,7 @@ class KnowledgeGraph:
     def get_by_type(self, node_type: str) -> list[Node]:
         return [
             node for node in self.nodes.values()
-            if node.get("type") == node_type
+            if node.get("type") == node_type and not node.get("builtin")
         ]
 
     def find_dependents(self, symbol_name: str, max_results: int = 15) -> list[dict]:
