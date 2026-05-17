@@ -16,6 +16,7 @@ import atexit
 import threading
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
 from dataclasses import dataclass
+from typing import Any
 
 from .model_registry import (
     get_models_by_tier,
@@ -147,7 +148,7 @@ _tier_cache_lock = threading.Lock()
 _TIER_CACHE_MAX = 512
 
 
-def _llm_classify_worker(prompt_snippet: str, config) -> int:  # pragma: no cover
+def _llm_classify_worker(prompt_snippet: str, config: Any) -> int:  # pragma: no cover
     """Blocking worker that calls the LLM to classify a prompt (runs in thread pool)."""
     _CLASSIFY_PROMPT = (
         "Rate this coding task 1-4:\n"
@@ -358,7 +359,7 @@ EFFORT_LABELS: dict[str, str] = {
 }
 
 
-def apply_effort(config, effort: str) -> str:  # pragma: no cover
+def apply_effort(config: Any, effort: str) -> str:  # pragma: no cover
     """Apply an effort level to a Config object in-place.
 
     Updates ``config.effort``, ``config.max_tokens``, and
@@ -430,7 +431,7 @@ def resolve_initial_route(
     provider: str,
     preferred_model: str,
     auto_route: bool = True,
-    config=None,
+    config: Any = None,
 ) -> RoutingResult:
     """Determine the initial model tier for a user message."""
     if not auto_route:

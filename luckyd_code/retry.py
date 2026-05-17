@@ -3,6 +3,7 @@
 import time
 import random
 from functools import wraps
+from typing import Any, Callable
 
 from .exceptions import RetryableError, NonRetryableError, ModelNotFoundError
 from .log import get_logger
@@ -24,9 +25,9 @@ def with_retry(
         max_delay: Maximum delay in seconds (default 30.0)
         jitter: Add random jitter to delay (default True)
     """
-    def decorator(func):
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             last_exception = None
             delay = base_delay
             logger = get_logger()

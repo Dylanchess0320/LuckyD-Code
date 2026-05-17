@@ -11,6 +11,15 @@ from pathlib import Path
 
 _logger = logging.getLogger("luckyd_code._data_dir")
 
+__all__ = [
+    "DATA_DIR",
+    "ensure_data_dir",
+    "data_path",
+    "legacy_path",
+    "project_data_path",
+    "project_legacy_path",
+]
+
 # ---------- user-global paths ----------
 
 DATA_DIR = Path.home() / ".luckyd-code"

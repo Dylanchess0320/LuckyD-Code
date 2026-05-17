@@ -28,7 +28,7 @@ class UsageRecord:
     # costs.jsonl.  repr=False keeps it out of str() output too.
     _cost_provided: bool = field(default=False, repr=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not self.timestamp:
             self.timestamp = datetime.now().isoformat()
         # Only recalculate when cost was NOT explicitly provided by the caller.
@@ -75,7 +75,7 @@ class UsageRecord:
 class CostTracker:
     """Records API usage costs per session with cumulative tracking."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.session_start = datetime.now()
         self.records: list[UsageRecord] = []
         self._written_count: int = 0  # how many records already flushed to disk
@@ -153,7 +153,7 @@ class CostTracker:
         except Exception as e:
             return f"Failed to clear cost file: {e}"
 
-    def _append_new_records(self):
+    def _append_new_records(self) -> None:
         """Append only new records to the JSONL file — O(1) per call."""
         new_records = self.records[self._written_count:]
         if not new_records:

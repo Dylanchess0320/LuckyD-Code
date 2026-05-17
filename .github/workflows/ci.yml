@@ -71,7 +71,7 @@ jobs:
           pip install ".[dev]"
 
       - name: mypy
-        run: mypy luckyd_code --ignore-missing-imports || true
+        run: mypy luckyd_code --ignore-missing-imports
 
   build:
     name: Build Package

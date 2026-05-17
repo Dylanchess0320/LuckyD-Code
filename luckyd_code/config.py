@@ -164,7 +164,7 @@ class Config:
         save_config_file(self.to_dict())
 
     @classmethod
-    def from_args(cls, args=None):
+    def from_args(cls, args: Any = None) -> "Config":
         cfg = cls()
         if args:
             if hasattr(args, "model") and args.model:

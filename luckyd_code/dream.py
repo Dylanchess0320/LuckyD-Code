@@ -13,6 +13,7 @@ from __future__ import annotations
 import logging
 import time
 from dataclasses import dataclass, field
+from typing import Any
 
 from .memory.manager import MemoryManager
 
@@ -59,7 +60,7 @@ class DreamCycle:
     leaves the originals intact, a failed prune leaves stale memories in place.
     """
 
-    def __init__(self, memory_manager: MemoryManager, config=None):
+    def __init__(self, memory_manager: MemoryManager, config: Any = None) -> None:
         self.mm = memory_manager
         self.config = config
 
@@ -260,7 +261,7 @@ class DreamCycle:
 
 def run_dream_cycle(
     memory_manager: MemoryManager,
-    config=None,
+    config: Any = None,
 ) -> DreamReport:
     """Run one autoDream cycle. Thin wrapper around DreamCycle.run()."""
     return DreamCycle(memory_manager, config).run()
