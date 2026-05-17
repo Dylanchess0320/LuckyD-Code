@@ -86,4 +86,6 @@ luckyd_code/
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+By contributing, you agree that your contributions will be licensed under the GNU AGPL v3 License.
+
+To contribute under a different license (e.g., for commercial use), contact the maintainer.

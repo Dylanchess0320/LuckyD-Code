@@ -12,7 +12,7 @@
   <a href="https://codecov.io/gh/Dylanchess0320/LuckyD-Code"><img src="https://img.shields.io/codecov/c/github/Dylanchess0320/LuckyD-Code?style=flat-square&logo=codecov&label=Coverage" alt="Coverage"></a>
   <a href="https://pypi.org/project/luckyd-code/"><img src="https://img.shields.io/pypi/v/luckyd-code?style=flat-square&logo=pypi&label=PyPI&color=3775A9" alt="PyPI"></a>
   <a href="https://pypi.org/project/luckyd-code/"><img src="https://img.shields.io/pypi/pyversions/luckyd-code?style=flat-square&logo=python&label=Python&color=3776AB" alt="Python"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square&logo=opensourceinitiative" alt="License"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL%20v3-blue?style=flat-square&logo=opensourceinitiative" alt="License"></a>
   <a href="https://github.com/Dylanchess0320/LuckyD-Code"><img src="https://img.shields.io/github/stars/Dylanchess0320/LuckyD-Code?style=flat-square&logo=github&color=FCD34D" alt="Stars"></a>
   <a href="https://discord.gg/ApEKKUuKd"><img src="https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord"></a>
 </p>
@@ -364,7 +364,14 @@ See **[SECURITY.md](SECURITY.md)** for full policy.
 
 ## 📜 License
 
-MIT © 2026 [Dylan Kaye](https://github.com/Dylanchess0320)
+**GNU AGPL v3** — Free for open-source, non-commercial, and personal use.
+
+For proprietary or internal use, a commercial license is required.
+Contact: `dylanchess0320@users.noreply.github.com`
+
+Previous versions (≤ 1.2.4) remain under MIT License.
+
+© 2026 [Dylan Kaye](https://github.com/Dylanchess0320)
 
 ---
 

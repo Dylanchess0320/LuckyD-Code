@@ -4,10 +4,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "luckyd-code"
-version = "1.2.3"
+version = "1.2.4"
 description = "LuckyD Code — AI coding assistant powered by DeepSeek"
 readme = "README.md"
-license = { text = "MIT" }
+license = { text = "AGPL-3.0-only" }
 requires-python = ">=3.10"
 keywords = ["ai", "coding", "assistant", "luckyd", "cli"]
 authors = [
@@ -103,7 +103,7 @@ include = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-addopts = "-v --tb=short --cov=luckyd_code --cov-report=term-missing --cov-fail-under=80"
+addopts = "-v --tb=short --cov=luckyd_code --cov-report=term-missing --cov-fail-under=92"
 asyncio_mode = "strict"
 
 [tool.coverage.run]
@@ -138,7 +138,7 @@ omit = [
 ]
 
 [tool.coverage.report]
-fail_under = 80
+fail_under = 92
 exclude_lines = [
     "pragma: no cover",
     "if TYPE_CHECKING:",
@@ -200,15 +200,13 @@ exclude = [
     "luckyd_code/file_watcher\\.py",
     "luckyd_code/hooks\\.py",
     "luckyd_code/indexer\\.py",
-    "luckyd_code/init\\.py",
+    # init.py, themes.py, update.py — fully typed; removed from exclusion 2026-05-17
     "luckyd_code/keybindings\\.py",
     "luckyd_code/planner\\.py",
     "luckyd_code/plan_gate\\.py",
     "luckyd_code/self_improve\\.py",
     "luckyd_code/settings\\.py",
-    "luckyd_code/themes\\.py",
     "luckyd_code/undo\\.py",
-    "luckyd_code/update\\.py",
     "luckyd_code/verify\\.py",
     # Subsystems (whole directories)
     "luckyd_code/analytics/",
