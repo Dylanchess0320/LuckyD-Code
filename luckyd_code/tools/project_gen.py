@@ -107,7 +107,7 @@ class ProjectGenTool(Tool):
                 ln for ln in raw.splitlines() if not ln.startswith("```")
             ).strip()
 
-        return json.loads(raw)
+        return dict(json.loads(raw))  # type: ignore[return-value]
 
     def _call_model_direct(self, description: str) -> str:
         from ..config import get_api_key, get_base_url  # noqa: PLC0415
@@ -131,9 +131,9 @@ class ProjectGenTool(Tool):
         )
         with urllib.request.urlopen(req, timeout=120) as resp:
             data = json.loads(resp.read())
-        return data["choices"][0]["message"]["content"]
+        return str(data["choices"][0]["message"]["content"])
 
-    def run(self, description: str, output_dir: str = ".") -> str:  # type: ignore[override]
+    def run(self, description: str, output_dir: str = ".") -> str:
         parent = Path(output_dir).expanduser().resolve()
         try:
             parent.mkdir(parents=True, exist_ok=True)
@@ -148,7 +148,7 @@ class ProjectGenTool(Tool):
             return f"Error: model call failed — {e}"
 
         project_name = scaffold.get("project_name", "generated-project")
-        files: list[dict] = scaffold.get("files", [])
+        files: list[dict[str, Any]] = scaffold.get("files", [])
         if not files:
             return "Error: model returned no files."
 

@@ -42,7 +42,7 @@ class ReadTool(Tool):
         "required": ["file_path"],
     }
 
-    def run(self, file_path: str, offset: int = 0, limit: int | None = None) -> str:  # type: ignore[override]
+    def run(self, file_path: str, offset: int = 0, limit: int | None = None) -> str:
         try:
             path = validate_file_path(file_path, must_exist=True)
         except (ValueError, FileNotFoundError) as e:
@@ -102,7 +102,7 @@ class WriteTool(Tool):
         "required": ["file_path", "content"],
     }
 
-    def run(self, file_path: str, content: str, dry_run: bool = False) -> str:  # type: ignore[override]
+    def run(self, file_path: str, content: str, dry_run: bool = False) -> str:
         try:
             path = validate_file_path(file_path)
         except ValueError as e:
@@ -188,7 +188,7 @@ class EditTool(Tool):
         new_string: str,
         replace_all: bool = False,
         dry_run: bool = False,
-    ) -> str:  # type: ignore[override]
+    ) -> str:
         try:
             path = validate_file_path(file_path, must_exist=True)
         except (ValueError, FileNotFoundError) as e:
@@ -250,7 +250,7 @@ class GlobTool(Tool):
         "required": ["pattern"],
     }
 
-    def run(self, pattern: str, path: str | None = None) -> str:  # type: ignore[override]
+    def run(self, pattern: str, path: str | None = None) -> str:
         search_dir = path or os.getcwd()
         try:
             root = validate_file_path(search_dir, must_exist=True)
@@ -308,7 +308,7 @@ class GrepTool(Tool):
         path: str | None = None,
         glob: str | None = None,
         output_mode: str = "content",
-    ) -> str:  # type: ignore[override]
+    ) -> str:
         search_path = path or os.getcwd()
         try:
             search_path_validated = validate_file_path(search_path, must_exist=True)

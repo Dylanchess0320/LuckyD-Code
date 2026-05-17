@@ -119,7 +119,7 @@ class WebFetchTool(Tool):
         "required": ["url"],
     }
 
-    def run(self, url: str) -> str:  # type: ignore[override]  # pragma: no cover
+    def run(self, url: str) -> str:  # pragma: no cover
         try:
             response = httpx.get(
                 url,
@@ -191,7 +191,7 @@ class WebSearchTool(Tool):
         "required": ["query"],
     }
 
-    def run(self, query: str) -> str:  # type: ignore[override]  # pragma: no cover
+    def run(self, query: str) -> str:  # pragma: no cover
         errors: list[str] = []
 
         # ── provider 1: DuckDuckGo HTML (real web results, may be rate-limited) ─
@@ -319,7 +319,7 @@ class WebSearchTool(Tool):
                 title_el = (
                     block.select_one(".result__title a")
                     or block.select_one(".result__a")
-                    or block.find("a", class_=re.compile("result"))
+                    or block.find("a", class_=re.compile("result"))  # type: ignore[assignment]
                 )
                 snippet_el = (
                     block.select_one(".result__snippet")

@@ -70,7 +70,7 @@ def _call_vision(image_path: str, prompt: str) -> str:
         max_tokens=1024,
         temperature=0.3,
     )
-    return response.choices[0].message.content.strip()
+    return response.choices[0].message.content or ""
 
 
 # ── tool ───────────────────────────────────────────────────────────────────
@@ -104,7 +104,7 @@ class ImageAnalyzeTool(Tool):
         "required": ["file_path"],
     }
 
-    def run(self, file_path: str, question: str = "") -> str:  # type: ignore[override]
+    def run(self, file_path: str, question: str = "") -> str:
         path = Path(file_path)
         if not path.exists():
             return f"Error: image file not found: {file_path}"

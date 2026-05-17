@@ -138,7 +138,7 @@ class DockerfileGenTool(Tool):
         raw = raw.strip()
         if raw.startswith("```"):
             raw = "\n".join(ln for ln in raw.splitlines() if not ln.startswith("```")).strip()
-        return json.loads(raw)
+        return dict(json.loads(raw))  # type: ignore[return-value]
 
     def _call_model_direct(self, user_msg: str) -> str:  # pragma: no cover
         from ..config import get_api_key, get_base_url  # noqa: PLC0415
@@ -159,9 +159,9 @@ class DockerfileGenTool(Tool):
         )
         with urllib.request.urlopen(req, timeout=90) as resp:
             data = json.loads(resp.read())
-        return data["choices"][0]["message"]["content"]
+        return str(data["choices"][0]["message"]["content"])
 
-    def run(self, project_dir: str = ".", overwrite: bool = False) -> str:  # type: ignore[override]
+    def run(self, project_dir: str = ".", overwrite: bool = False) -> str:
         root = Path(project_dir).expanduser().resolve()
         if not root.is_dir():
             return f"Error: '{root}' is not a directory."

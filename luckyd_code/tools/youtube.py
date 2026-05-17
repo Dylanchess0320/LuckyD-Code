@@ -57,7 +57,7 @@ OEMBED_URL = "https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v
 MAX_CONCURRENT = 10  # YouTube oembed API handles concurrent requests well
 
 
-def _validate_one(video_id: str, timeout: int = 10) -> tuple:  # pragma: no cover
+def _validate_one(video_id: str, timeout: int = 10) -> tuple[str, bool, str]:  # pragma: no cover
     """Validate a single video ID via YouTube's lightweight oembed API.
 
     Returns (video_id, is_valid, title_or_error).
@@ -165,7 +165,7 @@ def extract_video_id(raw: str) -> str | None:
     return None
 
 
-def build_playlist_url(video_ids: list) -> str:
+def build_playlist_url(video_ids: list[str]) -> str:
     """Construct a YouTube watch_videos URL from a list of video IDs.
 
     Uses safe="," to prevent urlencode from percent-encoding the commas
@@ -273,7 +273,7 @@ class YouTubePlaylistTool(Tool):
     }
     permission_risk = "safe"
 
-    def run(  # type: ignore[override]
+    def run(  # noqa: override handled by disable_error_code
         self,
         videos: list[Any],
         max_videos: int = MAX_VIDEOS,

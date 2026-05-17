@@ -40,7 +40,7 @@ def _get_shell() -> ShellInfo:
     return _SHELL_CACHE
 
 
-def reset_shell_cache():
+def reset_shell_cache() -> None:
     """Force re-detection on next call. Used by /config set shell."""
     global _SHELL_CACHE
     _SHELL_CACHE = None
@@ -166,7 +166,7 @@ class _CommandTimeout(Exception):
 
 
 def _run_with_timeout(  # pragma: no cover
-    cmd,
+    cmd: list[str] | str,
     *,
     shell: bool = False,
     timeout_sec: float = 120,
@@ -279,7 +279,7 @@ class BashTool(Tool):
         "required": ["command"],
     }
 
-    def run(self, command: str, description: str = "", timeout: int = 120000) -> str:  # type: ignore[override]  # pragma: no cover
+    def run(self, command: str, description: str = "", timeout: int = 120000) -> str:  # pragma: no cover
         # Safety check
         warning = _is_dangerous(command)
         if warning:

@@ -30,5 +30,5 @@ class DateTimeTool(Tool):
         "required": [],
     }
 
-    def run(self, format: str = "%A, %B %d %Y  %I:%M:%S %p") -> str:  # type: ignore[override]
+    def run(self, format: str = "%A, %B %d %Y  %I:%M:%S %p") -> str:
         return datetime.now().strftime(format)

@@ -62,7 +62,7 @@ def _collect_files(root: Path) -> list[tuple[str, str]]:
     collected: list[tuple[str, str]] = []
     seen_names: set[str] = set()
 
-    def _walk(path: Path, depth: int = 0):
+    def _walk(path: Path, depth: int = 0) -> None:
         if depth > 5 or len(collected) >= _MAX_FILES:
             return
         try:
@@ -181,14 +181,14 @@ class ReadmeGenTool(Tool):
         )
         with urllib.request.urlopen(req, timeout=90) as resp:
             data = json.loads(resp.read())
-        return data["choices"][0]["message"]["content"]
+        return str(data["choices"][0]["message"]["content"])
 
     def run(
         self,
         project_dir: str = ".",
         output_path: str = "",
         overwrite: bool = False,
-    ) -> str:  # type: ignore[override]
+    ) -> str:
         root = Path(project_dir).expanduser().resolve()
         if not root.is_dir():
             return f"Error: '{root}' is not a directory."

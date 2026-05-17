@@ -29,7 +29,7 @@ class GitWorktreeTool(Tool):
         "required": ["action"],
     }
 
-    def run(self, action: str, path: str | None = None, branch: str | None = None) -> str:  # type: ignore[override]
+    def run(self, action: str, path: str | None = None, branch: str | None = None) -> str:
         try:
             if action == "list":
                 r = subprocess.run(

@@ -105,8 +105,8 @@ class TrendReport:
 class TrendTracker:
     """Track project metrics over time with snapshots."""
 
-    def __init__(self):
-        self.db_path = _get_db_path()
+    def __init__(self) -> None:
+        self.db_path: Path = _get_db_path()
         self._points: list[TrendPoint] | None = None
 
     def load(self) -> list[TrendPoint]:
@@ -125,7 +125,7 @@ class TrendTracker:
 
         return self._points
 
-    def save(self, points: list[TrendPoint] | None = None):
+    def save(self, points: list[TrendPoint] | None = None) -> None:
         """Save snapshots to disk."""
         if points is not None:
             self._points = points
@@ -281,7 +281,7 @@ class TrendTracker:
 
         return "\n".join(lines)
 
-    def clear(self):
+    def clear(self) -> None:
         """Delete all snapshots."""
         self._points = []
         if self.db_path.exists():

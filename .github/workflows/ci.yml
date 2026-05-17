@@ -71,7 +71,7 @@ jobs:
           pip install ".[dev]"
 
       - name: mypy
-        run: mypy luckyd_code --ignore-missing-imports
+        run: mypy --config-file pyproject.toml luckyd_code
 
   build:
     name: Build Package

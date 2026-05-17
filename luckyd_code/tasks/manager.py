@@ -40,9 +40,9 @@ def _load_tasks() -> dict[str, dict[str, Any]]:
     path = _get_db_path()
     if path.exists():
         try:
-            data: object = json.loads(path.read_text())
-            if isinstance(data, dict):
-                return data  # type: ignore[return-value]
+            raw = json.loads(path.read_text())
+            if isinstance(raw, dict):
+                return raw
             return {}
         except Exception:
             _logger.warning("Failed to load tasks from %s", path, exc_info=True)

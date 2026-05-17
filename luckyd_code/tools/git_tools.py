@@ -12,7 +12,7 @@ class GitStatusTool(Tool):
         "properties": {},
     }
 
-    def run(self, **kwargs: Any) -> str:  # type: ignore[override]
+    def run(self, **kwargs: Any) -> str:
         return git_status()
 
 
@@ -30,7 +30,7 @@ class GitDiffTool(Tool):
         },
     }
 
-    def run(self, staged: bool = False) -> str:  # type: ignore[override]
+    def run(self, staged: bool = False) -> str:
         return git_diff(staged)
 
 
@@ -45,7 +45,7 @@ class GitLogTool(Tool):
         },
     }
 
-    def run(self, count: int = 10) -> str:  # type: ignore[override]
+    def run(self, count: int = 10) -> str:
         return git_log(count)
 
 
@@ -61,7 +61,7 @@ class GitCommitTool(Tool):
         "required": ["message"],
     }
 
-    def run(self, message: str) -> str:  # type: ignore[override]
+    def run(self, message: str) -> str:
         return git_commit(message)
 
 
@@ -80,7 +80,7 @@ class GitAddTool(Tool):
         },
     }
 
-    def run(self, files: list[str] | None = None) -> str:  # type: ignore[override]
+    def run(self, files: list[str] | None = None) -> str:
         return git_add(files)
 
 
@@ -93,7 +93,7 @@ class GitBranchTool(Tool):
         "properties": {},
     }
 
-    def run(self, **kwargs: Any) -> str:  # type: ignore[override]
+    def run(self, **kwargs: Any) -> str:
         return git_branch()
 
 
@@ -110,7 +110,7 @@ class GitPRTool(Tool):
         "required": ["title"],
     }
 
-    def run(self, title: str, body: str = "") -> str:  # type: ignore[override]
+    def run(self, title: str, body: str = "") -> str:
         push_result = git_push()
         pr_result = git_create_pr(title, body, draft=True)
         return f"Push: {push_result}\nDraft PR: {pr_result}"
@@ -127,5 +127,5 @@ class GitPushTool(Tool):
         },
     }
 
-    def run(self, branch: str | None = None) -> str:  # type: ignore[override]
+    def run(self, branch: str | None = None) -> str:
         return git_push(branch)

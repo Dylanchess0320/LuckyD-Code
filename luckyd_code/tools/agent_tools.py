@@ -34,7 +34,7 @@ class SubAgentTool(Tool):
         "required": ["task"],
     }
 
-    def run(self, task: str) -> str:  # type: ignore[override]
+    def run(self, task: str) -> str:
         global _repl
         if _repl is None:
             return "Error: sub-agent not available (not initialized)"
@@ -71,7 +71,7 @@ class AgentHandoffTool(Tool):
         "required": ["role", "task"],
     }
 
-    def run(self, role: str, task: str) -> str:  # type: ignore[override]
+    def run(self, role: str, task: str) -> str:
         global _repl
         if _repl is None:
             return "Error: handoff not available (not initialized)"
