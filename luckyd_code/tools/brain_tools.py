@@ -59,7 +59,7 @@ class BrainSearchTool(Tool):
     }
     permission_risk = "safe"
 
-    def run(self, query: str, max_results: int = 10, file_filter: str = "") -> str:  # type: ignore[override]
+    def run(self, query: str, max_results: int = 10, file_filter: str = "") -> str:
         retriever = _get_retriever()
 
         results = retriever.search(
@@ -101,7 +101,7 @@ class BrainStatusTool(Tool):
     }
     permission_risk = "safe"
 
-    def run(self) -> str:  # type: ignore[override]
+    def run(self) -> str:
         retriever = _get_retriever()
         info = retriever.stats()
 

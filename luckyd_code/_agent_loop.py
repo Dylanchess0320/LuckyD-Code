@@ -50,6 +50,7 @@ class _AgentConfig(Protocol):
     model: str
     max_tokens: int
     temperature: float
+    system_prompt: str
 
 
 class ToolRegistryProtocol(Protocol):

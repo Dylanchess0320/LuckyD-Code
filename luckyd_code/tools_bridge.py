@@ -8,11 +8,17 @@ Examples:
     python -m luckyd_code.tools_bridge bash --command "dir /b"
     python -m luckyd_code.tools_bridge brain search --query "authentication"
 """
+from __future__ import annotations
+
 import json
 import sys
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 from rich.console import Console
+
+if TYPE_CHECKING:
+    from luckyd_code.tools.registry import Tool
 
 # Ensure the project root is on sys.path
 _project_root = Path(__file__).resolve().parent.parent
@@ -22,7 +28,7 @@ if str(_project_root) not in sys.path:
 _console = Console()
 
 
-def _parse_args(raw_args: list[str]) -> dict:
+def _parse_args(raw_args: list[str]) -> dict[str, Any]:
     """Parse KEY=VALUE or --flag VALUE pairs into a dict."""
     result = {}
     key = None
@@ -48,7 +54,7 @@ def _parse_args(raw_args: list[str]) -> dict:
     return result
 
 
-def _import_tool(tool_name: str):
+def _import_tool(tool_name: str) -> Tool:
     """Import and return a tool instance by name."""
     from luckyd_code.tools import get_default_registry
     registry = get_default_registry()
@@ -62,7 +68,7 @@ def _import_tool(tool_name: str):
     return tool
 
 
-def cmd_info(tool_name: str):
+def cmd_info(tool_name: str) -> None:
     """Show info about a tool."""
     tool = _import_tool(tool_name)
     _console.print(f"Tool: {tool.name}")
@@ -77,7 +83,7 @@ def cmd_info(tool_name: str):
         _console.print(f"  --{name}: {desc}{req}")
 
 
-def cmd_run(tool_name: str, *args):
+def cmd_run(tool_name: str, *args: str) -> None:
     """Run a tool with given arguments."""
     tool = _import_tool(tool_name)
     kwargs = _parse_args(list(args))
@@ -85,7 +91,7 @@ def cmd_run(tool_name: str, *args):
     _console.print(result)
 
 
-def cmd_list():
+def cmd_list() -> None:
     """List all registered tools."""
     from luckyd_code.tools import get_default_registry
     registry = get_default_registry()
@@ -101,7 +107,7 @@ def cmd_list():
     _console.print("         python -m luckyd_code.tools_bridge info <ToolName>")
 
 
-def main():
+def main() -> None:
     if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help"):
         _console.print("LuckyD Code Tools Bridge — expose internal tools as CLI")
         _console.print()

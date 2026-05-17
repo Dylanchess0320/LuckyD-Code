@@ -51,7 +51,7 @@ __all__ = [
 ]
 
 
-def get_default_registry():
+def get_default_registry() -> ToolRegistry:
     registry = ToolRegistry()
     registry.register(ReadTool())
     registry.register(WriteTool())
