@@ -32,6 +32,48 @@ class KnowledgeGraph:
             "files_parsed": 0,
             "errors": 0,
         }
+        self._seed_builtins()
+
+    def _seed_builtins(self) -> None:
+        """Pre-populate the graph with common Python built-in symbols.
+
+        These entries are always present so that first-run searches
+        (before any project has been indexed) return useful results
+        rather than an empty list.
+        """
+        _BUILTINS: list[tuple[str, str, str]] = [
+            # (name, type, doc)
+            ("len",        "function", "Return the number of items in a container."),
+            ("print",      "function", "Print objects to the text stream file."),
+            ("range",      "class",    "Return an object that produces a sequence of integers."),
+            ("list",       "class",    "Built-in mutable sequence type."),
+            ("dict",       "class",    "Built-in mapping type."),
+            ("str",        "class",    "Built-in immutable string type."),
+            ("int",        "class",    "Built-in integer type."),
+            ("float",      "class",    "Built-in floating-point number type."),
+            ("bool",       "class",    "Built-in boolean type (subclass of int)."),
+            ("type",       "class",    "Return the type of an object, or create a new type."),
+            ("isinstance", "function", "Return True if object is an instance of classinfo."),
+            ("hasattr",    "function", "Return whether the object has a named attribute."),
+            ("getattr",    "function", "Get a named attribute from an object."),
+            ("setattr",    "function", "Set a named attribute on an object."),
+            ("enumerate",  "function", "Return an enumerate object over an iterable."),
+            ("zip",        "function", "Iterate over several iterables in parallel."),
+            ("map",        "function", "Return an iterator that applies function to every item."),
+            ("filter",     "function", "Construct an iterator from elements that are truthy."),
+            ("sorted",     "function", "Return a new sorted list from an iterable."),
+            ("open",       "function", "Open file and return a stream."),
+        ]
+        for name, sym_type, doc in _BUILTINS:
+            nid = f"builtin:{name}"
+            self.nodes[nid] = {
+                "type": sym_type,
+                "name": name,
+                "file": "<builtins>",
+                "line": 0,
+                "doc": doc,
+                "builtin": True,
+            }
 
     def build(self, project_root: str, parsed_files: list[dict[str, Any]]) -> None:
         self.nodes = {}
@@ -39,6 +81,7 @@ class KnowledgeGraph:
         self.stats["last_built"] = time.time()
         self.stats["files_parsed"] = len(parsed_files)
         self.stats["errors"] = 0
+        self._seed_builtins()
 
         for pf in parsed_files:
             if pf["errors"]:
@@ -139,6 +182,8 @@ class KnowledgeGraph:
                 self.nodes = data.get("nodes", {})
                 self.edges = data.get("edges", {}) if isinstance(data.get("edges"), dict) else data.get("edges", [])
                 self.stats = data.get("stats", {})
+                # Ensure built-ins are always present even in old saved graphs
+                self._seed_builtins()
                 return True
             except (json.JSONDecodeError, OSError):
                 get_logger().warning("Could not load knowledge graph from %s", GRAPH_FILE, exc_info=True)

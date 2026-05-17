@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "luckyd-code"
-version = "1.3.1"
+version = "1.3.3"
 description = "LuckyD Code — AI coding assistant powered by DeepSeek"
 readme = "README.md"
 license = { text = "AGPL-3.0-only" }
@@ -17,7 +17,7 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -103,7 +103,7 @@ include = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-addopts = "-v --tb=short --cov=luckyd_code --cov-report=term-missing --cov-fail-under=92"
+addopts = "-v --tb=short --cov=luckyd_code --cov-report=term-missing --cov-fail-under=97"
 asyncio_mode = "strict"
 
 [tool.coverage.run]
@@ -138,7 +138,7 @@ omit = [
 ]
 
 [tool.coverage.report]
-fail_under = 92
+fail_under = 97
 exclude_lines = [
     "pragma: no cover",
     "if TYPE_CHECKING:",
@@ -194,20 +194,12 @@ exclude = [
     # Feature modules
     "luckyd_code/audit_daemon\\.py",
     "luckyd_code/autonomous_fixer\\.py",
-    "luckyd_code/backup\\.py",
     "luckyd_code/error_reporter\\.py",
-    "luckyd_code/export\\.py",
     "luckyd_code/file_watcher\\.py",
-    "luckyd_code/hooks\\.py",
     "luckyd_code/indexer\\.py",
-    # init.py, themes.py, update.py — fully typed; removed from exclusion 2026-05-17
-    "luckyd_code/keybindings\\.py",
-    "luckyd_code/planner\\.py",
-    "luckyd_code/plan_gate\\.py",
-    "luckyd_code/self_improve\\.py",
-    "luckyd_code/settings\\.py",
-    "luckyd_code/undo\\.py",
-    "luckyd_code/verify\\.py",
+    # init.py, themes.py, update.py, keybindings.py, undo.py, settings.py,
+    # plan_gate.py, planner.py, verify.py — fully typed; removed 2026-05-17
+    # backup.py, export.py, hooks.py, self_improve.py — fully typed; removed 2026-05-17
     # Subsystems (whole directories)
     "luckyd_code/analytics/",
     "luckyd_code/brain/",

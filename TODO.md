@@ -7,30 +7,29 @@ Each item has an effort tag: 🟢 small (< 1 hr) · 🟡 medium (1–4 hrs) · �
 
 ## 🔴 Code Quality — mypy Strict Coverage
 
-Currently 27 modules remain excluded from mypy strict checking.
-Remove them incrementally once annotations are complete.
+Currently **16 modules** remain excluded from mypy strict checking (down from 27).
+Recently graduated: `keybindings.py`, `undo.py`, `settings.py`, `plan_gate.py`,
+`planner.py`, `verify.py`, `backup.py`, `export.py`, `hooks.py`, `self_improve.py` —
+all fully annotated and removed from the exclusion list.
 
-### High-value, low-effort removals (already partially typed)
-- [ ] 🟢 `luckyd_code/keybindings.py` — add missing return types
-- [ ] 🟢 `luckyd_code/undo.py` — add missing param annotations
-- [ ] 🟢 `luckyd_code/settings.py` — add return types to public functions
-- [ ] 🟢 `luckyd_code/plan_gate.py` — already structured; add `-> None` / `-> bool`
-- [ ] 🟢 `luckyd_code/planner.py` — add annotations to `Planner` methods
-- [ ] 🟡 `luckyd_code/verify.py` — complex; add annotations, remove from exclusion list
-- [ ] 🟡 `luckyd_code/hooks.py` — add param + return types throughout
-
-### Whole subsystems (deferred — heavy third-party stubs)
+### Still excluded (whole subsystems — heavy third-party stubs)
 - [ ] 🔴 `luckyd_code/analytics/` — scanner, smells, trends, reporter
 - [ ] 🔴 `luckyd_code/brain/` — chunker, graph, indexer, parser, retriever
 - [ ] 🔴 `luckyd_code/memory/` — manager, user
 - [ ] 🔴 `luckyd_code/tools/` — file_ops, bash, readme_gen, image, youtube
 - [ ] 🔴 `luckyd_code/web_routes/` — all route modules
 
+### Near-clean individual modules (next targets)
+- [x] 🟢 `luckyd_code/hooks.py` — fixed `env_updates: dict` → `dict[str, Any]`; added `__init__(self) -> None`
+- [x] 🟡 `luckyd_code/self_improve.py` — added `-> None` to `ImprovementTracker.__init__`
+- [x] 🟡 `luckyd_code/backup.py` — fully typed; removed from exclusion list
+- [x] 🟡 `luckyd_code/export.py` — `list` → `list[dict[str, Any]]`; added `from typing import Any`
+
 ---
 
 ## 🟡 Testing — Raise Coverage Floor
 
-Current measured total: **93 %** (target: 95 %+, floor set at 92 %)
+Current measured total: **93%+** (target: 95%+, floor now set at **95%**)
 
 ### Remaining gaps (from most recent coverage report)
 
@@ -47,11 +46,11 @@ Current measured total: **93 %** (target: 95 %+, floor set at 92 %)
 | `cost_tracker.py` | ~87 % | 113–114, 126–127, 151–152, 185–199 |
 
 ### Action items
-- [ ] 🟢 Add tests for `error_reporter._get_version`, `_get_reporting_mode`, `_get_api_key`, `capture_and_log_only`
-- [ ] 🟢 Add tests for `analytics/trends.py` uncovered branches
-- [ ] 🟡 Add tests for `analytics/reporter.py` uncovered render paths
-- [ ] 🟡 Add tests for `hooks.py` conditional paths
-- [ ] 🟡 Raise `fail_under` from 92 → 95 once new tests land
+- [x] 🟢 Add tests for `error_reporter._get_version`, `_get_reporting_mode`, `_get_api_key`, `capture_and_log_only`
+- [x] 🟢 Add tests for `analytics/trends.py` uncovered branches
+- [x] 🟡 Add tests for `analytics/reporter.py` uncovered render paths
+- [x] 🟡 Add tests for `hooks.py` conditional paths
+- [ ] 🟢 Raise `fail_under` from 97 → 98+ once remaining subsystem gaps are closed
 
 ---
 
@@ -71,37 +70,33 @@ real bytes to disk before calling `tool.run()`.
 
 ---
 
-## 🟡 Polish — RAG Plug-and-Play
+## 🟢 Polish — RAG Plug-and-Play
 
-The RAG (Retrieval-Augmented Generation) system currently requires manual
-steps to activate. Make it automatic:
+The RAG system degrades gracefully: `is_rag_available()` in `brain/__init__.py`
+detects whether `sentence-transformers` is installed. The UI notice is still TODO.
 
-- [ ] 🟡 Auto-detect whether `sentence-transformers` is installed and silently
-       degrade to keyword search if not
-- [ ] 🟢 Add a `luckyd-code install-rag` CLI command that installs the optional
-       `rag-full` extra
-- [ ] 🟢 Surface a one-line notice in the UI when RAG is available but inactive
+- [x] 🟢 Surface a one-line notice in CLI and Web UI when RAG is available but inactive
+- [x] 🟢 Add a `luckyd-code install-rag` CLI command that installs the optional `rag-full` extra
 
 ---
 
-## 🟡 Polish — Knowledge Graph Fallback
+## ✅ Knowledge Graph Fallback
 
-The knowledge graph's fallback path currently contains only 2 stub symbols.
-Add at least 10 real built-in fallback symbols so first-run is useful without
-a full parse step:
-
-- [ ] 🟡 Expand `brain/graph.py` fallback with common Python builtins
-- [ ] 🟢 Add a unit test asserting fallback has ≥ 10 symbols
+The knowledge graph is now pre-seeded with **20 Python built-in symbols** (`len`, `print`,
+`range`, `list`, `dict`, `str`, `int`, `float`, `bool`, `type`, `isinstance`, `hasattr`,
+`getattr`, `setattr`, `enumerate`, `zip`, `map`, `filter`, `sorted`, `open`).
+Built-ins are re-seeded after both `build()` and `load()` so they survive graph
+resets and old saved graphs.
 
 ---
 
 ## 🟢 Documentation
 
-- [ ] 🟢 Write `docs/architecture.md` — one-page description of the request
+- [x] 🟢 Write `docs/architecture.md` — one-page description of the request
        lifecycle (CLI → agent loop → tools → verify pipeline)
-- [ ] 🟢 Write `docs/contributing.md` additions — how to add a new tool,
+- [x] 🟢 Write `docs/contributing.md` additions — how to add a new tool,
        how to run the ceiling suite
-- [ ] 🟢 Add badges to README (coverage, PyPI version, Python ≥ 3.10)
+- [x] 🟢 Add badges to README (coverage, PyPI version, Python ≥ 3.10)
 - [ ] 🟢 Ensure all public API functions have docstrings (scan with `pydocstyle`)
 
 ---
@@ -110,15 +105,22 @@ a full parse step:
 
 Currently a single-developer project (bus factor = 1).
 
-- [ ] 🟡 Add `ARCHITECTURE.md` with a module-dependency diagram
+- [x] 🟡 Add `ARCHITECTURE.md` with a module-dependency diagram
 - [ ] 🟡 Label GitHub issues with `good first issue` / `help wanted`
-- [ ] 🔴 Set up GitHub Actions CI (lint → mypy → pytest) so contributors get
+- [x] 🔴 Set up GitHub Actions CI (lint → mypy → pytest) so contributors get
        instant feedback without needing the local dev setup
 
 ---
 
 ## Completed ✅
 
+- [x] `pyproject.toml` — license classifier corrected from `MIT` → `GNU Affero General Public License v3`
+- [x] `cli.py` — RAG startup notice surfaced (installed+inactive and not-installed paths)
+- [x] `cli_commands/dispatcher.py` — `/install-rag` command added; `/help` table updated
+- [x] `config.py` — docstrings added to `__init__`, `_resolve_api_key`, `from_args`
+- [x] `tests/test_config_coverage.py` — 18 cases covering exception branches (lines 56-57, 90-92, 98, 156)
+- [x] `pyproject.toml` — `fail_under` raised 95 → 97
+- [x] `docs/contributing.md` — how to add a tool + ceiling suite guide written
 - [x] `pyproject.toml` — coverage floor raised 80 → 92
 - [x] `pyproject.toml` — mypy exclusion list reduced from 30 → 27 modules
        (`init.py`, `themes.py`, `update.py` now fully typed and checked)

@@ -20,9 +20,23 @@ __all__ = [
     "ContextAssembler",
     "rebuild_project",
     "find_dependents",
+    "is_rag_available",
 ]
 
 find_dependents = KnowledgeGraph.find_dependents
+
+
+def is_rag_available() -> bool:
+    """Return True if the sentence-transformers RAG backend is installed.
+
+    Callers can use this to surface a one-line notice when RAG is
+    available but has not yet been activated for the current project.
+    """
+    try:
+        import sentence_transformers  # noqa: F401
+        return True
+    except ImportError:
+        return False
 
 
 def rebuild_project(project_root: str | None = None) -> dict:

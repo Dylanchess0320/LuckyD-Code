@@ -76,7 +76,12 @@ def save_config_file(config: dict):
 class Config:
     """Application configuration with validation."""
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Load configuration from the data directory, falling back to defaults.
+
+        Reads the persisted JSON config file first, then resolves the API key
+        from the ``.env`` file or environment variables.
+        """
         saved = load_config_file()
 
         self.provider: str = saved.get("provider", "deepseek")
@@ -92,6 +97,15 @@ class Config:
         self.effort: str = saved.get("effort", "normal")  # low | normal | high | max
 
     def _resolve_api_key(self) -> str:
+        """Resolve the API key for the current provider.
+
+        Search order:
+        1. ``.env`` file adjacent to the package root — checks both
+           ``<PROVIDER>_API_KEY`` and the legacy ``DEEPSEEK_API_KEY`` name.
+        2. Environment variables — provider-specific key first, then the
+           legacy ``DEEPSEEK_API_KEY`` as a fallback.
+        3. Empty string if nothing is found.
+        """
         provider_env = f"{self.provider.upper()}_API_KEY"
         for path in (Path(__file__).parent.parent / ".env", Path(".env")):
             try:
@@ -164,6 +178,13 @@ class Config:
 
     @classmethod
     def from_args(cls, args: Any = None) -> "Config":
+        """Build a Config from command-line argument namespace, with CLI overrides.
+
+        Args:
+            args: An argparse namespace (or any object with optional attributes
+                  ``model``, ``temperature``, ``system_prompt``, ``dir``,
+                  ``provider``).  ``None`` returns a plain default Config.
+        """
         cfg = cls()
         if args:
             if hasattr(args, "model") and args.model:

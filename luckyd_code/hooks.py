@@ -34,7 +34,7 @@ import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
+from typing import Any
 
 from .settings import load_settings, get_settings_dir
 
@@ -53,18 +53,18 @@ HOOK_EVENTS = [
 class HookResult:
     success: bool = True
     output: str = ""
-    error: Optional[str] = None
+    error: str | None = None
     allow: bool = True           # preToolUse: block or allow the tool call
-    env_updates: dict = field(default_factory=dict)
+    env_updates: dict[str, Any] = field(default_factory=dict)
 
 
 class HookRunner:
     """Execute shell-based hooks for lifecycle events."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.settings = load_settings()
 
-    def run_hook(self, event: str, context: Optional[dict] = None) -> list[HookResult]:
+    def run_hook(self, event: str, context: dict[str, Any] | None = None) -> list[HookResult]:
         """Run all hooks configured for an event.
 
         Args:
@@ -93,7 +93,7 @@ class HookRunner:
             results.append(result)
         return results
 
-    def _get_hook_scripts(self, event: str) -> list[dict]:
+    def _get_hook_scripts(self, event: str) -> list[dict[str, Any]]:
         """Get all hook scripts for an event from settings.
 
         Returns empty for unknown (not in HOOK_EVENTS) event types
@@ -141,7 +141,7 @@ class HookRunner:
         return HookResult(success=True, output=output)
 
     def _execute_script(self, script: str, event: str,
-                        context: Optional[dict] = None) -> HookResult:
+                        context: dict[str, Any] | None = None) -> HookResult:
         """Execute a single hook script and return the result.
 
         Supports both shell commands and ``.py`` scripts.  Python scripts
@@ -184,7 +184,7 @@ class HookRunner:
             return HookResult(success=False, error=f"Hook '{event}' error: {e}")
 
     def _run_python_script(self, script_path: Path, event: str,
-                           full_env: dict) -> HookResult:
+                           full_env: dict[str, str]) -> HookResult:
         """Execute a ``.py`` hook script with the current Python interpreter.
 
         The script receives all ``LDC_*`` environment variables and can
@@ -212,7 +212,7 @@ class HookRunner:
 
 
 # Global singleton access
-_hook_runner: Optional[HookRunner] = None
+_hook_runner: HookRunner | None = None
 
 
 def get_hook_runner() -> HookRunner:

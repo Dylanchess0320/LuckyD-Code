@@ -128,6 +128,13 @@ class Repl:
         effort_str = f"{effort_icons.get(effort, '◎')} {effort}"
         console.print(f"[dim]LuckyD Code v{updater.get_version()} — {tool_count} tools{', ' + symbol_summary if symbol_summary else ''} — effort: {effort_str} — /help for commands[/dim]")
 
+        # RAG availability notice — shown once at startup
+        from .brain import is_rag_available as _is_rag_available
+        if _is_rag_available() and not self.brain.nodes:
+            console.print("[dim]💡 RAG backend ready — run [bold]/brain rebuild[/bold] to enable semantic code search[/dim]")
+        elif not _is_rag_available():
+            console.print('[dim]⚡ Tip: [bold]pip install "luckyd-code[rag-full]"[/bold] for semantic codebase search[/dim]')
+
         # Start background audit daemon if requested via --daemon flag
         if self._daemon_enabled:
             self._start_audit_daemon()

@@ -24,7 +24,7 @@ def get_keybindings_path() -> Path:
     return data_path("keybindings.json")
 
 
-def load_keybindings() -> dict:
+def load_keybindings() -> dict[str, str]:
     path = get_keybindings_path()
     if path.exists():
         try:

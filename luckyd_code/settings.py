@@ -32,7 +32,7 @@ def load_settings() -> dict[str, Any]:
     return settings
 
 
-def save_setting(key: str, value):
+def save_setting(key: str, value: Any) -> None:
     path = get_local_settings_path()
     path.parent.mkdir(parents=True, exist_ok=True)
     settings = {}
@@ -45,7 +45,7 @@ def save_setting(key: str, value):
     path.write_text(json.dumps(settings, indent=2))
 
 
-def get_hooks() -> dict:
+def get_hooks() -> dict[str, Any]:
     settings = load_settings()
     return settings.get("hooks", {})
 

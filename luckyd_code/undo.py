@@ -36,7 +36,7 @@ class UndoEntry:
 _undo_stack: list[UndoEntry] = []
 
 
-def _save():
+def _save() -> None:
     """Persist the undo stack to disk."""
     try:
         data = [e.to_dict() for e in _undo_stack]
@@ -46,7 +46,7 @@ def _save():
         _logger.warning("Failed to save undo history", exc_info=True)
 
 
-def _load():
+def _load() -> None:
     """Load the undo stack from disk."""
     global _undo_stack
     try:
@@ -60,7 +60,7 @@ def _load():
         _undo_stack = []
 
 
-def push(file_path: str, original_content: str | None = None, action: str = ""):
+def push(file_path: str, original_content: str | None = None, action: str = "") -> None:
     """Push an undo entry and persist."""
     _undo_stack.append(UndoEntry(file_path, original_content, action))
     _save()
@@ -82,7 +82,7 @@ def peek() -> UndoEntry | None:
     return None
 
 
-def clear():
+def clear() -> None:
     """Clear all undo history."""
     _undo_stack.clear()
     _save()

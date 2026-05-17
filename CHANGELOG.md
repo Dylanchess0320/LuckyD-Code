@@ -5,6 +5,63 @@ All notable changes to LuckyD Code will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.3.3] — 2026-05-17
+
+### Fixed
+- **`pyproject.toml`** — classifiers still listed `MIT License`; corrected to
+  `GNU Affero General Public License v3` to match the AGPL v3 license set in
+  v1.3.1.  This was a metadata-only bug with no code impact.
+
+### Added
+- **CLI startup RAG notice** — `cli.py` now prints a one-line dim notice at
+  startup when the RAG backend is installed but the project has not yet been
+  indexed (`/brain rebuild` prompt), or when it is not installed at all
+  (`pip install luckyd-code[rag-full]` prompt). Resolves the long-standing
+  TODO item "Surface a one-line notice in CLI when RAG is available but inactive".
+- **`/install-rag` command** — new CLI command that checks whether
+  `sentence-transformers` is installed and, if not, invokes
+  `pip install luckyd-code[rag-full]` in a subprocess. The command is listed
+  in `/help` under Skills & Tools and in `docs/contributing.md`.
+- **`config.py` docstrings** — `Config.__init__`, `Config._resolve_api_key`,
+  and `Config.from_args` now have full NumPy-style docstrings describing
+  their search order, args, and return values.
+- **`tests/test_config_coverage.py`** — 18 new cases targeting the remaining
+  uncovered branches in `config.py`: `load_config_file` exception handler
+  (lines 56–57), `_resolve_api_key` DEEPSEEK fallback (lines 90–92) and env
+  var return path (line 98), `from_args` provider override key re-resolution
+  (line 156), and `save_config_file` directory creation.
+
+### Changed
+- **`pyproject.toml`** — `fail_under` raised from 95 → 97 in both
+  `[tool.pytest.ini_options]` and `[tool.coverage.report]`.
+
+## [1.3.2] — 2026-05-17
+
+### Changed
+- **`pyproject.toml`** — mypy exclusion list reduced from 20 → 16 modules:
+  `backup.py`, `export.py`, `hooks.py`, and `self_improve.py` are now fully
+  annotated and pass strict checks.
+
+### Fixed
+- **`hooks.py`** — `HookResult.env_updates` narrowed from bare `dict` to
+  `dict[str, Any]`; `HookRunner.__init__` now declares `-> None` return type.
+- **`export.py`** — `messages` parameter typed from bare `list` to
+  `list[dict[str, Any]]` in both `export_markdown` and `export_html`;
+  `from typing import Any` import added.
+- **`self_improve.py`** — `ImprovementTracker.__init__` now declares `-> None`.
+- **`backup.py`** — confirmed fully typed; removed from mypy exclusion list
+  (no source changes required).
+
+### Added
+- **`docs/contributing.md`** — contributor guide covering: how to add a new
+  tool (file, registration, tests, README update), how to run the ceiling
+  suite (Windows and Unix commands, single-file, HTML report, CI-equivalent),
+  type-checking workflow, pre-commit setup, commit message format, and
+  release checklist.
+- **`TODO.md`** — marked all previously completed items as done (test
+  coverage files, architecture docs, README badges, CI, ARCHITECTURE.md,
+  and all near-clean type annotation items).
+
 ## [1.3.1] — 2026-05-24
 
 ### Changed

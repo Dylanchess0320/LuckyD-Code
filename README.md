@@ -1,11 +1,7 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/Dylanchess0320/LuckyD-Code/main/docs/luckyd-logo.png?v=2" alt="LuckyD Code Logo" width="128">
-</p>
+# LuckyD Code
 
-<p align="center">
-  <b>The AI coding assistant that thinks before it ships.</b><br>
-  Terminal-native · Browser-ready · DeepSeek-powered
-</p>
+**The AI coding assistant that thinks before it ships.**
+Terminal-native · Browser-ready · DeepSeek-powered
 
 <p align="center">
   <a href="https://github.com/Dylanchess0320/LuckyD-Code/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Dylanchess0320/LuckyD-Code/ci.yml?style=flat-square&label=CI&logo=github" alt="CI"></a>
@@ -35,346 +31,176 @@
 
 ## 🚀 Quick Start
 
-### 📋 Prerequisites
+### Prerequisites
 
-- **Python 3.10+** — [python.org/downloads](https://www.python.org/downloads/) or `brew install python@3.12`
-- **Rust** (only if pip can't find a pre-built wheel for your platform, e.g. old macOS versions) — `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
+- **Python 3.10+** – [python.org](https://www.python.org/downloads/) or `brew install python@3.12`
+- **Rust** – only needed if `pip` can’t find a pre‑built wheel for your platform (uncommon).
 
-> 💡 `tiktoken` (the tokenizer library) is Rust-based. Pre-built wheels are available for macOS (Intel + Apple Silicon), Linux x86_64, and Windows. If you see a Rust compiler error during `pip install`, that means no wheel matched your platform — install Rust and retry.
-
-### ⚡ One-click launchers
-
-| OS | Script |
-|---|---|
-| **Windows** | Double-click `installers/Install and Run - Windows.bat` |
-| **Windows (Web UI)** | Double-click `installers/Install and Run Web UI - Windows.bat` |
-| **macOS** | Double-click `installers/Install and Run - Mac.command` |
-| **Linux** | `chmod +x "installers/Install and Run - Linux.sh" && "./installers/Install and Run - Linux.sh"` |
-
-The launcher creates a virtual environment, installs dependencies, prompts for your API key, and starts the assistant — **no terminal knowledge required**.
-
-### 📦 Install via pip
+### Installation
 
 ```bash
+# Install from PyPI (recommended)
 pip install luckyd-code
+
+# With optional RAG support (code search & knowledge graph)
+pip install luckyd-code[rag-full]
+
+# Browser automation (for web scraping / testing)
+pip install luckyd-code[browser]
 ```
 
-### 🏗️ From source
+Or clone and install in editable mode for development:
 
 ```bash
 git clone https://github.com/Dylanchess0320/LuckyD-Code
 cd LuckyD-Code
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -e .
+pip install -e ".[dev]"
 ```
 
-> ⚠️ If `pip install` fails with a Rust error, install Rust first:
-> `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
-> Then open a new terminal and retry.
-
-### 🔑 Get your API key
-
-1. Visit [platform.deepseek.com/api_keys](https://platform.deepseek.com/api_keys)
-2. Create a key (free credits available)
-3. Set it in `.env`:
-   ```bash
-   DEEPSEEK_API_KEY=sk-your-key-here
-   ```
-
----
-
-## 🖥️ Usage
+### Usage
 
 ```bash
-# Start the CLI
+# Start the interactive CLI
 luckyd-code
-# or the short alias
-ldc
 
-# Start the Web UI
+# Launch the web UI (FastAPI + WebSocket)
 luckyd-code --web
-# → Open http://localhost:8000
 
-# Pick a model
-luckyd-code --model deepseek-v4-pro
+# Show help
+luckyd-code --help
 
-# Custom port
-luckyd-code --web --port 9090
+# Quick alias (same as luckyd-code)
+ldc
 ```
 
-### ⌨️ CLI slash commands
-
-| Command | Action |
-|---|---|
-| `/help` | Show all commands |
-| `/clear` | Reset the conversation |
-| `/compact` | Summarize and compress context |
-| `/undo` | Revert the last file change |
-| `/model [name]` | Switch models |
-| `/cost` | View token usage and spending |
-| `/memory [query]` | Search saved memories |
-| `/brain [query]` | Search the codebase knowledge graph |
-| `/export [format]` | Export conversation to Markdown or HTML |
-| `/sessions` | Save, load, or list sessions |
-| `/review [file]` | Code review a file |
-| `/orchestrate [goal]` | Run the multi-agent pipeline |
-| `/background [task]` | Start a background agent |
-
----
-
-## 🧠 Smart Model Routing
-
-LuckyD Code automatically classifies your prompt and routes it to the right model — optimizing for speed, cost, or reasoning depth.
-
-| Tier | Model | Best For |
-|:----:|-------|----------|
-| **T1** | DeepSeek V4 Flash | Simple chat, quick Q&A, trivial edits |
-| **T2** | DeepSeek V4 Flash | General coding, file ops, search |
-| **T3** | DeepSeek V4 Pro | Debugging, architecture, complex analysis |
-| **T4** | DeepSeek V4 Pro | Large refactors, code generation, reviews |
-
-- **Heuristic classifier** returns in microseconds for known patterns
-- **LLM classifier** runs in the background for ambiguous prompts (4 s timeout)
-- **Mid-loop escalation** — if T1/T2 produces repeated errors, the loop auto-promotes to a higher tier
-- **Cost-aware** — T1 runs at **$0.00014/1K input tokens** (80× cheaper than GPT-4)
-
----
-
-## 📊 Codebase Analytics
-
-Built-in health scanning that runs on demand — no external service needed.
-
-| Feature | Description |
-|---|---|
-| 🧪 **Health Score** | 0–100 score based on complexity, duplication, and structure |
-| 👃 **Smell Detection** | Identifies 12 code smells including deep nesting, god functions, magic numbers |
-| 📈 **Trend Tracking** | Snapshots your project over time; compare any two points |
-| 📋 **Report Export** | Terminal output, Markdown, JSON, or HTML reports |
+From source:
 
 ```bash
-# In-session commands
-/brain scan              # Scan and index current project
-/brain stats             # View knowledge graph statistics
+python main.py                    # CLI
+python main.py --web              # Web UI
+python main.py --version          # v1.3.3
 ```
 
 ---
 
-## 🕸️ Web UI
+## 🔑 Configuration
 
-Launch with `luckyd-code --web` and open `http://localhost:8000`.
+Create a `.env` file in the project root or set the environment variable:
 
-| Panel | What You Can Do |
-|---|---|
-| 💬 **Chat** | Full conversational interface with streaming responses |
-| 💰 **Cost** | Real-time token and cost dashboard |
-| 🧠 **Memory** | Browse, search, and edit persistent memories |
-| 🗺️ **Brain** | Explore the knowledge graph; run codebase searches |
-| 📁 **Files** | Browse project files with syntax highlighting |
-| 🔍 **Review** | Request automated code reviews |
-| ⚙️ **Settings** | Configure models, keys, and defaults from the browser |
-| 📡 **WebSocket** | Live streaming chat with bidirectional updates |
+```env
+# DeepSeek API key (required)
+DEEPSEEK_API_KEY=sk-your-deepseek-key-here
+```
 
-The Web UI uses the same engine as the CLI — everything syncs.
+Get your key at [platform.deepseek.com](https://platform.deepseek.com).
+
+Optional settings (see `config.py` for all options):
+
+| Variable | Description |
+|----------|-------------|
+| `DEEPSEEK_API_KEY` | Primary API key |
+| `OPENAI_API_KEY` | Fallback/alternative provider |
+| `LUCKYD_CONFIG_DIR` | Custom config directory |
+| `LOG_LEVEL` | `DEBUG`, `INFO`, `WARNING`, `ERROR` |
+
+Settings are resolved in this order: environment variable → config file → defaults.
 
 ---
 
-## 🧰 Tools Gallery
+## 🌟 Features
 
-LuckyD Code ships with **40 built-in tools**, organized by category:
+### Core
+- **Think → Act → Verify loop** – Model generates code, tools execute it, verification checks syntax, lint, and tests automatically.
+- **Smart model routing** – Four tiers (T1–T4) from lightweight chat to deep reasoning; heuristic + LLM classifier for sub‑400ms selection.
+- **40+ built‑in tools** – File ops, Git operations, Docker sandbox, web fetch, code generators, browser automation, and more.
 
-### 📁 File Operations
-`Read` · `Write` · `Edit` · `Glob` · `Grep`
+### Code Intelligence
+- **Code Knowledge Graph** (RAG) – FAISS index + sentence‑transformers for semantic code search across your entire project.
+- **Project Memory** – Persistent context across sessions: remembers your codebase structure and conversation history.
+- **Autonomous Fixer** – Detects errors, writes patches, runs verification, and can open a PR automatically.
 
-> Write and Edit support `dry_run=true` for safe diff previews. All writes are auto-verified after execution.
+### Interface
+- **Full CLI** – Rich terminal UI with syntax highlighting, streaming responses, slash commands (`/help`, `/install-rag`, etc.).
+- **Web UI** – FastAPI + WebSocket server, same agent loop, accessible from any browser.
+- **Lifecycle hooks** – Run custom scripts before/after actions, integrate with CI/CD pipelines.
 
-### 🐚 Shell & Environment
-`Bash` · `DateTime` · `ShellDetect`
-
-> Bash runs are sandboxed via Docker. Shell auto-detection picks the right shell on Windows (Git Bash → WSL → cmd).
-
-### 🌐 Web & Browser
-`WebFetch` · `WebSearch` · `BrowserNavigate` · `BrowserClick` · `BrowserType` · `BrowserSnapshot` · `BrowserScreenshot`
-
-> Browser tools use Playwright for full-page automation and testing.
-
-### 🔀 Git & Version Control
-`GitStatus` · `GitDiff` · `GitLog` · `GitCommit` · `GitAdd` · `GitBranch` · `GitPush` · `GitPR` · `GitWorktree`
-
-> Automated PR creation, worktree isolation for safe fix application.
-
-### 🧠 Brain & Knowledge Graph
-`BrainSearch` · `BrainStatus`
-
-> Semantic vector search across your codebase with keyword fallback.
-
-### 🤖 Agent & Orchestration
-`SubAgent` · `AgentHandoff`
-
-> Spawn independent sub-agents or hand off to researcher, coder, or reviewer specialists.
-
-### 🎮 Generators
-`GameGen` · `ProjectGen` · `ReadmeGen` · `DockerfileGen`
-
-> Generate complete Pygame games, project scaffolds, READMEs, or Docker configurations from plain-English descriptions.
-
-### 🎬 Media & Misc
-`YouTubePlaylist` · `OpenInBrowser`
+### Security & Analytics
+- **Docker‑sandboxed bash** – All shell commands run isolated by default.
+- **Permission system** – Granular control over file read/write, network, and tool access.
+- **Code analytics** – Smell detection, trend tracking, and health reporting.
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-luckyd_code/
-│
-├── 🖥️  cli.py              Terminal UI (Rich + prompt_toolkit)
-├── 🕸️  web_app.py          FastAPI server + WebSocket streaming
-├── 🔄  _agent_loop.py      Shared agent loop (CLI + sub-agents + handoffs)
-│
-├── 🧠  brain/              Knowledge Graph & Semantic Search
-│    ├── graph.py            Vector index + dependency tracking
-│    ├── embedder.py         Sentence transformer embeddings
-│    ├── chunker.py          Smart code chunking (AST-aware + fallback)
-│    ├── indexer.py          Full-project scanner & indexer
-│    └── retriever.py        Semantic + keyword search
-│
-├── 🛠️  tools/               Tool Registry (40 tools)
-│    ├── registry.py          Cached tool registry (5 min TTL)
-│    ├── file_ops.py          Read/Write/Edit/Glob/Grep
-│    ├── bash.py              Sandboxed shell execution
-│    ├── git_tools.py         Git operations
-│    ├── browser.py           Playwright browser automation
-│    ├── agent_tools.py       Sub-agents & handoffs
-│    └── ...                  Generators, YouTube, Web tools
-│
-├── 🤖  orchestrator.py     Multi-agent pipeline (Researcher → Coder → Reviewer)
-├── 🔀  router.py            Model tier classifier (heuristic + LLM)
-├── 📋  model_registry.py    Model definitions with costs & capabilities
-│
-├── 💾  memory/             Persistent Memory System
-├── 📊  analytics/          Code Health · Smells · Trends · Reports
-├── 🔗  mcp/                Model Context Protocol client
-├── 🔒  permissions/         Permission management
-├── 🪝  hooks.py            Lifecycle hook system (pre/post tool, pre/post chat)
-├── 🔧  autonomous_fixer.py Diagnose → patch → validate → PR pipeline
-├── 🌙  dream.py            Idle-time memory consolidation (4-phase: orient → gather → consolidate → prune)
-├── 🔬  feedback_analyzer.py LLM-powered error root-cause diagnosis
-├── 🔄  self_improve.py     Automated code improvement engine
-├── 📡  audit_daemon.py     Background audit and monitoring
-├── 💡  skills/             Reusable analysis helpers (code review, security review)
-│
-├── 📁  sessions.py         Conversation save/load
-├── ↩️  undo.py             Revert file changes
-├── 📤  export.py           Export to Markdown or HTML
-├── 🎨  themes.py           CLI color themes
-├── ⌨️  keybindings.py      Custom keybindings
-├── 🔌  plugins.py          Runtime plugin loader
-├── ⚙️  config.py           Configuration management
-├── 📈  cost_tracker.py     Per-session cost tracking (JSONL append-only)
-├── 📝  context.py          Context window management with auto-compaction
-└── 🔁  retry.py            Retry logic with exponential backoff
+User input (CLI or Browser)
+       │
+       ▼
+  ┌──────────────────┐      ┌──────────────────┐
+  │    cli.py /       │      │  web_app.py      │
+  │  cli_entry.py     │      │  (FastAPI)       │
+  └────────┬─────────┘      └────────┬─────────┘
+           │                         │
+           └──────────┬──────────────┘
+                      │
+              ┌───────▼───────┐
+              │   router.py    │  Prompt classification → model tier
+              │ (heuristic +   │
+              │  LLM fallback) │
+              └───────┬───────┘
+                      │
+              ┌───────▼─────────┐
+              │  _agent_loop.py  │  Think → Act → Verify (max N turns)
+              └───────┬─────────┘
+                      │
+         ┌────────────┴────────────┐
+         │                         │
+  ┌──────▼──────┐        ┌─────────▼──────────┐
+  │  api.py      │        │  tools/registry.py  │
+  │ (stream SSE)│        │  40 tools + 5min TTL│
+  └─────────────┘        └─────────────────────┘
 ```
+
+For full details, see [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ---
 
-## 🔌 Plugins
-
-LuckyD Code supports community plugins. Drop a `.py` file into `~/.luckyd-code/plugins/` and it loads automatically as a new tool.
+## 🧪 Development & Testing
 
 ```bash
-# Scaffold a new plugin
-/plugins new my_tool
-
-# Hot-reload without restarting
-/plugins reload
-```
-
-See **[docs/PLUGINS.md](docs/PLUGINS.md)** for the full guide, **[docs/SKILLS.md](docs/SKILLS.md)** for the built-in skills reference, and **[examples/plugins/](examples/plugins/)** for working examples.
-
----
-
-## 📦 Optional Extras
-
-```bash
-# RAG — semantic codebase search with sentence-transformers
-pip install "luckyd-code[rag]"
-
-# Full RAG — adds FAISS vector store + file watcher for live re-indexing
-pip install "luckyd-code[rag-full]"
-
-# Browser — Playwright-powered web automation
-pip install "luckyd-code[browser]"
-
-# Dev — test suite, type checker, coverage
-pip install "luckyd-code[dev]"
-```
-
----
-
-## 🧪 Development
-
-```bash
-# Clone & install with all dev deps
-git clone https://github.com/Dylanchess0320/LuckyD-Code
-cd LuckyD-Code
-pip install -e ".[dev,rag-full]"
-
-# Run the test suite
+# Run all tests
 pytest
 
-# With coverage report
-pytest --cov=luckyd_code --cov-report=term-missing
+# With coverage (target ≥97%)
+pytest --cov=luckyd_code
 
 # Type checking
 mypy luckyd_code
 
-# Build distribution
-python -m build
+# Lint with pre‑commit hooks
+pre-commit run --all-files
+
+# Scan for accidentally committed secrets
+make secrets-scan   # requires gitleaks
 ```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor guide.
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! See **[CONTRIBUTING.md](CONTRIBUTING.md)** for the full guide.
+We welcome contributions! Please read the [Contributing Guide](CONTRIBUTING.md) for setup instructions, coding standards, and the PR process.
 
-1. 🍴 Fork the repo
-2. 🌿 Create a feature branch from `main`
-3. ✅ Write tests for new functionality
-4. ✔️ Ensure `pytest` passes
-5. 📝 Update CHANGELOG.md
-6. 🚀 Submit a pull request
+By contributing, you agree that your contributions will be licensed under AGPL v3. For alternative licensing, contact the maintainer.
 
 ---
 
-## 🔐 Security
+## 📄 License
 
-To report a vulnerability, **do not** open a public issue. Use the **[private advisory form](https://github.com/Dylanchess0320/LuckyD-Code/security/advisories/new)** or contact the maintainer directly.
-
-| Version | Support |
-|:--------|:--------|
-| 1.2.x   | ✅ Full support |
-| 1.1.x   | ⚠️ Critical fixes only |
-| ≤ 1.0.x | ❌ Unsupported |
-
-See **[SECURITY.md](SECURITY.md)** for full policy.
+This project is licensed under the **GNU Affero General Public License v3**. See [LICENSE](LICENSE) for the full text.
 
 ---
 
-## 📜 License
-
-**GNU AGPL v3** — Free for open-source, non-commercial, and personal use.
-
-For proprietary or internal use, a commercial license is required.
-Contact: `dylanchess0320@users.noreply.github.com`
-
-Previous versions (≤ 1.3.1) remain under MIT License.
-
-© 2026 [Dylan Kaye](https://github.com/Dylanchess0320)
-
----
-
-<p align="center">
-  <sub>Built with ❤️ by <a href="https://github.com/Dylanchess0320">Dylan Kaye</a> · Powered by <a href="https://platform.deepseek.com">DeepSeek</a></sub>
-</p>
+*Built with ❤️ by [Dylan Kaye](https://github.com/Dylanchess0320).*

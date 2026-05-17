@@ -193,6 +193,7 @@ def handle_command(repl, cmd: str):
                 ("/security-review", "Run security analysis"),
                 ("/sandbox status", "Check Docker sandbox availability"),
                 ("/allow <tool>", "Allow a tool without confirmation"),
+                ("/install-rag", "Install RAG semantic search (sentence-transformers + faiss)"),
                 ("/update", "Update LuckyD Code"),
             ]),
             ("Plugins", [
@@ -712,6 +713,26 @@ def handle_command(repl, cmd: str):
 
     elif command == "/budget":
         handle_budget_command(repl, args)
+
+    elif command == "/install-rag":
+        from ..brain import is_rag_available
+        if is_rag_available():
+            console.print("[green]RAG is already installed.[/green]")
+            console.print("[dim]Run /brain rebuild to index your project.[/dim]")
+        else:
+            import subprocess as _subprocess
+            import sys as _sys
+            console.print("[yellow]Installing RAG dependencies (sentence-transformers + faiss-cpu)...[/yellow]")
+            console.print("[dim]This downloads ~500 MB — it may take a few minutes.[/dim]")
+            proc = _subprocess.run(
+                [_sys.executable, "-m", "pip", "install", "luckyd-code[rag-full]"],
+            )
+            if proc.returncode == 0:
+                console.print("\n[green]✓ RAG installed successfully.[/green]")
+                console.print("[dim]Restart LuckyD Code, then run /brain rebuild to index your project.[/dim]")
+            else:
+                console.print("\n[red]Installation failed. Try running manually:[/red]")
+                console.print('[dim]  pip install "luckyd-code[rag-full]"[/dim]')
 
     else:
         console.print(f"[red]Unknown command: {command}. Type /help[/red]")

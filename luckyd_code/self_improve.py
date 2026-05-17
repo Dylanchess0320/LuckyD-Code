@@ -140,7 +140,7 @@ class ImprovementTracker:
         report = tracker.report()            # git diff + optional commit
     """
 
-    def __init__(self, cwd: str | None = None):
+    def __init__(self, cwd: str | None = None) -> None:
         self.cwd = cwd or str(Path.cwd())
         self._branch = _git("rev-parse", "--abbrev-ref", "HEAD", cwd=self.cwd)
         self._start_hash = _git("rev-parse", "--short", "HEAD", cwd=self.cwd)
