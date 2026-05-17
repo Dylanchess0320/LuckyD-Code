@@ -16,7 +16,7 @@ logger = logging.getLogger("luckyd_code.mcp")
 class MCPServer:
     """A connected MCP server with health checks and reconnection."""
 
-    def __init__(self, name: str, command: str, args: list[str] | None = None):
+    def __init__(self, name: str, command: str, args: list[str] | None = None) -> None:
         self.name = name
         self.command = command
         self.args = args or []
@@ -25,8 +25,8 @@ class MCPServer:
         self._request_id = 0
         self._max_retries = 2
 
-    def connect(self):
-        """Start the MCP server process."""
+    def connect(self) -> str | None:
+        """Start the MCP server process. Returns an error string, or None on success."""
         try:
             import sys
             # On Windows, use shell=True for .cmd/.bat files (like npx, which is npx.cmd)
@@ -41,7 +41,7 @@ class MCPServer:
             )
             # Poll stderr in a non-blocking way — log any startup errors
             import threading
-            def _log_stderr(proc):
+            def _log_stderr(proc: subprocess.Popen) -> None:
                 for line in iter(proc.stderr.readline, ""):
                     if line:
                         logger.debug("[mcp:%s] %s", self.name, line.rstrip())
@@ -118,7 +118,7 @@ class MCPServer:
             c.get("text", "") for c in content if c.get("type") == "text"
         ) or json.dumps(content)
 
-    def close(self):
+    def close(self) -> None:
         if self.process:
             try:
                 self.process.terminate()
@@ -131,10 +131,10 @@ class MCPServer:
 class MCPManager:
     """Manages MCP server connections."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.servers: list[MCPServer] = []
 
-    def load_from_config(self, config: dict):
+    def load_from_config(self, config: dict[str, Any]) -> None:
         """Load MCP servers from settings config."""
         servers_config = config.get("mcpServers", {})
         if not servers_config:
@@ -179,6 +179,6 @@ class MCPManager:
                     return server.call_tool(name, arguments)
         return f"MCP tool '{name}' not found"
 
-    def close_all(self):
+    def close_all(self) -> None:
         for server in self.servers:
             server.close()

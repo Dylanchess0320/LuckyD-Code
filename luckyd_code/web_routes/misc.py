@@ -1,5 +1,7 @@
 """Miscellaneous routes: clear, undo, compact, context info."""
 
+from typing import Any
+
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
@@ -10,7 +12,7 @@ router = APIRouter()
 
 
 @router.post("/api/clear")
-async def clear_context(request: Request):
+async def clear_context(request: Request) -> Any:
     try:
         state = request.app.state.web_state
         context = state.context
@@ -37,7 +39,7 @@ async def clear_context(request: Request):
 
 
 @router.post("/api/undo")
-async def undo():
+async def undo() -> Any:
     try:
         result = undo_last()
         return {"status": result}
@@ -46,7 +48,7 @@ async def undo():
 
 
 @router.post("/api/compact")
-async def compact(request: Request):
+async def compact(request: Request) -> Any:
     try:
         state = request.app.state.web_state
         result = state.context.compact(state.config, state.config.model)
@@ -56,7 +58,7 @@ async def compact(request: Request):
 
 
 @router.get("/api/context")
-async def context_info(request: Request):
+async def context_info(request: Request) -> Any:
     try:
         context = request.app.state.web_state.context
         return {

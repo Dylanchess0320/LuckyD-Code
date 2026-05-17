@@ -3,7 +3,7 @@
 import ast
 import os
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from .constants import should_skip
 
@@ -107,7 +107,7 @@ def parse_file(filepath: Path) -> ParsedFile:
     return result
 
 
-def parse_project(project_root: str, file_mtimes: Optional[dict[str, tuple[float, int]]] = None) -> ParseResult:
+def parse_project(project_root: str, file_mtimes: dict[str, tuple[float, int]] | None = None) -> ParseResult:
     root = Path(project_root).resolve()
     results: list[ParsedFile] = []
     new_mtimes: dict[str, tuple[float, int]] = {}

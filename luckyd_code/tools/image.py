@@ -104,7 +104,7 @@ class ImageAnalyzeTool(Tool):
         "required": ["file_path"],
     }
 
-    def run(self, file_path: str, question: str = "") -> str:
+    def run(self, file_path: str, question: str = "") -> str:  # type: ignore[override]
         path = Path(file_path)
         if not path.exists():
             return f"Error: image file not found: {file_path}"

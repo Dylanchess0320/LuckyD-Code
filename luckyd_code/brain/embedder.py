@@ -8,12 +8,12 @@ All dependencies are optional — embedder returns available=False gracefully.
 """
 
 import os
-from typing import Optional
+from typing import Any
 
 from ..log import get_logger
 
 # Module-level singleton
-_embedder: Optional["Embedder"] = None
+_embedder: "Embedder | None" = None
 
 
 def get_embedder() -> "Embedder":
@@ -28,14 +28,14 @@ def get_embedder() -> "Embedder":
 class Embedder:
     """Generates embeddings for text/code using available backends."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.available = False
         self.dimension = 0
         self.model_name = "none"
-        self._model = None
-        self._openai_client = None
+        self._model: Any = None
+        self._openai_client: Any = None
 
-    def load(self, model_type: Optional[str] = None) -> bool:
+    def load(self, model_type: str | None = None) -> bool:
         """Load the embedding model.
 
         Args:
@@ -110,7 +110,7 @@ class Embedder:
         self.available = False
         return False
 
-    def embed(self, texts: list[str]) -> Optional[list[list[float]]]:
+    def embed(self, texts: list[str]) -> list[list[float]] | None:
         """Embed a list of texts into vectors.
 
         Args:
@@ -148,7 +148,7 @@ class Embedder:
 
         return None
 
-    def embed_query(self, query: str) -> Optional[list[float]]:
+    def embed_query(self, query: str) -> list[float] | None:
         """Embed a single query string.
 
         Args:

@@ -4,16 +4,15 @@ import os
 import shutil
 import sys
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
 class ShellInfo:
-    name: str          # "git_bash", "wsl", "cmd", "powershell"
-    path: str          # executable path
-    args: list[str]    # extra args (e.g. ["--login"] for bash)
-    unix_like: bool    # True if ls/grep/find/curl etc. are available
-    description: str   # Human-readable name
+    name: str
+    path: str
+    args: list[str]
+    unix_like: bool
+    description: str
 
 
 def detect_shell() -> ShellInfo:
@@ -84,7 +83,7 @@ def _is_windows_store_stub(path: str) -> bool:
     return "windowsapps" in normalized
 
 
-def _find_git_bash() -> Optional[str]:
+def _find_git_bash() -> str | None:
     """Locate Git Bash — use PATH lookup first, then common install paths.
 
     Skips Windows Store app stubs (AppData\\Local\\Microsoft\\WindowsApps\\bash.exe)
@@ -105,7 +104,7 @@ def _find_git_bash() -> Optional[str]:
     return None
 
 
-def _find_wsl() -> Optional[str]:
+def _find_wsl() -> str | None:
     """Check if WSL is available."""
     wsl_path = shutil.which("wsl.exe") or shutil.which("wsl")
     if wsl_path:

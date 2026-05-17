@@ -1,13 +1,14 @@
 """Sub-agent tool for spawning child agents."""
 
+from typing import Any
 from .registry import Tool
 
 
 # Reference to the Repl instance for config access
-_repl = None
+_repl: Any = None
 
 
-def set_repl(repl):
+def set_repl(repl: Any) -> None:
     global _repl
     _repl = repl
 

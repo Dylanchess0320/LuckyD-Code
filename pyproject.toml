@@ -197,17 +197,9 @@ exclude = [
     # init.py, themes.py, update.py, keybindings.py, undo.py, settings.py,
     # plan_gate.py, planner.py, verify.py — fully typed; removed 2026-05-17
     # backup.py, export.py, hooks.py, self_improve.py — fully typed; removed 2026-05-17
-    # Subsystems (whole directories)
-    "luckyd_code/analytics/",
-    "luckyd_code/brain/",
-    "luckyd_code/git/",
-    "luckyd_code/mcp/",
-    "luckyd_code/memory/",
-    "luckyd_code/metrics/",
-    "luckyd_code/permissions/",
-    "luckyd_code/tasks/",
-    "luckyd_code/tools/",
-    "luckyd_code/web_routes/",
+    # Subsystems — all fully typed; graduated 2026-05-17
+    # analytics/, brain/, memory/, tools/, web_routes/,
+    # git/, mcp/, tasks/, metrics/, permissions/ — all clean
 ]
 
 [tool.pydocstyle]

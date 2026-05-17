@@ -11,6 +11,7 @@ Behaviour
 """
 
 import subprocess
+from typing import Any
 
 from ..log import get_logger
 
@@ -102,7 +103,7 @@ def _commit(message: str, cwd: str | None = None) -> str | None:
         return None
 
 
-def collect_modified_paths(tool_calls: list[dict], tool_args_map: dict[str, dict]) -> list[str]:
+def collect_modified_paths(tool_calls: list[dict[str, Any]], tool_args_map: dict[str, dict[str, Any]]) -> list[str]:
     """Extract file paths that were written or edited this turn.
 
     Args:

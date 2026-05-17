@@ -19,7 +19,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urlencode, urlparse, parse_qs
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
-from typing import Optional
+from typing import Any
 
 # macOS Python often lacks root CA certs — certifi ships its own bundle.
 # Without this, all HTTPS validation fails on a fresh Mac install.
@@ -86,7 +86,7 @@ def _validate_one(video_id: str, timeout: int = 10) -> tuple:  # pragma: no cove
         return video_id, False, f"Validation error: {e}"
 
 
-def validate_videos(video_ids: list, max_concurrent: int = MAX_CONCURRENT) -> dict:  # pragma: no cover
+def validate_videos(video_ids: list[str], max_concurrent: int = MAX_CONCURRENT) -> dict[str, Any]:  # pragma: no cover
     """Validate multiple video IDs concurrently against YouTube's oembed API.
 
     Returns a dict with:
@@ -98,8 +98,8 @@ def validate_videos(video_ids: list, max_concurrent: int = MAX_CONCURRENT) -> di
     if not video_ids:
         return {"valid": [], "invalid": [], "playlist_ids": [], "playlist_url": None}
 
-    valid = []
-    invalid = []
+    valid: list[dict[str, Any]] = []
+    invalid: list[dict[str, Any]] = []
 
     with ThreadPoolExecutor(max_workers=min(max_concurrent, len(video_ids))) as pool:
         futures = {pool.submit(_validate_one, vid): vid for vid in video_ids}
@@ -131,7 +131,7 @@ def validate_videos(video_ids: list, max_concurrent: int = MAX_CONCURRENT) -> di
 # Core extraction logic (reused by both Tool and CLI script)
 # ---------------------------------------------------------------------------
 
-def extract_video_id(raw: str) -> Optional[str]:
+def extract_video_id(raw: str) -> str | None:
     """Extract an 11-character YouTube video ID from a URL or bare ID string.
 
     Returns the ID string on success, or None if the input is not recognised
@@ -177,7 +177,7 @@ def build_playlist_url(video_ids: list) -> str:
     return f"{PLAYLIST_BASE}?{params}"
 
 
-def process_inputs(raw_inputs: list, cap: int = MAX_VIDEOS) -> tuple:
+def process_inputs(raw_inputs: list[str], cap: int = MAX_VIDEOS) -> tuple[list[str], list[str]]:
     """Parse raw input strings into (valid_ids, skipped_inputs).
 
     Deduplicates IDs while preserving order. Enforces the video cap and
@@ -187,9 +187,9 @@ def process_inputs(raw_inputs: list, cap: int = MAX_VIDEOS) -> tuple:
         raw_inputs: Raw URL/ID strings to process.
         cap: Maximum number of videos to accept (default: MAX_VIDEOS = 50).
     """
-    seen: set = set()
-    valid: list = []
-    skipped: list = []
+    seen: set[str] = set()
+    valid: list[str] = []
+    skipped: list[str] = []
 
     for raw in raw_inputs:
         vid = extract_video_id(raw)
@@ -275,7 +275,7 @@ class YouTubePlaylistTool(Tool):
 
     def run(  # type: ignore[override]
         self,
-        videos: list,
+        videos: list[Any],
         max_videos: int = MAX_VIDEOS,
         validate: bool = False,
     ) -> str:
@@ -283,7 +283,7 @@ class YouTubePlaylistTool(Tool):
             return "Error: no videos provided."
 
         cap = max(1, min(max_videos, MAX_VIDEOS))
-        lines: list = []
+        lines: list[str] = []
 
         # Step 1: extract and deduplicate IDs
         valid_ids, skipped = process_inputs(videos, cap=cap)

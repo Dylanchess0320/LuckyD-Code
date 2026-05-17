@@ -33,8 +33,7 @@ _ST_MODEL = None
 _ST_MODEL_LOCK = threading.Lock()
 
 
-def _get_st_model():  # pragma: no cover
-    """Return the cached SentenceTransformer, loading it on first call."""
+def _get_st_model() -> Any:  # pragma: no cover
     global _ST_MODEL
     if _ST_MODEL is None:
         with _ST_MODEL_LOCK:
@@ -118,7 +117,7 @@ class MemoryManager:
             return True
         return False
 
-    def list_memories(self, memory_type: str | None = None) -> list[dict]:
+    def list_memories(self, memory_type: str | None = None) -> list[dict[str, Any]]:
         """List all memories, optionally filtered by type. Returns list of {name, type, path, importance}."""
         results = []
         pattern = f"{memory_type}_*.md" if memory_type else "*.md"
@@ -357,9 +356,9 @@ class MemoryManager:
         return raw
 
     @staticmethod
-    def _read_meta(filepath: Path) -> dict:
+    def _read_meta(filepath: Path) -> dict[str, Any]:
         """Parse metadata from a memory file header."""
-        meta: dict = {"importance": 5, "saved": 0, "accessed": 0, "access_count": 0}
+        meta: dict[str, Any] = {"importance": 5, "saved": 0, "accessed": 0, "access_count": 0}
         if not filepath.exists():
             return meta
         try:
@@ -454,7 +453,7 @@ def load_claude_md() -> str:
     return _get_manager().load_claude_md()
 
 
-def save_claude_md(content: str):
+def save_claude_md(content: str) -> None:
     _get_manager().save_claude_md(content)
 
 
@@ -462,7 +461,7 @@ def load_memory_index() -> str:
     return _get_manager().get_all_memories_formatted()
 
 
-def save_memory(name: str, content: str, memory_type: str = "general"):
+def save_memory(name: str, content: str, memory_type: str = "general") -> None:
     _get_manager().save_memory(name, content, memory_type)
 
 

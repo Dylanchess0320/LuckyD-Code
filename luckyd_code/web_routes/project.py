@@ -1,5 +1,7 @@
 """Project initialization, indexing, tasks, and plans routes."""
 
+from typing import Any
+
 from fastapi import APIRouter, Request
 
 from .. import tasks, planner, init as project_init
@@ -8,13 +10,13 @@ router = APIRouter()
 
 
 @router.post("/api/init")
-async def init_project():
+async def init_project() -> Any:
     result = project_init.init_project()
     return {"status": "ok", "message": result}
 
 
 @router.post("/api/index")
-async def reindex_project(request: Request):
+async def reindex_project(request: Request) -> Any:
     from ..indexer import index_project
     project_context = index_project()
     state = request.app.state.web_state
@@ -37,12 +39,12 @@ async def reindex_project(request: Request):
 
 
 @router.get("/api/tasks")
-async def list_tasks(status: str = ""):
+async def list_tasks(status: str = "") -> Any:
     result = tasks.list_tasks(status or None)
     return {"tasks": result}
 
 
 @router.get("/api/plans")
-async def list_plans():
+async def list_plans() -> Any:
     plans = planner.list_plans()
     return {"plans": plans}

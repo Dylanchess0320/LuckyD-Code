@@ -1,3 +1,4 @@
+from typing import Any
 from .registry import Tool
 from ..git import git_status, git_diff, git_log, git_commit, git_add, git_branch, git_create_pr, git_push
 
@@ -11,7 +12,7 @@ class GitStatusTool(Tool):
         "properties": {},
     }
 
-    def run(self, **kwargs) -> str:  # type: ignore[override]
+    def run(self, **kwargs: Any) -> str:  # type: ignore[override]
         return git_status()
 
 
@@ -92,7 +93,7 @@ class GitBranchTool(Tool):
         "properties": {},
     }
 
-    def run(self, **kwargs) -> str:  # type: ignore[override]
+    def run(self, **kwargs: Any) -> str:  # type: ignore[override]
         return git_branch()
 
 

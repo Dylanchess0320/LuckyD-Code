@@ -1,4 +1,5 @@
 import time
+from collections.abc import Callable
 from typing import Any
 
 # Tools in this set are read-only and safe to cache.
@@ -28,7 +29,7 @@ class Tool:
     parameters: dict[str, Any] = {}
     permission_risk: str = "safe"  # safe | medium | high
 
-    def run(self, **kwargs) -> str:
+    def run(self, **kwargs: Any) -> str:
         raise NotImplementedError
 
     def to_openai_tool(self) -> dict[str, Any]:
@@ -128,7 +129,7 @@ class ToolRegistry:
     #  Execution
     # ------------------------------------------------------------------ #
 
-    def execute(self, name: str, arguments: dict[str, Any], check_perm=None) -> str:
+    def execute(self, name: str, arguments: dict[str, Any], check_perm: Callable[[str], bool] | None = None) -> str:
         tool = self.get(name)
         if not tool:
             return f"Error: unknown tool '{name}'"

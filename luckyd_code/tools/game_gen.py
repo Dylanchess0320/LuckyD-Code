@@ -307,7 +307,7 @@ class GameGenTool(Tool):
         theme_color: str = "#00FF00",
         output_format: str = "exe",
         output_dir: str = ".",
-    ) -> str:
+    ) -> str:  # type: ignore[override]
 
         if difficulty not in DIFFICULTIES:
             return f"Error: unknown difficulty '{difficulty}'. Use: {', '.join(DIFFICULTIES)}"

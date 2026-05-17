@@ -1,4 +1,5 @@
 """Persistent Codebase Brain — knowledge graph and RAG system for code understanding."""
+from typing import Any
 import os
 from .graph import KnowledgeGraph
 from .parser import parse_project
@@ -51,7 +52,7 @@ def rebuild_project(project_root: str | None = None) -> dict:
     if project_root is None:
         project_root = os.getcwd()
 
-    result = {"chunks": 0, "files": 0, "node_count": 0, "files_parsed": 0, "languages": {}}
+    result: dict[str, Any] = {"chunks": 0, "files": 0, "node_count": 0, "files_parsed": 0, "languages": {}}
 
     # Build vector index
     chunks = chunk_project(project_root)
@@ -63,7 +64,7 @@ def rebuild_project(project_root: str | None = None) -> dict:
         from .constants import should_skip
         from pathlib import Path
 
-        mtimes: dict = {}
+        mtimes: dict[str, tuple[float, int]] = {}
         for dirpath, dirnames, filenames in os.walk(Path(project_root).resolve()):
             dirnames[:] = [d for d in dirnames if not should_skip(d)]
             for fname in filenames:

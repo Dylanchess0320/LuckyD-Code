@@ -18,14 +18,14 @@ class Retriever:
       4. Graph keyword fallback with token-overlap scoring
     """
 
-    def __init__(self):
-        self._indexer = None
-        self._graph = None
-        self._bm25 = None
-        self._bm25_tokenized = None
-        self._bm25_chunk_count = 0
+    def __init__(self) -> None:
+        self._indexer: Any = None
+        self._graph: Any = None
+        self._bm25: Any = None
+        self._bm25_tokenized: list[list[str]] | None = None
+        self._bm25_chunk_count: int = 0
 
-    def _get_indexer(self):
+    def _get_indexer(self) -> Any:
         if self._indexer is None:  # pragma: no cover
             from .indexer import VectorIndexer
 
@@ -34,7 +34,7 @@ class Retriever:
             self._indexer = idx
         return self._indexer
 
-    def _get_graph(self):
+    def _get_graph(self) -> Any:
         if self._graph is None:  # pragma: no cover
             from .graph import KnowledgeGraph
 

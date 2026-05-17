@@ -16,7 +16,7 @@ MAX_TOOL_LOOPS = 100
 
 
 @router.websocket("/ws")
-async def websocket_endpoint(ws: WebSocket):  # pragma: no cover
+async def websocket_endpoint(ws: WebSocket) -> None:  # pragma: no cover
     await ws.accept()
     from ..api import stream_chat
 

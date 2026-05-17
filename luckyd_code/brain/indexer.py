@@ -20,7 +20,7 @@ CHUNK_SIZE = 384  # all-MiniLM-L6-v2 dimension
 class VectorIndexer:
     """Manages the FAISS vector index with mtime tracking."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.index: Any = None  # FAISS index object
         self.chunks: list[dict[str, Any]] = []
         self.file_mtimes: dict[str, tuple[float, int]] = {}

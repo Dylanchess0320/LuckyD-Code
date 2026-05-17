@@ -1,21 +1,23 @@
 """Knowledge graph / brain routes."""
 
+from typing import Any
+
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 try:
     from ..brain import KnowledgeGraph, Retriever, VectorIndexer, rebuild_project
 except Exception:  # pragma: no cover
-    KnowledgeGraph = None  # type: ignore[assignment]
-    Retriever = None  # type: ignore[assignment]
-    VectorIndexer = None  # type: ignore[assignment]
-    rebuild_project = None  # type: ignore[assignment]
+    KnowledgeGraph: Any = None
+    Retriever: Any = None
+    VectorIndexer: Any = None
+    rebuild_project: Any = None
 
 router = APIRouter()
 
 
 @router.get("/api/brain")
-async def brain_status(request: Request):
+async def brain_status(request: Request) -> Any:
     brain = KnowledgeGraph()
     brain.load()
 
@@ -52,7 +54,7 @@ async def brain_status(request: Request):
 
 
 @router.post("/api/brain/rebuild")
-async def brain_rebuild(request: Request):
+async def brain_rebuild(request: Request) -> Any:
     import os
     result = rebuild_project(os.getcwd())
 
@@ -70,7 +72,7 @@ async def brain_rebuild(request: Request):
 
 
 @router.get("/api/brain/search")
-async def brain_search(request: Request, q: str = "", max_results: int = 5):
+async def brain_search(request: Request, q: str = "", max_results: int = 5) -> Any:
     if not q:
         return {"results": []}
     try:
@@ -89,7 +91,7 @@ async def brain_search(request: Request, q: str = "", max_results: int = 5):
 
 
 @router.get("/api/brain/stats")
-async def brain_stats(request: Request):
+async def brain_stats(request: Request) -> Any:
     try:
         r = Retriever()
         info = r.stats()
@@ -99,7 +101,7 @@ async def brain_stats(request: Request):
 
 
 @router.get("/api/brain/dependents")
-async def brain_dependents(request: Request, symbol: str = ""):
+async def brain_dependents(request: Request, symbol: str = "") -> Any:
     """Find all nodes that depend on a symbol in the knowledge graph."""
     if not symbol:
         return JSONResponse({"error": "symbol parameter required"}, status_code=400)

@@ -96,7 +96,7 @@ class SmellDetector:
 
         return self.smells
 
-    def _detect_python_smells(self, content: str, fp: Path, lines: list[str]):
+    def _detect_python_smells(self, content: str, fp: Path, lines: list[str]) -> None:
         """Python-specific smell detection."""
         import ast
 
@@ -168,7 +168,7 @@ class SmellDetector:
                             suggestion="Use None as default and set the mutable value in the function body.",
                         ))
 
-    def _detect_generic_smells(self, content: str, fp: Path, lines: list[str]):
+    def _detect_generic_smells(self, content: str, fp: Path, lines: list[str]) -> None:
         """Generic smell detection for any language."""
 
         # Long function detection via indentation heuristics
@@ -222,7 +222,7 @@ class SmellDetector:
                 suggestion="Catch specific exception types.",
             ))
 
-    def _detect_deep_nesting(self, content: str, fp: Path, lines: list[str]):
+    def _detect_deep_nesting(self, content: str, fp: Path, lines: list[str]) -> None:
         """Detect lines with deep indentation."""
         for i, line in enumerate(lines):
             if not line.strip():
@@ -293,7 +293,7 @@ class SmellDetector:
 # ── Convenience ──────────────────────────────────────────────────────────────
 
 
-def detect_smells(path_or_pm=None) -> list[Smell]:
+def detect_smells(path_or_pm: ProjectMetrics | str | None = None) -> list[Smell]:
     """Convenience: detect smells in a file, project directory, or ProjectMetrics."""
     detector = SmellDetector()
 

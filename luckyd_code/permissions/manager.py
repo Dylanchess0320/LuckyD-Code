@@ -55,7 +55,7 @@ def _load_allowlist() -> set[str]:
     return set()
 
 
-def _save_to_allowlist(tool_name: str):
+def _save_to_allowlist(tool_name: str) -> None:
     path = _get_settings_path()
     path.parent.mkdir(parents=True, exist_ok=True)
     allowlist = _load_allowlist()

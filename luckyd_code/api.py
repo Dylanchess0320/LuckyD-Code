@@ -289,21 +289,25 @@ def _repair_json(raw: str) -> str:
     # Remove trailing comma before closing brace/bracket (outside strings only)
     raw = _remove_trailing_commas(raw)
 
+    # Count unmatched braces/brackets BEFORE closing unclosed strings.
+    # If we count after, a brace like `"{` gets absorbed into the string by
+    # _close_unclosed_string and _count_unquoted then sees 0 opens — leaving
+    # the brace unclosed.  Counting first captures the intended structure.
+    open_braces_pre, close_braces_pre = _count_unquoted(raw, "{", "}")
+    open_brackets_pre, close_brackets_pre = _count_unquoted(raw, "[", "]")
+
     # Close any unterminated string literal before counting brackets.
     # Without this, a bracket appended to close an open string would itself
     # be invisible to _count_unquoted (it lands inside the string), causing
     # the next repair pass to add yet another bracket.
     raw = _close_unclosed_string(raw)
 
-    # Close unmatched braces/brackets — count only characters outside strings
-    # so that values like {"key": "template {var}"} are never corrupted.
-    open_braces, close_braces = _count_unquoted(raw, "{", "}")
-    if open_braces > close_braces:
-        raw += "}" * (open_braces - close_braces)
+    # Close unmatched braces/brackets using the pre-string-close counts.
+    if open_braces_pre > close_braces_pre:
+        raw += "}" * (open_braces_pre - close_braces_pre)
 
-    open_brackets, close_brackets = _count_unquoted(raw, "[", "]")
-    if open_brackets > close_brackets:
-        raw += "]" * (open_brackets - close_brackets)
+    if open_brackets_pre > close_brackets_pre:
+        raw += "]" * (open_brackets_pre - close_brackets_pre)
 
     return raw
 

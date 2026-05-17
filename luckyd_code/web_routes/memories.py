@@ -1,5 +1,7 @@
 """Memory (MEMORY.md and named memories) routes."""
 
+from typing import Any
+
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -12,7 +14,7 @@ router = APIRouter()
 # --- Project Memory (MEMORY.md) ---
 
 @router.get("/api/memory")
-async def get_memory(request: Request):
+async def get_memory(request: Request) -> Any:
     state = request.app.state.web_state
     md = memory_module.load_claude_md()
     return {"claude_md": md, "message_count": state.context.count_messages()}
@@ -23,7 +25,7 @@ class MemorySave(BaseModel):
 
 
 @router.post("/api/memory/save")
-async def save_memory(request: Request, data: MemorySave):
+async def save_memory(request: Request, data: MemorySave) -> Any:
     memory_module.save_claude_md(data.content)
     # Update context so the change is reflected immediately.
     # The <claude-md> block may also contain session memories — preserve them.
@@ -51,7 +53,7 @@ async def save_memory(request: Request, data: MemorySave):
 # --- Named memories ---
 
 @router.get("/api/memories")
-async def list_memories(request: Request, q: str = ""):
+async def list_memories(request: Request, q: str = "") -> Any:
     state = request.app.state.web_state
     mgr = state.web_memory_mgr
     if q:
@@ -67,7 +69,7 @@ class NamedMemorySave(BaseModel):
 
 
 @router.post("/api/memories/save")
-async def save_memory_web(request: Request, data: NamedMemorySave):
+async def save_memory_web(request: Request, data: NamedMemorySave) -> Any:
     state = request.app.state.web_state
     mgr = state.web_memory_mgr
     mgr.save_memory(data.name, data.content)
@@ -75,7 +77,7 @@ async def save_memory_web(request: Request, data: NamedMemorySave):
 
 
 @router.delete("/api/memories/{name}")
-async def delete_memory_web(request: Request, name: str):
+async def delete_memory_web(request: Request, name: str) -> Any:
     state = request.app.state.web_state
     mgr = state.web_memory_mgr
     ok = mgr.delete_memory(name)
@@ -85,7 +87,7 @@ async def delete_memory_web(request: Request, name: str):
 
 
 @router.get("/api/memories/{name}")
-async def get_memory_web(request: Request, name: str):
+async def get_memory_web(request: Request, name: str) -> Any:
     state = request.app.state.web_state
     mgr = state.web_memory_mgr
     content = mgr.load_memory(name)

@@ -1,5 +1,7 @@
 """Session management routes."""
 
+from typing import Any
+
 from fastapi import APIRouter, Request
 from pydantic import BaseModel
 
@@ -17,26 +19,26 @@ class SessionLoad(BaseModel):
 
 
 @router.get("/api/sessions")
-async def sessions_list():
+async def sessions_list() -> Any:
     result = list_sessions()
     return {"sessions": result}
 
 
 @router.post("/api/sessions/save")
-async def sessions_save(request: Request, data: SessionSave):
+async def sessions_save(request: Request, data: SessionSave) -> Any:
     state = request.app.state.web_state
     result = save_session(data.name, state.context)
     return {"status": "ok", "message": result}
 
 
 @router.post("/api/sessions/load")
-async def sessions_load(request: Request, data: SessionLoad):
+async def sessions_load(request: Request, data: SessionLoad) -> Any:
     state = request.app.state.web_state
     result = load_session(data.name, state.context)
     return {"status": "ok", "message": result}
 
 
 @router.delete("/api/sessions/{name}")
-async def sessions_delete(name: str):
+async def sessions_delete(name: str) -> Any:
     result = delete_session(name)
     return {"status": "ok", "message": result}

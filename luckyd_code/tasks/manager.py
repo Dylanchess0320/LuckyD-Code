@@ -8,7 +8,7 @@ _logger = logging.getLogger("luckyd_code.tasks")
 
 
 class Task:
-    def __init__(self, subject: str, description: str = "", task_id: str | None = None):
+    def __init__(self, subject: str, description: str = "", task_id: str | None = None) -> None:
         self.id = task_id or uuid.uuid4().hex[:8]
         self.subject = subject
         self.description = description
@@ -16,7 +16,7 @@ class Task:
         self.blocked_by: list[str] = []
         self.blocks: list[str] = []
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,
             "subject": self.subject,

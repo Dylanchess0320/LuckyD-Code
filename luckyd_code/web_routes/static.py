@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+from typing import Any
 
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse, JSONResponse, Response
@@ -12,7 +13,7 @@ TEMPLATES = Path(__file__).resolve().parent.parent / "templates"
 
 
 @router.get("/")
-async def index():
+async def index() -> Any:
     path = TEMPLATES / "index.html"
     if path.exists():  # pragma: no cover
         return HTMLResponse(
@@ -27,7 +28,7 @@ async def index():
 
 
 @router.get("/manifest.json")
-async def manifest():  # pragma: no cover
+async def manifest() -> Any:  # pragma: no cover
     path = TEMPLATES / "manifest.json"
     if path.exists():
         return JSONResponse(json.loads(path.read_text(encoding="utf-8")))
@@ -35,7 +36,7 @@ async def manifest():  # pragma: no cover
 
 
 @router.get("/sw.js")
-async def service_worker():  # pragma: no cover
+async def service_worker() -> Any:  # pragma: no cover
     path = TEMPLATES / "sw.js"
     if path.exists():
         return Response(path.read_bytes(), media_type="application/javascript")
@@ -43,7 +44,7 @@ async def service_worker():  # pragma: no cover
 
 
 @router.get("/icon-192.png")
-async def icon_192():  # pragma: no cover
+async def icon_192() -> Any:  # pragma: no cover
     path = TEMPLATES / "icon-192.png"
     if path.exists():
         return Response(path.read_bytes(), media_type="image/png")
@@ -51,7 +52,7 @@ async def icon_192():  # pragma: no cover
 
 
 @router.get("/icon-512.png")
-async def icon_512():  # pragma: no cover
+async def icon_512() -> Any:  # pragma: no cover
     path = TEMPLATES / "icon-512.png"
     if path.exists():
         return Response(path.read_bytes(), media_type="image/png")
@@ -59,7 +60,7 @@ async def icon_512():  # pragma: no cover
 
 
 @router.get("/favicon.ico")
-async def favicon():  # pragma: no cover
+async def favicon() -> Any:  # pragma: no cover
     path = TEMPLATES / "icon-192.png"
     if path.exists():
         return Response(path.read_bytes(), media_type="image/png")

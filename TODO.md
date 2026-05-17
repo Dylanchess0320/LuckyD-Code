@@ -6,24 +6,25 @@ Each item has an effort tag: 🟢 small (< 1 hr) · 🟡 medium (1–4 hrs) · �
 
 ---
 
-## 🔴 Code Quality — mypy Strict Coverage
+## ✅ Code Quality — mypy Strict Coverage
 
-Currently **15 modules** remain excluded from mypy strict checking (down from 16).
-Recently graduated: `orchestrator.py` — fully typed with `_AgentConfig` + `ToolRegistryProtocol` (2026-05-17).
+All major subsystems are now fully typed and have graduated from the mypy exclude list.
+Recently graduated (2026-05-17): `analytics/`, `brain/`, `memory/`, `tools/`, `web_routes/`
 
-### Still excluded (whole subsystems — heavy third-party stubs)
-- [ ] 🔴 `luckyd_code/analytics/` — scanner, smells, trends, reporter
-- [ ] 🔴 `luckyd_code/brain/` — chunker, graph, indexer, parser, retriever
-- [ ] 🔴 `luckyd_code/memory/` — manager, user
-- [ ] 🔴 `luckyd_code/tools/` — file_ops, bash, readme_gen, image, youtube
-- [ ] 🔴 `luckyd_code/web_routes/` — all route modules
+### Still excluded (whole subsystems — thin wrappers / optional deps / OS daemons)
+- [ ] 🟡 `luckyd_code/cli_commands/` — imperative CLI scripts (low type-value)
 
-### Near-clean individual modules (next targets)
-- [x] 🟢 `luckyd_code/hooks.py` — fixed `env_updates: dict` → `dict[str, Any]`; added `__init__(self) -> None`
-- [x] 🟡 `luckyd_code/self_improve.py` — added `-> None` to `ImprovementTracker.__init__`
-- [x] 🟡 `luckyd_code/backup.py` — fully typed; removed from exclusion list
-- [x] 🟡 `luckyd_code/export.py` — `list` → `list[dict[str, Any]]`; added `from typing import Any`
-- [x] 🟡 `luckyd_code/orchestrator.py` — `_AgentConfig` + `ToolRegistryProtocol`; graduated (2026-05-17)
+### Graduated subsystems ✅
+- [x] 🔴 `luckyd_code/analytics/` (2026-05-17)
+- [x] 🔴 `luckyd_code/brain/` (2026-05-17)
+- [x] 🔴 `luckyd_code/memory/` (2026-05-17)
+- [x] 🔴 `luckyd_code/tools/` (2026-05-17)
+- [x] 🔴 `luckyd_code/web_routes/` (2026-05-17)
+- [x] 🟡 `luckyd_code/git/` (2026-05-17)
+- [x] 🟡 `luckyd_code/mcp/` (2026-05-17)
+- [x] 🟡 `luckyd_code/tasks/` (2026-05-17)
+- [x] 🟢 `luckyd_code/metrics/` (2026-05-17)
+- [x] 🟢 `luckyd_code/permissions/` (2026-05-17)
 
 ---
 

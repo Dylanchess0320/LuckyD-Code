@@ -1,6 +1,7 @@
 """File browsing, reading, writing, and editing routes."""
 
 from pathlib import Path
+from typing import Any
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
@@ -15,7 +16,7 @@ MAX_READ_BYTES = 1_000_000   # 1 MB
 MAX_WRITE_BYTES = 10_485_760  # 10 MB — matches CLI WriteTool
 
 
-def _safe_resolve(path: str):
+def _safe_resolve(path: str) -> Path | None:
     """Wrap safe_resolve so callers get None instead of a raw ValueError."""
     try:
         return path_validate.safe_resolve(path)
@@ -35,7 +36,7 @@ class EditData(BaseModel):
 
 
 @router.get("/api/tools")
-async def list_tools(request: Request):
+async def list_tools(request: Request) -> Any:
     """List available tool names."""
     state = request.app.state.web_state
     tools = state.registry.list_tools()
@@ -44,7 +45,7 @@ async def list_tools(request: Request):
 
 
 @router.get("/api/files")
-async def list_files(request: Request, dir: str = "."):
+async def list_files(request: Request, dir: str = ".") -> Any:
     """List directory contents."""
     safe = _safe_resolve(dir)
     if safe is None:
@@ -73,7 +74,7 @@ async def list_files(request: Request, dir: str = "."):
 
 
 @router.get("/api/read-file")
-async def read_file(request: Request, path: str = ""):
+async def read_file(request: Request, path: str = "") -> Any:
     if not path:
         return JSONResponse({"error": "path parameter required"}, status_code=400)
     safe = _safe_resolve(path)
@@ -95,7 +96,7 @@ async def read_file(request: Request, path: str = ""):
 
 
 @router.post("/api/write-file")
-async def write_file(request: Request, data: WriteData):
+async def write_file(request: Request, data: WriteData) -> Any:
     if not data.path:
         return JSONResponse({"error": "path required"}, status_code=400)
     if len(data.content) > MAX_WRITE_BYTES:
@@ -113,7 +114,7 @@ async def write_file(request: Request, data: WriteData):
 
 
 @router.post("/api/edit-file")
-async def edit_file(request: Request, data: EditData):
+async def edit_file(request: Request, data: EditData) -> Any:
     if not data.path or not data.old_string:
         return JSONResponse({"error": "path and old_string required"}, status_code=400)
     safe = _safe_resolve(data.path)

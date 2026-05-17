@@ -63,7 +63,7 @@ _ST_MODEL = None
 _ST_MODEL_LOCK = threading.Lock()
 
 
-def _get_st_model():  # pragma: no cover
+def _get_st_model() -> Any:  # pragma: no cover
     """Return cached SentenceTransformer, loading it on first call."""
     global _ST_MODEL
     if _ST_MODEL is None:

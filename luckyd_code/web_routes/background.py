@@ -1,5 +1,7 @@
 """Background agent task routes."""
 
+from typing import Any
+
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -15,7 +17,7 @@ class BackgroundStart(BaseModel):
 
 
 @router.get("/api/background")
-async def background_list(request: Request):
+async def background_list(request: Request) -> Any:
     try:
         from ..background import BackgroundAgent
         state = request.app.state.web_state
@@ -29,7 +31,7 @@ async def background_list(request: Request):
 
 
 @router.post("/api/background/start")
-async def background_start(request: Request, data: BackgroundStart):
+async def background_start(request: Request, data: BackgroundStart) -> Any:
     try:
         from ..background import BackgroundAgent
         state = request.app.state.web_state
@@ -44,7 +46,7 @@ async def background_start(request: Request, data: BackgroundStart):
 
 
 @router.get("/api/background/status/{task_id}")
-async def background_status(request: Request, task_id: str):
+async def background_status(request: Request, task_id: str) -> Any:
     try:
         from ..background import BackgroundAgent
         state = request.app.state.web_state
@@ -59,7 +61,7 @@ async def background_status(request: Request, task_id: str):
 
 
 @router.get("/api/background/result/{task_id}")
-async def background_result(request: Request, task_id: str):
+async def background_result(request: Request, task_id: str) -> Any:
     try:
         from ..background import BackgroundAgent
         state = request.app.state.web_state

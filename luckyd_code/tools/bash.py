@@ -16,6 +16,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from typing import Any
 from .registry import Tool
 from .shell_detect import resolve_shell, ShellInfo
 from ..settings import load_settings
@@ -195,7 +196,7 @@ def _run_with_timeout(  # pragma: no cover
             env["PATH"] = system32 + os.pathsep + current_path
 
     # Build creation flags for proper process group handling
-    kwargs: dict = {
+    kwargs: dict[str, Any] = {
         "stdout": subprocess.PIPE,
         "stderr": subprocess.PIPE,
         "text": True,
