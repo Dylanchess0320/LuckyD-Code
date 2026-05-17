@@ -5,6 +5,41 @@ All notable changes to LuckyD Code will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.3.1] — 2026-05-24
+
+### Changed
+- **License** — MIT → GNU AGPL v3 (proprietary/internal use now requires commercial license)
+- **`luckyd_code/__init__.py`** — `__license__` updated from `"MIT"` to `"AGPL-3.0-only"`
+- **`pyproject.toml`** — `license` field updated to `"AGPL-3.0-only"`
+- **`README.md`** — Badge and license section updated to reflect AGPL v3 + dual-license option
+- **`CONTRIBUTING.md`** — CLA now references AGPL v3 instead of MIT
+
+## [1.2.4] — 2026-05-17
+
+### Added
+- **Tests** — `tests/test_brain_rebuild.py` (11 cases fully covering `brain/__init__.py`
+  `rebuild_project()`: defaults to cwd, vector-index path, mtime tracking, knowledge-graph
+  path, both paths together, and partial stats handling).
+- **Tests** — `tests/test_dream_llm_merge.py` (15 cases covering `dream.py`
+  `_phase_consolidate` and `_llm_merge`: config=None skip, empty groups, merge cap,
+  successful merge, empty-content skip, exception capture, delete-before-save order,
+  dominant-type selection, LLM response parsing, default model fallback, malformed
+  response, name truncation, and load-memory calls).
+- **Tests** — `tests/test_lazy_imports.py` (5 cases covering `luckyd_code/__init__.py`
+  lazy `__getattr__` subpackage loader: memory, tools, settings, brain, unknown-attr
+  error, and caching behaviour).
+- **TODO.md** — Comprehensive prioritised improvement roadmap covering code quality,
+  testing, polish, and documentation work items with effort estimates.
+
+### Changed
+- **`pyproject.toml`** — coverage `fail_under` threshold raised from 80 → 92
+  (actual measured coverage is 93%+; the floor now reflects a meaningful standard).
+- **`pyproject.toml`** — pytest `--cov-fail-under` flag updated from 80 → 92 to match.
+- **`pyproject.toml`** — `init.py`, `themes.py`, and `update.py` removed from the mypy
+  exclusion list — all three modules are fully annotated and pass strict checks.
+  Mypy exclusion list reduced from 30 modules to 27.
+- **Version bump** — `1.2.3` → `1.2.4`.
+
 ## [Unreleased] — 2026-05-17
 
 ### Fixed

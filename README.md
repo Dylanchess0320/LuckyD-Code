@@ -369,7 +369,7 @@ See **[SECURITY.md](SECURITY.md)** for full policy.
 For proprietary or internal use, a commercial license is required.
 Contact: `dylanchess0320@users.noreply.github.com`
 
-Previous versions (≤ 1.2.4) remain under MIT License.
+Previous versions (≤ 1.3.1) remain under MIT License.
 
 © 2026 [Dylan Kaye](https://github.com/Dylanchess0320)
 
