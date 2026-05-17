@@ -330,7 +330,8 @@ class TestConfigResolveApiKey:
         """Lines 90-92: falls back to env var when .env file not present."""
         monkeypatch.setenv("DEEPSEEK_API_KEY", "sk-from-env-var")
         with patch("luckyd_code.config.load_config_file", return_value={}), \
-             patch("pathlib.Path.exists", return_value=False):
+             patch("pathlib.Path.exists", return_value=False), \
+             patch("pathlib.Path.read_text", side_effect=FileNotFoundError):
             from luckyd_code.config import Config
             cfg = Config()
         assert cfg.api_key == "sk-from-env-var"
@@ -340,7 +341,8 @@ class TestConfigResolveApiKey:
         monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
         monkeypatch.delenv("OPENAI_API_KEY", raising=False)
         with patch("luckyd_code.config.load_config_file", return_value={}), \
-             patch("pathlib.Path.exists", return_value=False):
+             patch("pathlib.Path.exists", return_value=False), \
+             patch("pathlib.Path.read_text", side_effect=FileNotFoundError):
             from luckyd_code.config import Config
             cfg = Config()
         assert cfg.api_key == ""
@@ -420,7 +422,8 @@ class TestConfigValidation:
     def test_validate_raises_on_missing_api_key(self, monkeypatch):
         monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
         with patch("luckyd_code.config.load_config_file", return_value={}), \
-             patch("pathlib.Path.exists", return_value=False):
+             patch("pathlib.Path.exists", return_value=False), \
+             patch("pathlib.Path.read_text", side_effect=FileNotFoundError):
             from luckyd_code.config import Config
             cfg = Config()
         with pytest.raises(ValueError, match="API_KEY"):

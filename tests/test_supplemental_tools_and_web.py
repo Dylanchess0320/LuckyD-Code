@@ -1026,14 +1026,14 @@ if sys.version_info < (3, 15):
         return TestClient(app)
 
     class TestBrainRoutes:
-        # Routes use lazy imports (from ..brain import ...) inside function bodies,
-        # so we patch the source module, not the web_routes module.
+        # Names are bound at import time in web_routes.brain (module-level imports),
+        # so we patch there — not in the source luckyd_code.brain module.
         def test_brain_status_empty(self):
             c = _brain_client()
             mock_kg = MagicMock(); mock_kg.nodes = {}; mock_kg.stats = {}
             mock_idx = MagicMock(); mock_idx.load.return_value = False
-            with patch("luckyd_code.brain.KnowledgeGraph", return_value=mock_kg):
-                with patch("luckyd_code.brain.VectorIndexer", return_value=mock_idx):
+            with patch("luckyd_code.web_routes.brain.KnowledgeGraph", return_value=mock_kg):
+                with patch("luckyd_code.web_routes.brain.VectorIndexer", return_value=mock_idx):
                     resp = c.get("/api/brain")
             assert resp.status_code == 200
             assert resp.json()["status"] == "empty"
@@ -1044,8 +1044,8 @@ if sys.version_info < (3, 15):
             mock_kg.nodes = {"sym": {}}
             mock_kg.stats = {"node_count": 5, "edge_count": 3, "files_parsed": 2, "last_built": 1700000000}
             mock_idx = MagicMock(); mock_idx.load.return_value = False
-            with patch("luckyd_code.brain.KnowledgeGraph", return_value=mock_kg):
-                with patch("luckyd_code.brain.VectorIndexer", return_value=mock_idx):
+            with patch("luckyd_code.web_routes.brain.KnowledgeGraph", return_value=mock_kg):
+                with patch("luckyd_code.web_routes.brain.VectorIndexer", return_value=mock_idx):
                     resp = c.get("/api/brain")
             assert resp.status_code == 200
             assert resp.json()["symbols"] == 5
@@ -1055,9 +1055,9 @@ if sys.version_info < (3, 15):
             mock_kg = MagicMock(); mock_kg.nodes = {"x": {}}; mock_kg.stats = {"node_count": 1, "edge_count": 0, "files_parsed": 1}
             mock_idx = MagicMock(); mock_idx.load.return_value = True
             mock_r = MagicMock(); mock_r.stats.return_value = {"vector": {"chunks": 10, "files": 2}}
-            with patch("luckyd_code.brain.KnowledgeGraph", return_value=mock_kg):
-                with patch("luckyd_code.brain.VectorIndexer", return_value=mock_idx):
-                    with patch("luckyd_code.brain.Retriever", return_value=mock_r):
+            with patch("luckyd_code.web_routes.brain.KnowledgeGraph", return_value=mock_kg):
+                with patch("luckyd_code.web_routes.brain.VectorIndexer", return_value=mock_idx):
+                    with patch("luckyd_code.web_routes.brain.Retriever", return_value=mock_r):
                         resp = c.get("/api/brain")
             assert resp.status_code == 200
             assert "rag_chunks" in resp.json()
@@ -1070,25 +1070,25 @@ if sys.version_info < (3, 15):
             c = _brain_client()
             mock_r = MagicMock()
             mock_r.search.return_value = [{"content": "def login():", "file": "auth.py", "score": 0.9}]
-            with patch("luckyd_code.brain.Retriever", return_value=mock_r):
+            with patch("luckyd_code.web_routes.brain.Retriever", return_value=mock_r):
                 resp = c.get("/api/brain/search?q=login&max_results=3")
             assert resp.status_code == 200
             assert len(resp.json()["results"]) == 1
 
         def test_brain_search_exception(self):
             c = _brain_client()
-            with patch("luckyd_code.brain.Retriever", side_effect=Exception("boom")):
+            with patch("luckyd_code.web_routes.brain.Retriever", side_effect=Exception("boom")):
                 assert c.get("/api/brain/search?q=login").status_code == 500
 
         def test_brain_stats(self):
             c = _brain_client()
             mock_r = MagicMock(); mock_r.stats.return_value = {"vector": {}, "graph": {}}
-            with patch("luckyd_code.brain.Retriever", return_value=mock_r):
+            with patch("luckyd_code.web_routes.brain.Retriever", return_value=mock_r):
                 assert c.get("/api/brain/stats").status_code == 200
 
         def test_brain_stats_exception(self):
             c = _brain_client()
-            with patch("luckyd_code.brain.Retriever", side_effect=Exception("fail")):
+            with patch("luckyd_code.web_routes.brain.Retriever", side_effect=Exception("fail")):
                 assert c.get("/api/brain/stats").status_code == 500
 
         def test_brain_dependents_no_symbol(self):
@@ -1098,20 +1098,20 @@ if sys.version_info < (3, 15):
         def test_brain_dependents_with_symbol(self):
             c = _brain_client()
             mock_kg = MagicMock(); mock_kg.find_dependents.return_value = ["mod_a", "mod_b"]
-            with patch("luckyd_code.brain.KnowledgeGraph", return_value=mock_kg):
+            with patch("luckyd_code.web_routes.brain.KnowledgeGraph", return_value=mock_kg):
                 resp = c.get("/api/brain/dependents?symbol=MyClass")
             assert resp.status_code == 200
             assert resp.json()["count"] == 2
 
         def test_brain_dependents_exception(self):
             c = _brain_client()
-            with patch("luckyd_code.brain.KnowledgeGraph", side_effect=Exception("fail")):
+            with patch("luckyd_code.web_routes.brain.KnowledgeGraph", side_effect=Exception("fail")):
                 assert c.get("/api/brain/dependents?symbol=X").status_code == 500
 
         def test_brain_rebuild(self):
             c = _brain_client()
             mock_result = {"chunks": 50, "files": 5, "node_count": 20, "files_parsed": 5}
-            with patch("luckyd_code.brain.rebuild_project", return_value=mock_result):
+            with patch("luckyd_code.web_routes.brain.rebuild_project", return_value=mock_result):
                 resp = c.post("/api/brain/rebuild")
             assert resp.status_code == 200
             assert resp.json()["chunks"] == 50

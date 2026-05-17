@@ -222,6 +222,7 @@ class TestProjectMetricsProperties:
         pm = ProjectMetrics(root="/tmp")
         pm.total_functions = 4
         pm.total_complexity = 20
+        pm._compute_derived()
         assert pm.avg_complexity == 5.0
 
     def test_todo_rate_no_code_lines(self):
@@ -243,6 +244,7 @@ class TestProjectMetricsProperties:
         pm.source_files = 2
         pm.total_lines = 1200  # 600 avg lines → penalty
         pm.total_code_lines = 1000
+        pm._compute_derived()
         score = pm.health_score
         assert score < 100
 
@@ -254,6 +256,7 @@ class TestProjectMetricsProperties:
         pm.total_lines = 10000
         pm.total_code_lines = 8000
         pm.files_by_language = {"python": 150}  # single language
+        pm._compute_derived()
         score = pm.health_score
         assert score < 100
 

@@ -286,7 +286,7 @@ class TestContextRemainingBranches:
         mock_client = MagicMock()
         mock_client.chat.completions.create.return_value = mock_response
 
-        with patch("luckyd_code.context.OpenAI", return_value=mock_client):
+        with patch("luckyd_code.context.openai.OpenAI", return_value=mock_client):
             result = ctx.compact(config, "deepseek-v4-flash", keep_last=3,
                                   on_compact=on_compact)
 
@@ -314,7 +314,7 @@ class TestContextRemainingBranches:
         mock_client = MagicMock()
         mock_client.chat.completions.create.return_value = mock_response
 
-        with patch("luckyd_code.context.OpenAI", return_value=mock_client):
+        with patch("luckyd_code.context.openai.OpenAI", return_value=mock_client):
             result = ctx.compact(config, "model", keep_last=2, on_compact=bad_callback)
 
         # Should not raise
@@ -342,7 +342,7 @@ class TestContextRemainingBranches:
         for i in range(10):
             ctx.messages.append({"role": "user", "content": f"msg {i}"})
 
-        with patch("luckyd_code.context.OpenAI", side_effect=Exception("connection error")):
+        with patch("luckyd_code.context.openai.OpenAI", side_effect=Exception("connection error")):
             result = ctx.compact(config, "model", keep_last=2)
 
         assert "Compaction failed" in result
@@ -364,7 +364,7 @@ class TestContextRemainingBranches:
         mock_client = MagicMock()
         mock_client.chat.completions.create.return_value = mock_response
 
-        with patch("luckyd_code.context.OpenAI", return_value=mock_client):
+        with patch("luckyd_code.context.openai.OpenAI", return_value=mock_client):
             ctx.compact(config, "deepseek-reasoner", keep_last=2)
 
         # The model used in create() should be flash, not reasoner
