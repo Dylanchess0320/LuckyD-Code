@@ -14,7 +14,7 @@ tiktoken>=0.5.0
 mcp>=1.0.0
 python-dotenv>=1.0.0
 starlette>=0.27.0
-pillow>=10.0.0
+pillow>=12.2.0
 
 # ── Test / dev dependencies ───────────────────────────────────────────────
 pytest>=7.0.0
