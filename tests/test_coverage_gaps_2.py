@@ -740,18 +740,12 @@ class TestGetApp:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 class TestBackgroundLoadHistoryEdges:
-    def test_load_history_nonexistent_dir_no_error(self):
+    def test_load_history_nonexistent_dir_no_error(self, tmp_path):
         """load_history when BACKGROUND_DIR doesn't exist should be a no-op."""
         from luckyd_code.background import BackgroundAgent
 
-        config = MagicMock()
-        nonexistent = Path("/nonexistent/background_dir_xyz")
-
-        with patch("luckyd_code.background.BACKGROUND_DIR", nonexistent):
-            agent = BackgroundAgent(config)
-            # Should not raise even if dir doesn't exist (but mkdir is called in __init__)
-            # Override: simulate existing agent that tries to load from missing dir
-            agent._run_task = lambda *a, **kw: None  # suppress thread
+        # Use a path under tmp_path that genuinely doesn't exist (no PermissionError)
+        nonexistent = tmp_path / "no_such_bg_dir"
 
         # Manually test load_history with a missing dir
         class FakeAgent:
@@ -761,7 +755,6 @@ class TestBackgroundLoadHistoryEdges:
         fake = FakeAgent()
         fake.load_history = BackgroundAgent.load_history.__get__(fake, type(fake))
 
-        # The background dir doesn't exist
         with patch("luckyd_code.background.BACKGROUND_DIR", nonexistent):
             # load_history returns early when dir doesn't exist
             fake.load_history()  # should not raise
