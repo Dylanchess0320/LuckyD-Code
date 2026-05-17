@@ -25,7 +25,7 @@ import os
 from collections import deque
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Any
+from typing import Any, Protocol
 
 from .api import stream_chat, _repair_json
 from .context import ConversationContext
@@ -36,6 +36,31 @@ from .model_registry import ALL_MODELS_FLAT as _ALL_MODELS_FLAT_ESC
 _log = logging.getLogger(__name__)
 
 __all__ = ["run_agent_loop", "RunConfig", "LoopResult"]
+
+
+class _AgentConfig(Protocol):
+    """Structural type for the Config object consumed by the agent loop.
+
+    Using a Protocol instead of importing Config directly avoids a circular
+    import (Config → context → _agent_loop → Config).
+    """
+
+    api_key: str
+    base_url: str
+    model: str
+    max_tokens: int
+    temperature: float
+
+
+class ToolRegistryProtocol(Protocol):
+    """Structural type for a ToolRegistry consumed by the agent loop.
+
+    Avoids importing the concrete ToolRegistry (which pulls in every tool
+    module) and makes the dependency explicit and mockable in tests.
+    """
+
+    def execute(self, name: str, args: dict[str, Any]) -> str: ...
+    def list_tools(self) -> list[dict[str, Any]]: ...
 
 # ── tunables ──────────────────────────────────────────────────────────────────
 _MAX_VERIFY_RETRIES     = 1       # verify-retry cycles before giving up
@@ -184,7 +209,7 @@ def _ingest_tool_result(
 
 def _execute_tool_calls_parallel(
     pending_tool_calls: list,
-    registry,
+    registry: ToolRegistryProtocol,
     context: ConversationContext,
     on_start: Callable[[str, int, int], None] | None = None,
     on_end: Callable[[str, str], None] | None = None,
@@ -295,12 +320,12 @@ def _check_files_verification(  # pragma: no cover
 
 def _verify_and_recover(  # pragma: no cover
     context: ConversationContext,
-    config,
-    tools: list,
+    config: _AgentConfig,
+    tools: list[dict[str, Any]],
     active_model: str,
     files_modified: list[str],
     run_cfg: RunConfig,
-    registry=None,
+    registry: ToolRegistryProtocol | None = None,
 ) -> tuple[bool, str]:
     """Run verification on modified files and retry on failure.
 
@@ -423,12 +448,12 @@ def _auto_save_turn_memory(
 
 
 def _stream_turn(
-    messages: list,
-    tools: list,
+    messages: list[dict[str, Any]],
+    tools: list[dict[str, Any]],
     active_model: str,
-    config,
+    config: _AgentConfig,
     rc: RunConfig,
-) -> tuple:
+) -> tuple[str, list[dict[str, Any]] | None, str, str | None]:
     """Stream one model turn. Returns (turn_text, pending_tool_calls, tool_reasoning, error_msg)."""
     pending_tool_calls = None
     tool_reasoning = ""
@@ -459,13 +484,13 @@ def _stream_turn(
 
 
 def _process_tool_calls_turn(
-    pending_tool_calls: list,
+    pending_tool_calls: list[dict[str, Any]],
     turn_text: str,
     tool_reasoning: str,
     context: ConversationContext,
-    registry,
-    config,
-    tools: list,
+    registry: ToolRegistryProtocol,
+    config: _AgentConfig,
+    tools: list[dict[str, Any]],
     active_model: str,
     rc: RunConfig,
     result: LoopResult,
@@ -532,9 +557,9 @@ def _process_tool_calls_turn(
 
 def run_agent_loop(
     context: ConversationContext,
-    config,
+    config: _AgentConfig,
     tools: list[dict[str, Any]],
-    registry,
+    registry: ToolRegistryProtocol,
     max_turns: int = 10,
     label: str = "agent",
     on_text: Callable[[str], None] | None = None,
@@ -571,11 +596,11 @@ def run_agent_loop(
         try:
             rc.memory_manager = MemoryManager(rc.project_root or os.getcwd())
         except Exception:
-            _log.debug("MemoryManager init failed", exc_info=True)
+            _log.warning("MemoryManager init failed", exc_info=True)
         try:
             rc.user_memory = get_user_memory()
         except Exception:
-            _log.debug("UserMemory init failed", exc_info=True)
+            _log.warning("UserMemory init failed", exc_info=True)
 
         # Inject relevant project memories into the first turn
         try:
@@ -588,7 +613,7 @@ def run_agent_loop(
                         f"[System: relevant project memories]\n\n{relevant}"
                     )
         except Exception:
-            _log.debug("Memory injection failed", exc_info=True)
+            _log.warning("Memory injection failed", exc_info=True)
 
         # Inject relevant cross-project user memories
         try:
@@ -601,7 +626,7 @@ def run_agent_loop(
                         f"[System: relevant user memories from past sessions]\n\n{user_relevant}"
                     )
         except Exception:
-            _log.debug("User memory injection failed", exc_info=True)
+            _log.warning("User memory injection failed", exc_info=True)
     text_buffer = ""
 
     # The model we're currently using — may escalate during verify-recovery
@@ -617,10 +642,10 @@ def run_agent_loop(
         turns_remaining = rc.max_turns - turn
 
         # ── context-overflow protection ──────────────────────────────────────
-        if context.estimate_tokens() > context._token_compact_threshold * 0.70:  # pragma: no cover
+        if context.estimate_tokens() > context.token_compact_threshold * 0.70:  # pragma: no cover
             _log.info("[%s] Context near limit — auto-compacting before turn %d",
                       rc.label, turn + 1)
-            context.compact(config, active_model, keep_last=5)
+            context.compact(config, keep_last=5)
 
         # ── turn budget warning ──────────────────────────────────────────────
         if turns_remaining <= _TURN_BUDGET_WARN and not _budget_warning_sent:
@@ -652,7 +677,7 @@ def run_agent_loop(
                         context, turn, rc.max_turns,
                     )
                 except Exception:
-                    _log.debug("Memory auto-save failed", exc_info=True)
+                    _log.warning("Memory auto-save failed", exc_info=True)
             if should_break:
                 break
             continue
@@ -667,7 +692,7 @@ def run_agent_loop(
                     context, turn, rc.max_turns,
                 )
             except Exception:
-                _log.debug("Final memory auto-save failed", exc_info=True)
+                _log.warning("Final memory auto-save failed", exc_info=True)
         break
 
     result.text = text_buffer.strip() or f"({rc.label}: no response)"

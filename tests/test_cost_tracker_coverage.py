@@ -407,3 +407,23 @@ class TestLoadAll:
              patch("luckyd_code.cost_tracker._LEGACY_COST_FILE", legacy_file):
             records = CostTracker._load_all()
         assert records == []
+
+
+class TestWriteTotalWarning:
+    """_write_total should log a WARNING (not swallow silently) on failure."""
+
+    def test_write_total_logs_warning_on_ioerror(self, tmp_path, caplog):
+        import logging
+        # Point _TOTALS_FILE at a path whose parent does NOT exist and cannot
+        # be created (simulate by making the parent a file, not a directory).
+        fake_parent = tmp_path / "is_a_file.txt"
+        fake_parent.write_text("blocker")
+        bad_totals = fake_parent / "costs_total.json"  # parent is a file → mkdir will fail
+
+        with patch("luckyd_code.cost_tracker._TOTALS_FILE", bad_totals), \
+             caplog.at_level(logging.WARNING, logger="luckyd_code.cost_tracker"):
+            CostTracker._write_total(1.23)
+
+        assert any("persist cost total" in r.message for r in caplog.records), (
+            "Expected a WARNING about failing to persist the cost total, but none was emitted"
+        )

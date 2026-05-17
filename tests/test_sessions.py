@@ -93,3 +93,21 @@ class TestSessions:
             with patch("luckyd_code.sessions.SESSIONS_DIR", sessions_dir):
                 result = delete_session("nonexistent")
                 assert "not found" in result
+
+    def test_list_sessions_corrupted_file_logs_warning(self, caplog):
+        """Corrupted session files should log a WARNING, not fail silently."""
+        import logging
+        with tempfile.TemporaryDirectory() as tmp:
+            sessions_dir = Path(tmp) / "sessions"
+            sessions_dir.mkdir(parents=True)
+            # Write a malformed JSON file
+            (sessions_dir / "bad_session.json").write_text("NOT VALID JSON", encoding="utf-8")
+            with patch("luckyd_code.sessions.SESSIONS_DIR", sessions_dir), \
+                 caplog.at_level(logging.WARNING, logger="luckyd_code.sessions"):
+                result = list_sessions()
+            # The stub entry should still appear in the listing
+            assert "bad_session" in result
+            # A warning must have been emitted
+            assert any("bad_session.json" in r.message for r in caplog.records), (
+                "Expected a warning about the corrupted session file"
+            )

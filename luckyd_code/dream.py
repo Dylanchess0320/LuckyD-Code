@@ -202,7 +202,13 @@ class DreamCycle:
         """Ask the LLM to synthesise a cluster of memories into one.
 
         Returns (merged_name, merged_content).
+        Raises ImportError if the ``openai`` package is not installed.
         """
+        if OpenAI is None:  # pragma: no cover
+            raise ImportError(
+                "autoDream LLM merge requires the 'openai' package. "
+                "Install it with: pip install openai"
+            )
         import httpx
 
         parts: list[str] = []

@@ -179,16 +179,13 @@ exclude = [
     # Optional extras that require heavy third-party stubs
     "luckyd_code/tools/browser\\.py",
     # ── Modules not yet fully annotated (incremental — remove as each is cleaned) ──
-    # Core runtime
+    # Core runtime  (_agent_loop.py, context.py, orchestrator.py fully typed — removed 2026-05-17)
     "luckyd_code/api\\.py",
     "luckyd_code/background\\.py",
-    "luckyd_code/context\\.py",
-    "luckyd_code/orchestrator\\.py",
     "luckyd_code/plugins\\.py",
     "luckyd_code/sandbox\\.py",
     "luckyd_code/subagents\\.py",
     "luckyd_code/web_app\\.py",
-    "luckyd_code/_agent_loop\\.py",
     "luckyd_code/__init__\\.py",
     "luckyd_code/__main__\\.py",
     # Feature modules
@@ -212,3 +209,12 @@ exclude = [
     "luckyd_code/tools/",
     "luckyd_code/web_routes/",
 ]
+
+[tool.pydocstyle]
+convention = "numpy"
+add-ignore = ["D100", "D104", "D105", "D107"]
+match = "(?!test_|conftest).*\.py"
+match-dir = "luckyd_code"
+# CLI entry-points and optional-dep modules are excluded from docstring checks
+# for the same reasons they are excluded from mypy.
+add-select = ["D417"]

@@ -6,9 +6,16 @@ as structured Markdown files in the project data directory for persistence acros
 """
 
 import json
+import logging
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
+from typing import TYPE_CHECKING
 from ._data_dir import project_data_path
+
+_log = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from ._agent_loop import _AgentConfig as _PlanConfig
 
 
 # ------------------------------------------------------------------ #
@@ -105,8 +112,11 @@ def load_plan(name: str) -> "Plan | None":
                 created_at=data.get("created_at", ""),
                 updated_at=data.get("updated_at", ""),
             )
-        except Exception:
-            pass
+        except Exception as exc:
+            _log.warning(
+                "load_plan: failed to deserialise plan '%s' from JSON: %s",
+                name, exc, exc_info=True,
+            )
     return None
 
 
@@ -194,7 +204,7 @@ Guidelines:
 """
 
 
-def ai_create_plan(name: str, goal: str, config) -> Plan:  # pragma: no cover
+def ai_create_plan(name: str, goal: str, config: "_PlanConfig") -> Plan:  # pragma: no cover
     """Use the DeepSeek API to decompose a goal into a structured Plan.
 
     Falls back to a minimal placeholder plan if the API call fails.

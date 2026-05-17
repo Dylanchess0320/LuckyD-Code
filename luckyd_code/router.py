@@ -94,12 +94,12 @@ HEAVY_TOOL_CALL_THRESHOLD = 8  # After N tool calls, escalate to tier 4
 
 # LLM classifier timeout — how long the main thread waits for the background
 # LLM classification call before falling back to the heuristic result.
-# At 0.0 s the background thread fires but the result is *always* discarded
-# on the first call (only cached copies are useful), making smart routing
-# heuristic-only in practice. 0.4 s gives the fast flash model enough time
-# to respond on a low-latency connection while still being imperceptible to
-# the user. Raise to 1.0–2.0 s on high-latency API endpoints.
-_LLM_CLASSIFY_TIMEOUT = 0.4
+# Configurable via the LDC_LLM_CLASSIFY_TIMEOUT environment variable (seconds).
+# Default: 0.4 s — enough for a fast flash model on a low-latency connection.
+# Raise to 1.0–2.0 on high-latency API endpoints.
+_LLM_CLASSIFY_TIMEOUT: float = float(
+    os.environ.get("LDC_LLM_CLASSIFY_TIMEOUT", "0.4")
+)
 
 # Shared thread pool for background LLM classification calls (daemon so it
 # doesn't block process exit).
@@ -107,6 +107,18 @@ _classify_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="route
 # Ensure the pool is cleanly shut down at process exit (non-blocking so the
 # main thread is never held waiting for in-flight classification calls).
 atexit.register(_classify_executor.shutdown, wait=False)
+
+
+# ------------------------------------------------------------------
+# File-size tier result cache — avoids reopening the same files on
+# every call to classify_tier() within the same session.
+# Key: MD5(cwd + "\x00" + text). Value: tier int.
+# Protected by _file_tier_cache_lock (written/read from multiple threads).
+# Capped at _FILE_TIER_CACHE_MAX entries to bound memory use.
+# ------------------------------------------------------------------
+_file_tier_cache: dict[str, int] = {}
+_file_tier_cache_lock = threading.Lock()
+_FILE_TIER_CACHE_MAX = 512
 
 
 def _file_size_tier(text: str) -> int:
@@ -117,6 +129,12 @@ def _file_size_tier(text: str) -> int:
     into reading arbitrary paths (e.g. ``../../.env``) embedded in their prompt.
     """
     cwd = os.path.realpath(os.getcwd())
+    cache_key = hashlib.md5(f"{cwd}\x00{text}".encode("utf-8", errors="replace")).hexdigest()
+
+    with _file_tier_cache_lock:
+        if cache_key in _file_tier_cache:
+            return _file_tier_cache[cache_key]
+
     paths = re.findall(r'[\w./\\-]+\.\w{1,5}', text)
     max_tier = 1
     for p in paths:
@@ -136,6 +154,13 @@ def _file_size_tier(text: str) -> int:
                     max_tier = max(max_tier, 2)
         except OSError:
             pass
+    with _file_tier_cache_lock:
+        if len(_file_tier_cache) >= _FILE_TIER_CACHE_MAX:
+            oldest = list(_file_tier_cache.keys())[:64]
+            for k in oldest:
+                del _file_tier_cache[k]
+        _file_tier_cache[cache_key] = max_tier
+
     return max_tier
 
 

@@ -1,6 +1,7 @@
 """Session save/load — persist and restore conversations."""
 
 import json
+import logging
 import os
 from datetime import datetime
 
@@ -11,6 +12,7 @@ from ._data_dir import data_path
 __all__ = ["save_session", "load_session", "list_sessions", "delete_session"]
 
 SESSIONS_DIR = data_path("sessions")
+_log = logging.getLogger(__name__)
 
 
 def _ensure_dir() -> None:
@@ -93,6 +95,10 @@ def list_sessions() -> str:
                 "count": data.get("message_count", 0),
             })
         except Exception:
+            _log.warning(
+                "list_sessions: could not parse session file '%s' — using stub entry",
+                path.name, exc_info=True,
+            )
             sessions.append({"name": path.stem, "saved_at": "unknown", "count": 0})
 
     if not sessions:
@@ -111,6 +117,6 @@ def delete_session(name: str) -> str:
     safe = _sanitize_name(name)
     path = SESSIONS_DIR / f"{safe}.json"
     if path.exists():
-        path.unlink()  # pragma: no cover
-        return f"Session '{name}' deleted"  # pragma: no cover
+        path.unlink()
+        return f"Session '{name}' deleted"
     return f"Session '{name}' not found"

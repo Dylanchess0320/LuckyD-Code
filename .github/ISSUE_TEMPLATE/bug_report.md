@@ -23,7 +23,7 @@ What actually happened. Include the full error message/traceback if applicable.
 ## Environment
 - OS: [e.g. Windows 11 / macOS 14 / Ubuntu 22.04]
 - Python version: [e.g. 3.12]
-- DeepSeek Code version: [run `/version` inside the app]
+- LuckyD Code version: [run `luckyd-code --version` or `/version` inside the app]
 - Install method: [pip / source]
 
 ## Additional context

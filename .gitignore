@@ -59,6 +59,8 @@ out.txt
 fail_output.txt
 full_test_output.txt
 test_output.txt
+ceiling_run.txt
+cov_out.txt
 hs_test.txt
 test_debug.txt
 test_out.txt
@@ -66,6 +68,12 @@ test_out.txt
 debug_*
 _debug_*.py
 _cleanup_*.py
+
+# One-off scripts that should never be committed
+_del_nul.py
+
+# Root-level convenience scripts (canonical copies live in scripts/)
+/gitpush.bat
 
 # Binary installers (too large for GitHub)
 installers/*.exe

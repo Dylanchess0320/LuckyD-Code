@@ -117,7 +117,7 @@ class Config:
                         return line.split("=", 1)[1].strip("\"'")
                     if line.startswith("DEEPSEEK_API_KEY=") and self.provider == "deepseek":
                         return line.split("=", 1)[1].strip("\"'")
-            except Exception:
+            except (OSError, UnicodeDecodeError, ValueError):
                 get_logger().warning("Could not read .env file: %s", path, exc_info=True)
 
         # Fallback: environment variables (provider-specific first, then legacy)

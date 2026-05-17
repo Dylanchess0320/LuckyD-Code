@@ -126,7 +126,7 @@ class CostTracker:
             _TOTALS_FILE.parent.mkdir(parents=True, exist_ok=True)
             _TOTALS_FILE.write_text(json.dumps({"total": total}), encoding="utf-8")
         except Exception:
-            pass
+            _logger.warning("Failed to persist cost total to sidecar file", exc_info=True)
 
     def get_stats(self) -> str:
         inp, out = self.get_session_tokens()

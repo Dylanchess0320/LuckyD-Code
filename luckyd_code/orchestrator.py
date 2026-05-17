@@ -9,9 +9,10 @@ from rich.console import Console
 
 from .context import ConversationContext
 from .tools import get_default_registry
-from ._agent_loop import run_agent_loop
+from ._agent_loop import run_agent_loop, _AgentConfig, ToolRegistryProtocol
 
 _console = Console()
+_log = __import__("logging").getLogger(__name__)
 
 __all__ = ["AgentHandoff", "Coordinator"]
 
@@ -92,7 +93,7 @@ the user actually asked.""",
 class AgentHandoff:
     """Hand off a subtask to a specialized agent and get results back."""
 
-    def __init__(self, config):
+    def __init__(self, config: _AgentConfig) -> None:
         self.config = config
 
     def handoff(self, role: str, task: str,
@@ -123,7 +124,7 @@ class AgentHandoff:
 class Coordinator:
     """Break down tasks and distribute across specialized agents."""
 
-    def __init__(self, config):
+    def __init__(self, config: _AgentConfig) -> None:
         self.config = config
         self.handoff = AgentHandoff(config)
 
@@ -158,7 +159,8 @@ class Coordinator:
                     try:
                         parallel_results[role] = future.result()
                     except Exception as e:
-                        parallel_results[role] = f"Error: {e}"
+                        _log.error("Agent '%s' raised an exception: %s", role, e, exc_info=True)
+                        parallel_results[role] = f"[ORCHESTRATION ERROR — {type(e).__name__}: {e}]"
             results.update(parallel_results)
             if "researcher" in results:
                 report_parts.append(f"\n## Research Findings\n{results['researcher']}\n")
@@ -216,7 +218,8 @@ class Coordinator:
                 try:
                     results[role] = future.result()
                 except Exception as e:
-                    results[role] = f"Error: {e}"
+                    _log.error("Agent '%s' raised an exception: %s", role, e, exc_info=True)
+                    results[role] = f"[ORCHESTRATION ERROR — {type(e).__name__}: {e}]"
 
         for role, result in results.items():
             report_parts.append(f"\n## {role.capitalize()} Results\n{result}\n")

@@ -1,6 +1,18 @@
 """Conversation context management with token-aware compaction."""
+from __future__ import annotations
+
 import logging
-from typing import Any
+from collections.abc import Callable
+from typing import Any, Protocol, runtime_checkable
+
+
+@runtime_checkable
+class _CompactConfig(Protocol):
+    """Minimal interface the context needs from a Config for compaction calls."""
+
+    api_key: str
+    base_url: str
+    model: str
 
 try:
     import openai
@@ -37,8 +49,13 @@ def _get_accurate_token_count(text: str) -> int:
 class ConversationContext:
     """Manages conversation history and message structure."""
 
-    def __init__(self, system_prompt: str, max_messages: int = 100,
-                 config=None, model: str = "deepseek-v4-flash"):
+    def __init__(
+        self,
+        system_prompt: str,
+        max_messages: int = 100,
+        config: _CompactConfig | None = None,
+        model: str = "deepseek-v4-flash",
+    ) -> None:
         self.messages: list[dict[str, Any]] = [
             {"role": "system", "content": system_prompt}
         ]
@@ -49,16 +66,39 @@ class ConversationContext:
         # DeepSeek V4 Flash and V4 Pro both support 1M context windows.
         # Compacting much earlier (150K) keeps the context lean, reducing
         # per-request token costs dramatically for long sessions.
-        self._token_compact_threshold = 150_000
+        self._token_compact_threshold: int = 150_000
+
+    # ------------------------------------------------------------------
+    # Public property so other modules never reach into private state.
+    # ------------------------------------------------------------------
+
+    @property
+    def token_compact_threshold(self) -> int:
+        """Token count at which auto-compaction is triggered. Settable."""
+        return self._token_compact_threshold
+
+    @token_compact_threshold.setter
+    def token_compact_threshold(self, value: int) -> None:
+        if value < 1:
+            raise ValueError(
+                f"token_compact_threshold must be positive, got {value}"
+            )
+        self._token_compact_threshold = value
 
     def add_user_message(self, content: str) -> None:
         self.messages.append({"role": "user", "content": content})
         self._maybe_trim()
         # Token-aware auto-compaction: prevent silent context window overflow
         if self._config is not None and self.estimate_tokens() > self._token_compact_threshold:
-            self.compact(self._config, self._model, keep_last=5)
+            self.compact(self._config, keep_last=5)
 
-    def add_assistant_message(self, content: str | None = None, tool_calls: list[dict[str, Any]] | None = None, reasoning_content: str | None = None) -> None:
+
+    def add_assistant_message(
+        self,
+        content: str | None = None,
+        tool_calls: list[dict[str, Any]] | None = None,
+        reasoning_content: str | None = None,
+    ) -> None:
         msg: dict[str, Any] = {"role": "assistant"}
         if content is not None:
             msg["content"] = content
@@ -143,15 +183,21 @@ class ConversationContext:
             system = self.messages[0]
             self.messages = [system]
 
-    def compact(self, config, model: str, keep_last: int = 5,
-                on_compact=None) -> str:  # noqa: ANN001
-        """Compact conversation by summarizing older messages using the model."""
-        if len(self.messages) <= keep_last + 1:
-            return "Nothing to compact"
+    # ------------------------------------------------------------------
+    # Compaction — network concern isolated in _fetch_summary()
+    # ------------------------------------------------------------------
 
-        system = self.messages[0]
-        keep = self.messages[-keep_last:]
-        compact_targets = self.messages[1:-keep_last]
+    def _fetch_summary(
+        self,
+        config: _CompactConfig,
+        compact_targets: list[dict[str, Any]],
+    ) -> str:
+        """Call the LLM to produce a concise summary of *compact_targets*.
+
+        Separated from :meth:`compact` so state-management logic and network
+        I/O live in different methods (single-responsibility principle).
+        """
+        import httpx  # lazy — only pay the import cost when compacting
 
         summary_text = "\n".join(
             f"{m['role']}: {str(m.get('content', ''))[:400]}"
@@ -161,43 +207,66 @@ class ConversationContext:
             )
             for m in compact_targets
         )
-
         summary_prompt = (
             "Summarize the following conversation history concisely. "
             "Capture key decisions, code changes, file paths, and the user's goals:"
             f"\n\n{summary_text}"
         )
 
+        flash_id = "deepseek-v4-flash"
+        compact_model = config.model or flash_id
+        # Reasoner models don't summarise well — fall back to Flash.
+        if "reason" in compact_model.lower():
+            compact_model = flash_id
+
+        client = openai.OpenAI(
+            api_key=config.api_key,
+            base_url=config.base_url,
+            http_client=httpx.Client(timeout=30),
+        )
+        response = client.chat.completions.create(
+            model=compact_model,
+            messages=[{"role": "user", "content": summary_prompt}],
+            max_tokens=500,
+        )
+        return response.choices[0].message.content or ""
+
+    def compact(
+        self,
+        config: _CompactConfig,
+        keep_last: int = 5,
+        on_compact: Callable[[str, int], None] | None = None,
+    ) -> str:
+        """Compact conversation by summarising older messages using the LLM.
+
+        The model used for summarisation is taken from ``config.model``
+        (falling back to Flash if the config model is a reasoner).
+        Network I/O is delegated to :meth:`_fetch_summary` so this method
+        only owns state transitions.
+        """
+        if len(self.messages) <= keep_last + 1:
+            return "Nothing to compact"
+
+        system = self.messages[0]
+        keep = self.messages[-keep_last:]
+        compact_targets = self.messages[1:-keep_last]
+
         try:
-            import httpx
-            # Use the configured model for compaction, falling back to Flash.
-            flash_id = "deepseek-v4-flash"
-            compact_model = getattr(config, "model", flash_id) or flash_id
-            # Override with Flash when the configured model is a reasoner.
-            if "reason" in compact_model.lower():
-                compact_model = flash_id
-            client = openai.OpenAI(
-                api_key=config.api_key,
-                base_url=config.base_url,
-                http_client=httpx.Client(timeout=30),
-            )
-            response = client.chat.completions.create(
-                model=compact_model,
-                messages=[{"role": "user", "content": summary_prompt}],
-                max_tokens=500,
-            )
-            summary = response.choices[0].message.content or ""
+            summary = self._fetch_summary(config, compact_targets)
         except Exception as e:
             return f"Compaction failed: {e}"
 
-        raw = [system, {
-            "role": "system",
-            "content": f"[Compacted conversation summary]: {summary}",
-        }] + keep
+        raw: list[dict[str, Any]] = [
+            system,
+            {
+                "role": "system",
+                "content": f"[Compacted conversation summary]: {summary}",
+            },
+        ] + keep
         self.messages = self._drop_orphaned_tool_messages(raw)
 
         count = len(compact_targets)
-        if callable(on_compact):
+        if on_compact is not None:
             try:
                 on_compact(summary, count)
             except Exception:

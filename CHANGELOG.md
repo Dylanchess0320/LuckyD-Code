@@ -5,6 +5,56 @@ All notable changes to LuckyD Code will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **`.github/ISSUE_TEMPLATE/good_first_issue.md`** — new issue template for first-time
+  contributors, including acceptance criteria, a definition-of-done checklist, and
+  links to CONTRIBUTING.md, ARCHITECTURE.md, and TODO.md.
+- **`[tool.pydocstyle]`** section added to `pyproject.toml` — enforces NumPy-style
+  docstrings across `luckyd_code/` (convention = numpy, excludes test files and
+  already-excluded CLI/optional-dep modules).
+
+### Changed
+- **`CONTRIBUTING.md`** — complete rewrite with a structured contributor guide:
+  quick-link table, good-first-issue guidance, how-to-add-a-tool walkthrough,
+  ceiling suite instructions, mypy graduation process, commit message format,
+  and release checklist.
+- **`tests/test_coverage_final_push.py`** — renamed to
+  `test_router_context_analytics_sandbox.py`. The new name describes the modules
+  under test (router, context, analytics/smells, sandbox, background, memory/user,
+  brain/indexer, brain/chunker) rather than the activity that produced the file.
+  Docstring updated to match. Type annotations added to callbacks throughout.
+- **`TODO.md`** — `ceiling_run.txt` note corrected (file is gitignored, not stale);
+  `pydocstyle` and `good_first_issue` items marked done.
+
+### Fixed
+- **`.github/ISSUE_TEMPLATE/bug_report.md`** — version field still said
+  "DeepSeek Code version"; corrected to "LuckyD Code version" with the right
+  command (`luckyd-code --version`).
+
+### Changed (context.py, _agent_loop.py, config.py, router.py)
+- **`context.py`**
+  public property with a validated setter.  Other modules no longer need to
+  reach into private state (`_token_compact_threshold`).
+- **`context.py`** — extracted `_fetch_summary()` from `compact()`. Network I/O
+  and state-management logic now live in separate methods (single-responsibility).
+- **`context.py`** — added `_CompactConfig` Protocol and full type annotations;
+  removed from the mypy exclusion list in `pyproject.toml`.
+- **`_agent_loop.py`** — replaced private-attribute access
+  `context._token_compact_threshold` with the new public property.
+- **`_agent_loop.py`** — added `_AgentConfig` Protocol; typed `config`,
+  `registry`, `_stream_turn`, `_process_tool_calls_turn`, and `run_agent_loop`
+  parameters fully.  Removed from the mypy exclusion list.
+- **`config.py`** — narrowed bare `except Exception` in `_resolve_api_key` to
+  `except (OSError, UnicodeDecodeError, ValueError)` so unexpected errors are
+  never silently swallowed.
+- **`router.py`** — `_file_size_tier` results are now cached in a
+  thread-safe LRU dict (up to 512 entries, keyed on cwd × prompt hash).
+  Repeated classify calls on the same prompt no longer re-open files.
+- **`router.py`** — `_LLM_CLASSIFY_TIMEOUT` is now configurable via the
+  `LDC_LLM_CLASSIFY_TIMEOUT` environment variable (default unchanged at 0.4 s).
+
 ## [1.3.3] — 2026-05-17
 
 ### Fixed
