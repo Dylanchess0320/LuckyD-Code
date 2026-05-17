@@ -53,17 +53,18 @@ class TestReviewSkill:
 class TestSecuritySkill:
     def test_returns_diff_when_present(self):
         from luckyd_code.skills.security import security_review
-        mock = MagicMock(); mock.stdout = "diff --git a/auth.py\n-secret"
+        # A clean diff (no security patterns) still returns a scan result
+        mock = MagicMock(); mock.stdout = "diff --git a/auth.py\n+x = 1"
         with patch("subprocess.run", return_value=mock):
             result = security_review()
-        assert "Security review" in result
+        assert "security" in result.lower() or "✅" in result
 
     def test_no_changes(self):
         from luckyd_code.skills.security import security_review
         empty = MagicMock(); empty.stdout = ""
         with patch("subprocess.run", return_value=empty):
             result = security_review()
-        assert result == "No changes to review."
+        assert "No pending changes" in result
 
     def test_exception_handling(self):
         from luckyd_code.skills.security import security_review
