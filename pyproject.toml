@@ -213,7 +213,7 @@ exclude = [
 [tool.pydocstyle]
 convention = "numpy"
 add-ignore = ["D100", "D104", "D105", "D107"]
-match = "(?!test_|conftest).*\.py"
+match = "(?!test_|conftest).*\\.py"
 match-dir = "luckyd_code"
 # CLI entry-points and optional-dep modules are excluded from docstring checks
 # for the same reasons they are excluded from mypy.
