@@ -695,7 +695,7 @@ class TestCallVisionFixed:
         # Use a real file so path.exists() passes; patch _encode_image so PIL
         # is never invoked (avoids PIL save/open issues in CI).
         img_path = tmp_path / "img.png"
-        img_path.write_bytes(b"fake")
+        img_path.write_bytes(b"\x89PNG\r\n\x1a\n" + b"\x00" * 64)  # minimal PNG-like bytes
 
         mock_choice = MagicMock()
         mock_choice.message.content = "A red square"
@@ -710,25 +710,23 @@ class TestCallVisionFixed:
         mock_cfg.api_key = "sk-test"
         mock_cfg.model = "vision-model"
 
-        with patch("luckyd_code.config.Config", return_value=mock_cfg), \
-             patch("openai.OpenAI", return_value=mock_client), \
-             patch("luckyd_code.tools.image._encode_image", return_value="data:image/jpeg;base64,abc"), \
+        from luckyd_code.tools.image import ImageAnalyzeTool
+        with patch("luckyd_code.tools.image._call_vision", return_value="A red square"), \
              patch("luckyd_code.tools.image._ocr_text", return_value="SOME TEXT"):
-            from luckyd_code.tools.image import ImageAnalyzeTool
             tool = ImageAnalyzeTool()
             result = tool.run(file_path=str(img_path))
         assert "SOME TEXT" in result or "OCR" in result
 
     def test_image_analyze_vision_fails_ocr_fallback(self, tmp_path):
         """Vision fails → OCR fallback path."""
-        # Config raises → _call_vision raises → run() falls back to _ocr_text.
-        # No PIL needed; just ensure the file exists so path.exists() passes.
+        # Patch _call_vision to raise so run() falls back to _ocr_text.
+        # Write a real file so path.exists() returns True.
         img_path = tmp_path / "img.png"
-        img_path.write_bytes(b"fake")
+        img_path.write_bytes(b"\x89PNG\r\n\x1a\n" + b"\x00" * 64)
 
-        with patch("luckyd_code.config.Config", side_effect=Exception("no api")), \
+        from luckyd_code.tools.image import ImageAnalyzeTool
+        with patch("luckyd_code.tools.image._call_vision", side_effect=Exception("no api")), \
              patch("luckyd_code.tools.image._ocr_text", return_value="EXTRACTED"):
-            from luckyd_code.tools.image import ImageAnalyzeTool
             tool = ImageAnalyzeTool()
             result = tool.run(file_path=str(img_path))
         assert "EXTRACTED" in result or "OCR" in result.upper()

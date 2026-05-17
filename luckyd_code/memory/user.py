@@ -12,6 +12,7 @@ Decay: low-importance memories are archived after 30 days of inactivity.
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 import threading
 import time
@@ -19,6 +20,9 @@ from pathlib import Path
 from typing import Any
 
 from .._data_dir import data_path
+
+# Module-level alias so tests can patch it
+project_data_path = data_path
 
 # ── user identity ────────────────────────────────────────────────────────────
 
@@ -75,71 +79,124 @@ def _get_st_model():  # pragma: no cover
 class UserMemory:
     """User-level persistent memory across all projects.
 
-    Each memory is a markdown file with frontmatter-like metadata
-    (importance, timestamps, access count).
+    Provides two storage APIs:
+
+    **Dict API** (new — used by tests):
+      ``save(data: dict)``   → write the entire dict to a single JSON file.
+      ``load()``             → return the stored dict (empty if missing/corrupt).
+      ``delete(key)``        → remove a single key from the JSON dict.
+      ``update(key, value)`` → update a single key in the JSON dict.
+      ``clear()``            → reset to an empty dict.
+      ``list_all()``         → return the stored dict.
+
+    **Named-memory API** (legacy — markdown files):
+      ``save(name: str, content: str, importance: int)``
+      ``load(name: str)``
+      ``delete(name: str)``  (file-based)
+      ``list_all()`` also works for the legacy store.
     """
 
     MAX_SNIPPET = 500
-    DECAY_DAYS = 30         # archive if untouched for this long
-    ARCHIVE_THRESHOLD = 3   # only archive if importance <= this
+    DECAY_DAYS = 30
+    ARCHIVE_THRESHOLD = 3
 
     def __init__(self) -> None:
+        # ── Dict / JSON store ────────────────────────────────────────────
+        self._base_dir: Path = project_data_path("user_memories")
+        self._base_dir.mkdir(parents=True, exist_ok=True)
+        self._json_file: Path = self._base_dir / "user_memories.json"
+
+        # ── Legacy markdown store ─────────────────────────────────────────
         self._mem_dir = _get_user_mem_dir()
 
-    # ── CRUD ─────────────────────────────────────────────────────────────────
+    # ── Dict API (new) ────────────────────────────────────────────────────
 
-    def save(self, name: str, content: str, importance: int = 5) -> str:
-        """Save a user-scoped memory.
+    def _load_json(self) -> dict:
+        """Load the JSON dict store. Returns {} on any error."""
+        if not self._json_file.exists():
+            return {}
+        try:
+            return json.loads(self._json_file.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError, ValueError):
+            return {}
 
-        Args:
-            name:       Short label (used as filename).
-            content:    Full content — markdown, plain text, anything.
-            importance: 1-10, where 10 is "never forget". Default 5.
+    def _save_json(self, data: dict) -> None:
+        """Persist the JSON dict store."""
+        self._json_file.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
 
-        Returns the file path.
+    def load(self, name: str | None = None) -> dict | str | None:
+        """Load memory.
+
+        * No argument → dict API: return the whole stored dict.
+        * With *name* → legacy API: return the named memory string.
         """
-        safe_name = _sanitize(name)
-        filepath = self._mem_dir / f"{safe_name}.md"
-
-        # Read existing metadata if updating
-        existing_meta = self._read_meta(filepath)
-
-        now = time.time()
-        access_count = existing_meta.get("access_count", 0)
-
-        meta = (
-            f"<!-- importance:{importance} saved:{now:.0f} "
-            f"accessed:{now:.0f} count:{access_count} -->\n"
-        )
-        filepath.write_text(meta + content, encoding="utf-8")
-        return str(filepath)
-
-    def load(self, name: str) -> str | None:
-        """Load a user memory by name, updating last_accessed."""
+        if name is None:
+            return self._load_json()
+        # Legacy path
         safe_name = _sanitize(name)
         filepath = self._mem_dir / f"{safe_name}.md"
         if not filepath.exists():
             return None
-
         raw = filepath.read_text(encoding="utf-8")
         content = self._strip_meta(raw)
-
-        # Bump access count and timestamp
         meta = self._read_meta(filepath)
-        self.save(name, content, meta.get("importance", 5))
+        # Bump access
+        self._legacy_save(name, content, meta.get("importance", 5))
         return content
 
-    def delete(self, name: str) -> bool:
-        """Delete a user memory. Returns True if it existed."""
-        safe_name = _sanitize(name)
+    def save(self, name_or_data, content: str | None = None, importance: int = 5) -> str:
+        """Save memory.
+
+        * Dict argument  → dict API: overwrite the entire JSON store.
+        * String + content args → legacy API: save a named markdown memory.
+        """
+        if isinstance(name_or_data, dict):
+            self._save_json(name_or_data)
+            return str(self._json_file)
+        # Legacy path
+        return self._legacy_save(name_or_data, content or "", importance)
+
+    def delete(self, key: str) -> Any:
+        """Delete a key from the JSON dict store.
+
+        Falls back to deleting a named markdown file if the key is not found
+        in the JSON store (backward compatibility).
+        Returns the updated dict, False, or None.
+        """
+        data = self._load_json()
+        if key in data:
+            del data[key]
+            self._save_json(data)
+            return data
+        # Legacy fallback
+        safe_name = _sanitize(key)
         filepath = self._mem_dir / f"{safe_name}.md"
         if filepath.exists():
             filepath.unlink()
             return True
         return False
 
-    def list_all(self) -> list[dict[str, Any]]:
-        """List all user memories with metadata."""
+    def update(self, key: str, value: Any) -> dict:
+        """Update a single key in the JSON dict store."""
+        data = self._load_json()
+        data[key] = value
+        self._save_json(data)
+        return data
+
+    def clear(self) -> None:
+        """Reset the JSON dict store to an empty dict."""
+        self._save_json({})
+
+    def list_all(self) -> dict | list:
+        """Return all stored memories.
+
+        If the JSON store is non-empty, return it as a dict.
+        Otherwise return the legacy list of named-memory metadata dicts.
+        """
+        json_data = self._load_json()
+        if json_data:
+            return json_data
+        # Legacy fallback
         results: list[dict[str, Any]] = []
         for f in sorted(self._mem_dir.glob("*.md")):
             meta = self._read_meta(f)
@@ -152,6 +209,22 @@ class UserMemory:
                 "access_count": meta.get("access_count", 0),
             })
         return results
+
+    # ── Legacy API (markdown files) ───────────────────────────────────────
+
+    def _legacy_save(self, name: str, content: str, importance: int = 5) -> str:
+        """Save a named markdown memory (legacy API)."""
+        safe_name = _sanitize(name)
+        filepath = self._mem_dir / f"{safe_name}.md"
+        existing_meta = self._read_meta(filepath)
+        now = time.time()
+        access_count = existing_meta.get("access_count", 0)
+        meta = (
+            f"<!-- importance:{importance} saved:{now:.0f} "
+            f"accessed:{now:.0f} count:{access_count} -->\n"
+        )
+        filepath.write_text(meta + content, encoding="utf-8")
+        return str(filepath)
 
     # ── search ───────────────────────────────────────────────────────────────
 

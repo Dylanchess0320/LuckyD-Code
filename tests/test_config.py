@@ -138,12 +138,7 @@ class TestConfig:
     def test_api_key_from_env(self):
         """API key should be read from environment variable."""
         with patch.dict(os.environ, {"DEEPSEEK_API_KEY": "env-test-key"}, clear=True):
-            # Mock Path.exists to return False for .env files so we hit the env var fallback
-            orig_exists = Path.exists
-            def mock_exists(self):
-                if self.name == ".env" or str(self).endswith(".env"):
-                    return False
-                return orig_exists(self)
-            with patch.object(Path, 'exists', mock_exists):
+            # Simulate missing .env files so _resolve_api_key falls through to env vars
+            with patch.object(Path, "read_text", side_effect=FileNotFoundError):
                 cfg = Config()
                 assert cfg.api_key == "env-test-key"

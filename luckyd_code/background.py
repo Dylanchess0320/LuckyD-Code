@@ -3,7 +3,9 @@
 import json
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
+from typing import Callable, Optional
 
 from .agent import SubAgent
 from .log import get_logger
@@ -11,6 +13,58 @@ from .log import get_logger
 from ._data_dir import data_path
 
 BACKGROUND_DIR = data_path("background")
+
+
+class BackgroundTaskRunner:
+    """Lightweight thread-pool runner for fire-and-forget background tasks.
+
+    Unlike BackgroundAgent (which wraps SubAgent), this class accepts any
+    callable and executes it on a thread pool.  It's the class the test
+    suite imports as ``BackgroundTaskRunner``.
+    """
+
+    def __init__(self, max_workers: int = 4) -> None:
+        self._pool = ThreadPoolExecutor(max_workers=max_workers)
+        self._lock = threading.Lock()
+        self._shutdown = False
+
+    def submit(
+        self,
+        fn: Callable,
+        *args,
+        on_error: Optional[Callable[[Exception], None]] = None,
+        **kwargs,
+    ) -> None:
+        """Submit a callable to run in the background thread pool.
+
+        If *on_error* is provided it will be called with the exception if
+        *fn* raises; otherwise the exception is silently logged.
+        """
+        with self._lock:
+            if self._shutdown:
+                return
+
+        def _wrapper():
+            try:
+                fn(*args, **kwargs)
+            except Exception as exc:  # noqa: BLE001
+                if on_error is not None:
+                    try:
+                        on_error(exc)
+                    except Exception:
+                        pass
+                else:
+                    get_logger().warning(
+                        "BackgroundTaskRunner: unhandled exception", exc_info=True
+                    )
+
+        self._pool.submit(_wrapper)
+
+    def shutdown(self, wait: bool = True) -> None:
+        """Stop accepting new tasks and optionally wait for pending ones."""
+        with self._lock:
+            self._shutdown = True
+        self._pool.shutdown(wait=wait)
 
 
 class BackgroundTask:

@@ -94,18 +94,17 @@ class Config:
     def _resolve_api_key(self) -> str:
         provider_env = f"{self.provider.upper()}_API_KEY"
         for path in (Path(__file__).parent.parent / ".env", Path(".env")):
-            if path.exists():
-                try:
-                    lines = path.read_text().splitlines()
-                    for line in lines:
-                        line = line.strip()
-                        # Match both DEEPSEEK_API_KEY and <PROVIDER>_API_KEY
-                        if line.startswith(f"{provider_env}="):
-                            return line.split("=", 1)[1].strip("\"'")
-                        if line.startswith("DEEPSEEK_API_KEY=") and self.provider == "deepseek":
-                            return line.split("=", 1)[1].strip("\"'")
-                except Exception:
-                    get_logger().warning("Could not read .env file: %s", path, exc_info=True)
+            try:
+                lines = path.read_text().splitlines()
+                for line in lines:
+                    line = line.strip()
+                    # Match both DEEPSEEK_API_KEY and <PROVIDER>_API_KEY
+                    if line.startswith(f"{provider_env}="):
+                        return line.split("=", 1)[1].strip("\"'")
+                    if line.startswith("DEEPSEEK_API_KEY=") and self.provider == "deepseek":
+                        return line.split("=", 1)[1].strip("\"'")
+            except Exception:
+                get_logger().warning("Could not read .env file: %s", path, exc_info=True)
 
         # Fallback: environment variables (provider-specific first, then legacy)
         key = os.environ.get(provider_env) or os.environ.get("DEEPSEEK_API_KEY")

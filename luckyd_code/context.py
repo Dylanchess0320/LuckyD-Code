@@ -2,6 +2,11 @@
 import logging
 from typing import Any
 
+try:
+    import openai
+except ImportError:  # pragma: no cover
+    openai = None  # type: ignore[assignment]
+
 _log = logging.getLogger(__name__)
 
 # Safety multiplier applied to tiktoken counts to account for the difference
@@ -87,12 +92,7 @@ class ConversationContext:
     def _drop_orphaned_tool_messages(
         messages: list[dict[str, Any]],
     ) -> list[dict[str, Any]]:
-        """Remove tool-result messages whose parent assistant tool_call is absent.
-
-        This keeps the message list valid for the DeepSeek API, which requires
-        every ``role=tool`` message to be preceded by an assistant message that
-        contains a matching ``tool_call_id`` in its ``tool_calls`` list.
-        """
+        """Remove tool-result messages whose parent assistant tool_call is absent."""
         valid_parent_ids: set = set()
         filtered: list[dict[str, Any]] = []
         for msg in messages:
@@ -104,9 +104,7 @@ class ConversationContext:
             elif role == "tool":
                 if msg.get("tool_call_id") in valid_parent_ids:
                     filtered.append(msg)
-                # orphaned tool result — silently dropped
             else:
-                # user / system messages reset parent-id tracking
                 valid_parent_ids.clear()
                 filtered.append(msg)
         return filtered
@@ -121,31 +119,20 @@ class ConversationContext:
         return len(self.messages)
 
     def estimate_tokens(self) -> int:
-        """Estimate total tokens using tiktoken (accurate) with fallback to chars/4.
-
-        Accounts for all message fields the API consumes: content, tool_calls,
-        reasoning_content, and tool_call_ids.
-        """
+        """Estimate total tokens using tiktoken (accurate) with fallback to chars/4."""
         total = 0
         for msg in self.messages:
             content = str(msg.get("content", ""))
             total += _get_accurate_token_count(content)
-            # Account for tool_calls in assistant messages
             for tc in msg.get("tool_calls", []):
                 fn = tc.get("function", {})
                 total += _get_accurate_token_count(str(fn.get("name", "")))
                 total += _get_accurate_token_count(str(fn.get("arguments", "")))
-            # Account for tool_call_id in tool messages
             if msg.get("tool_call_id"):
                 total += 5
-            # DeepSeek reasoning_content (thinking blocks) — preserved across
-            # multi-turn conversations and required by the API.  These can be
-            # surprisingly large (hundreds of tokens per assistant turn) and
-            # were previously invisible to the compaction threshold.
             reasoning = msg.get("reasoning_content", "")
             if reasoning:
                 total += _get_accurate_token_count(str(reasoning))
-            # Role overhead (~5 tokens per message)
             total += 5
         return total
 
@@ -158,11 +145,7 @@ class ConversationContext:
 
     def compact(self, config, model: str, keep_last: int = 5,
                 on_compact=None) -> str:  # noqa: ANN001
-        """Compact conversation by summarizing older messages using the model.
-
-        If *on_compact* is a callable, it is invoked with
-        ``(summary_text, compacted_count)`` after a successful compaction.
-        """
+        """Compact conversation by summarizing older messages using the model."""
         if len(self.messages) <= keep_last + 1:
             return "Nothing to compact"
 
@@ -186,17 +169,14 @@ class ConversationContext:
         )
 
         try:
-            from openai import OpenAI
             import httpx
             # Use the configured model for compaction, falling back to Flash.
-            # Always prefer Flash — it's fast and cheap for summarisation.
             flash_id = "deepseek-v4-flash"
             compact_model = getattr(config, "model", flash_id) or flash_id
-            # Override with Flash when the configured model is a reasoner —
-            # summarisation doesn't benefit from chain-of-thought.
+            # Override with Flash when the configured model is a reasoner.
             if "reason" in compact_model.lower():
                 compact_model = flash_id
-            client = OpenAI(
+            client = openai.OpenAI(
                 api_key=config.api_key,
                 base_url=config.base_url,
                 http_client=httpx.Client(timeout=30),

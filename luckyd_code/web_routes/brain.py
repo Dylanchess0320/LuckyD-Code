@@ -3,12 +3,19 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
+try:
+    from ..brain import KnowledgeGraph, Retriever, VectorIndexer, rebuild_project
+except Exception:  # pragma: no cover
+    KnowledgeGraph = None  # type: ignore[assignment]
+    Retriever = None  # type: ignore[assignment]
+    VectorIndexer = None  # type: ignore[assignment]
+    rebuild_project = None  # type: ignore[assignment]
+
 router = APIRouter()
 
 
 @router.get("/api/brain")
 async def brain_status(request: Request):
-    from ..brain import KnowledgeGraph, Retriever, VectorIndexer
     brain = KnowledgeGraph()
     brain.load()
 
@@ -46,7 +53,6 @@ async def brain_status(request: Request):
 
 @router.post("/api/brain/rebuild")
 async def brain_rebuild(request: Request):
-    from ..brain import rebuild_project
     import os
     result = rebuild_project(os.getcwd())
 
@@ -68,7 +74,6 @@ async def brain_search(request: Request, q: str = "", max_results: int = 5):
     if not q:
         return {"results": []}
     try:
-        from ..brain import Retriever
         r = Retriever()
         results = r.search(q, k=max_results)
         formatted = []
@@ -86,7 +91,6 @@ async def brain_search(request: Request, q: str = "", max_results: int = 5):
 @router.get("/api/brain/stats")
 async def brain_stats(request: Request):
     try:
-        from ..brain import Retriever
         r = Retriever()
         info = r.stats()
         return info
@@ -100,7 +104,6 @@ async def brain_dependents(request: Request, symbol: str = ""):
     if not symbol:
         return JSONResponse({"error": "symbol parameter required"}, status_code=400)
     try:
-        from ..brain import KnowledgeGraph
         kg = KnowledgeGraph()
         kg.load()
         deps = kg.find_dependents(symbol)

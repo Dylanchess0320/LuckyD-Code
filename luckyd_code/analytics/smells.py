@@ -293,9 +293,15 @@ class SmellDetector:
 # ── Convenience ──────────────────────────────────────────────────────────────
 
 
-def detect_smells(path: str | None = None) -> list[Smell]:
-    """Convenience: detect smells in a file or project."""
+def detect_smells(path_or_pm=None) -> list[Smell]:
+    """Convenience: detect smells in a file, project directory, or ProjectMetrics."""
     detector = SmellDetector()
+
+    # Accept a ProjectMetrics object directly
+    if isinstance(path_or_pm, ProjectMetrics):
+        return detector.detect_project(path_or_pm)
+
+    path = path_or_pm
 
     if path is None:
         # Scan whole project

@@ -15,6 +15,11 @@ import time
 from dataclasses import dataclass, field
 from typing import Any
 
+try:
+    from openai import OpenAI
+except ImportError:  # pragma: no cover
+    OpenAI = None  # type: ignore[assignment,misc]
+
 from .memory.manager import MemoryManager
 
 __all__ = ["DreamReport", "DreamCycle", "run_dream_cycle"]
@@ -198,7 +203,6 @@ class DreamCycle:
 
         Returns (merged_name, merged_content).
         """
-        from openai import OpenAI
         import httpx
 
         parts: list[str] = []

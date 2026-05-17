@@ -96,6 +96,8 @@ def _collect_files(root: Path) -> list[tuple[str, str]]:
             try:
                 text = candidate.read_text(encoding="utf-8", errors="replace")
                 snippet = text[:_MAX_FILE_CHARS]
+                if len(text) > _MAX_FILE_CHARS:
+                    snippet += f"\n... ({len(text) - _MAX_FILE_CHARS} chars truncated)"
                 collected.append((str(candidate.relative_to(root)), snippet))
                 seen_names.add(str(candidate.relative_to(root)))
             except Exception:
@@ -217,6 +219,7 @@ class ReadmeGenTool(Tool):
             readme = readme[:-3].rstrip("\n")
 
         try:
+            out.parent.mkdir(parents=True, exist_ok=True)
             out.write_text(readme, encoding="utf-8")
         except OSError as e:
             return f"Error: could not write file — {e}"

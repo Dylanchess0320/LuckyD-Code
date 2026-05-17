@@ -3,11 +3,87 @@
 import os
 import subprocess
 import threading
+from dataclasses import dataclass, field
+from typing import Optional
 
 
 SANDBOX_IMAGE = "python:3.10-slim"
 SANDBOX_MEM_LIMIT = "512m"
 SANDBOX_CPU_LIMIT = "1.0"
+
+# Supported language → interpreter mapping
+_LANGUAGE_INTERPRETERS: dict[str, list[str]] = {
+    "python": ["python3", "-c"],
+    "javascript": ["node", "-e"],
+    "ruby": ["ruby", "-e"],
+    "sh": ["sh", "-c"],
+    "bash": ["bash", "-c"],
+}
+
+
+@dataclass
+class SandboxResult:
+    """Result from a sandboxed code execution."""
+    success: bool = False
+    stdout: str = ""
+    stderr: str = ""
+    returncode: int = -1
+    error: Optional[str] = None
+
+
+def run_sandboxed(
+    code: str,
+    language: str = "python",
+    timeout: int = 30,
+) -> SandboxResult:
+    """Run code in a sandboxed subprocess.
+
+    Args:
+        code:     Source code to execute.
+        language: Language name ("python", "javascript", etc.).
+        timeout:  Max execution time in seconds.
+
+    Returns a SandboxResult with success/stdout/stderr/error.
+    """
+    lang = language.lower()
+    if lang not in _LANGUAGE_INTERPRETERS:
+        return SandboxResult(
+            success=False,
+            error=f"Unsupported language: {language!r}. Supported: {list(_LANGUAGE_INTERPRETERS)}",
+        )
+
+    cmd_prefix = _LANGUAGE_INTERPRETERS[lang]
+    cmd = cmd_prefix + [code]
+
+    try:
+        proc = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+        return SandboxResult(
+            success=proc.returncode == 0,
+            stdout=proc.stdout,
+            stderr=proc.stderr,
+            returncode=proc.returncode,
+            error=proc.stderr.strip() if proc.returncode != 0 else None,
+        )
+    except subprocess.TimeoutExpired:
+        return SandboxResult(
+            success=False,
+            error=f"Execution timed out after {timeout}s",
+        )
+    except FileNotFoundError as exc:
+        return SandboxResult(
+            success=False,
+            error=f"Interpreter not found: {exc}",
+        )
+    except Exception as exc:
+        return SandboxResult(
+            success=False,
+            error=str(exc),
+        )
 
 
 def check_docker() -> tuple[bool, str]:

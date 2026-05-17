@@ -23,6 +23,16 @@ import urllib.parse
 import webbrowser
 from datetime import datetime, timezone
 
+try:
+    from . import settings
+except Exception:  # pragma: no cover
+    settings = None  # type: ignore[assignment]
+
+try:
+    from .log import get_logger
+except Exception:  # pragma: no cover
+    get_logger = None  # type: ignore[assignment]
+
 # --- Globals ----------------------------------------------------------------
 
 GITHUB_ISSUES_URL = (
@@ -304,8 +314,6 @@ def capture_unhandled(exc: BaseException) -> bool:
 def _get_reporting_mode() -> str:
     """Read the ``error_reporting`` setting (case-insensitive)."""
     try:
-        from . import settings  # noqa: PLC0415
-
         s = settings.load_settings()
         val = str(s.get("error_reporting", "ask")).strip().lower()
         if val in ("off", "log", "ask"):
@@ -338,7 +346,6 @@ def _get_autonomous_mode() -> str:
     ────────────  ───────────────────────────────────────────────────
     """
     try:
-        from . import settings  # noqa: PLC0415
         s = settings.load_settings()
         val = str(s.get("autonomous_improvement", "fix")).strip().lower()
         if val in ("off", "analyze", "fix", "full"):
@@ -494,8 +501,6 @@ def capture_and_log_only(exc: BaseException) -> None:
 
     Useful for background threads / daemons where interaction is impossible.
     """
-    from .log import get_logger
-
     data = sanitize_traceback(exc)
     get_logger().error(
         "Unhandled error: %s: %s",

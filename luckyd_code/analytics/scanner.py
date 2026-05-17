@@ -63,6 +63,10 @@ class FileMetrics:
     complexity: int = 0  # rough cyclomatic
     max_indent: int = 0
     imports_count: int = 0
+    # Additional fields expected by tests
+    max_function_length: int = 0
+    has_tests: bool = False
+    import_count: int = 0  # alias for imports_count
 
 
 @dataclass
@@ -75,23 +79,23 @@ class ProjectMetrics:
     source_files: int = 0
     total_lines: int = 0
     total_code_lines: int = 0
+    total_comments: int = 0
+    total_blank: int = 0
     total_todos: int = 0
     total_fixmes: int = 0
     total_functions: int = 0
     total_classes: int = 0
     total_complexity: int = 0
     total_size_bytes: int = 0
+    max_complexity: int = 0
     file_metrics: list[FileMetrics] = field(default_factory=list)
     todos: list[dict[str, Any]] = field(default_factory=list)
     files_by_language: dict[str, int] = field(default_factory=dict)
     complexity_breakdown: dict[str, int] = field(default_factory=dict)
     smells: list[dict[str, Any]] = field(default_factory=list)
 
-    @property
-    def avg_complexity(self) -> float:
-        if self.total_functions == 0:
-            return 0.0
-        return self.total_complexity / self.total_functions
+    avg_complexity: float = 0.0
+    health_score: float = 0.0
 
     @property
     def todo_rate(self) -> float:
@@ -99,22 +103,21 @@ class ProjectMetrics:
             return 0.0
         return self.total_todos / (self.total_code_lines / 1000)
 
-    @property
-    def health_score(self) -> float:
-        """Heuristic health score from 0 (worst) to 100 (best)."""
+    def _compute_derived(self) -> None:
+        """Recompute avg_complexity and health_score from current totals."""
+        self.avg_complexity = (
+            self.total_complexity / self.total_functions
+            if self.total_functions > 0 else 0.0
+        )
         score = 100.0
-        # Penalize high TODO rates
         score -= min(15, self.todo_rate * 5)
-        # Penalize high complexity
         score -= min(15, max(0, self.avg_complexity - 5) * 2)
-        # Penalize large files
         if self.source_files > 0:
             avg_lines = self.total_lines / self.source_files
             score -= min(10, max(0, (avg_lines - 300) / 50))
-        # Penalize very large codebases with no organization
         if self.source_files > 100 and len(self.files_by_language) < 2:
             score -= 5
-        return max(0, round(score, 1))
+        self.health_score = max(0.0, round(score, 1))
 
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
@@ -410,6 +413,7 @@ class CodebaseScanner:
 
             pm.total_files += len(filenames)
 
+        pm._compute_derived()
         return pm
 
     def scan_file(self, file_path: str) -> FileMetrics | None:

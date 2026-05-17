@@ -5,6 +5,8 @@ import time
 from dataclasses import asdict
 from pathlib import Path
 
+from .scanner import scan_project
+
 
 
 def _format_size(b):
@@ -172,7 +174,6 @@ class ReportGenerator:
 def generate_report(pm=None, smells=None, fmt="terminal", output_path=None):
     """Generate a report from metrics. Scans if none provided."""
     if pm is None:
-        from .scanner import scan_project
         pm = scan_project()
 
     if smells is None:
