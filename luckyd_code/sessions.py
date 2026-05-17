@@ -13,7 +13,7 @@ __all__ = ["save_session", "load_session", "list_sessions", "delete_session"]
 SESSIONS_DIR = data_path("sessions")
 
 
-def _ensure_dir():
+def _ensure_dir() -> None:
     SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
 
 

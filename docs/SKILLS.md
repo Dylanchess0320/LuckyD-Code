@@ -29,12 +29,19 @@ to paste into a review prompt or display directly.
 ### `security` — Security Review
 
 **Module:** `luckyd_code/skills/security.py`
-**Entry point:** `security_review() -> str`
+**Entry points:** `security_review() -> str`, `SecurityFinding` dataclass
 
-Fetches the same git diff as the code-review skill but frames the output for
-a security-focused analysis. Intended to be fed into a follow-up LLM prompt
-that checks for injections, path traversals, secret exposure, and other
-security concerns.
+Scans added lines in the current git diff for common security anti-patterns
+using regex-based static analysis. No network calls, no LLM — runs instantly.
+
+**Detects:**
+| Severity | Patterns |
+|----------|----------|
+| 🔴 HIGH | Hardcoded API keys/tokens, `eval()`/`exec()`, `os.system()`, `shell=True`, SQL string interpolation |
+| 🟡 MEDIUM | `pickle.loads()`, path traversal (`../`) |
+| 🔵 LOW | Insecure HTTP URLs, `random.randint` for security, MD5, hardcoded absolute paths |
+
+Returns a severity-sorted report with file + line context for each finding.
 
 **Used by:** `/review --security` variant (planned), `audit_daemon.py`.
 

@@ -216,13 +216,17 @@ class DreamCycle:
             + "\n\n".join(parts)
         )
 
+        # Respect the user's configured model; fall back to the default
+        # consolidation model if the config doesn't expose a model attribute.
+        model = getattr(self.config, "model", _CONSOLIDATION_MODEL) or _CONSOLIDATION_MODEL
+
         client = OpenAI(
             api_key=self.config.api_key,
             base_url=self.config.base_url,
             http_client=httpx.Client(timeout=20),
         )
         resp = client.chat.completions.create(
-            model=_CONSOLIDATION_MODEL,
+            model=model,
             messages=[{"role": "user", "content": prompt}],
             max_tokens=200,
             temperature=0.1,
