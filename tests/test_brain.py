@@ -895,7 +895,7 @@ class TestRetriever:
         # Provide an empty indexer (no data, not available)
         empty_indexer = VectorIndexer()
         empty_indexer.chunks = []
-        empty_indexer.is_available = False
+        monkeypatch.setattr(type(empty_indexer), "is_available", property(lambda self: False))
         monkeypatch.setattr(r, "_get_indexer", lambda: empty_indexer)
         monkeypatch.setattr(r, "_fallback_search", lambda q, k, f: [])
         results = r.search("something", k=5)

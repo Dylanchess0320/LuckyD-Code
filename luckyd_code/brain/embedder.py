@@ -59,11 +59,14 @@ class Embedder:
     def _load_local(self) -> bool:
         """Load sentence-transformers for local embeddings."""
         try:
+            import contextlib
+            import io
             import sentence_transformers
 
-            self._model = sentence_transformers.SentenceTransformer(
-                "all-MiniLM-L6-v2"
-            )
+            with contextlib.redirect_stderr(io.StringIO()):
+                self._model = sentence_transformers.SentenceTransformer(
+                    "all-MiniLM-L6-v2"
+                )
             self.dimension = 384
             self.model_name = "sentence-transformers/all-MiniLM-L6-v2"
             self.available = True
