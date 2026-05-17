@@ -28,7 +28,7 @@ Please **do not** open a public GitHub issue for security vulnerabilities.
 
 Instead, report them privately:
 
-1. Go to the [Security tab](https://github.com/Dylanchess0320/DeepSeek-Code/security/advisories/new) and open a private advisory, **or**
+1. Go to the [Security tab](https://github.com/Dylanchess0320/LuckyD-Code/security/advisories/new) and open a private advisory, **or**
 2. Email the maintainer directly (see GitHub profile for contact)
 
 ### What to include

@@ -5,13 +5,13 @@ Hooks are shell scripts defined in .luckyd-code/settings.local.json:
     {
       "hooks": {
         "preToolUse": {
-          "script": "echo 'About to run $DSC_TOOL_NAME'",
+          "script": "echo 'About to run $LDC_TOOL_NAME'",
           "tools": ["all"]
         },
         "postToolUse": "npm run lint-changed",
-        "preChat": "echo 'Sending request to $DSC_MODEL'",
+        "preChat": "echo 'Sending request to $LDC_MODEL'",
         "postChat": "echo 'Response received'",
-        "onSessionStart": "echo 'Session started at $DSC_TIME'",
+        "onSessionStart": "echo 'Session started at $LDC_TIME'",
         "onSessionEnd": "echo 'Session ended'"
       }
     }
@@ -19,6 +19,13 @@ Hooks are shell scripts defined in .luckyd-code/settings.local.json:
 Hooks can return JSON on their first line to control execution:
   {"allow": false}     — block the tool call (preToolUse only)
   {"env": {"K": "v"}} — update environment variables
+
+Environment variables injected into every hook script:
+  LDC_HOOK_EVENT   — the hook event name (e.g. preToolUse)
+  LDC_PROJECT_DIR  — absolute path to the project root
+  LDC_TIME         — ISO-8601 timestamp when the hook fired
+  LDC_TOOL_NAME    — (preToolUse / postToolUse only) name of the tool
+  LDC_MODEL        — (preChat only) model being used
 """
 
 import json
@@ -108,6 +115,31 @@ class HookRunner:
             return raw
         return []
 
+    def _parse_script_output(
+        self, output: str, returncode: int, stderr: str, hook_label: str
+    ) -> HookResult:
+        """Build a HookResult from subprocess output — shared by shell and Python hooks."""
+        if returncode != 0 and stderr.strip():
+            return HookResult(success=False, error=stderr.strip(), output=output.strip())
+
+        output = output.strip()
+        if output:
+            first_line = output.split("\n")[0]
+            if first_line.startswith("{"):
+                try:
+                    data = json.loads(first_line)
+                    output = "\n".join(output.split("\n")[1:])
+                    return HookResult(
+                        success=True,
+                        output=output,
+                        allow=data.get("allow", True),
+                        env_updates=data.get("env", {}),
+                    )
+                except json.JSONDecodeError:
+                    pass
+
+        return HookResult(success=True, output=output)
+
     def _execute_script(self, script: str, event: str,
                         context: Optional[dict] = None) -> HookResult:
         """Execute a single hook script and return the result.
@@ -117,13 +149,13 @@ class HookRunner:
         variables, so they work portably across platforms.
         """
         env = {
-            "DSC_HOOK_EVENT": event,
-            "DSC_PROJECT_DIR": str(get_settings_dir().parent),
-            "DSC_TIME": __import__("datetime").datetime.now().isoformat(),
+            "LDC_HOOK_EVENT": event,
+            "LDC_PROJECT_DIR": str(get_settings_dir().parent),
+            "LDC_TIME": __import__("datetime").datetime.now().isoformat(),
         }
         if context:
             for k, v in context.items():
-                env[f"DSC_{k.upper()}"] = str(v)
+                env[f"LDC_{k.upper()}"] = str(v)
 
         full_env = {**os.environ, **env}
 
@@ -141,32 +173,9 @@ class HookRunner:
                 timeout=30,
                 env=full_env,
             )
-            output = proc.stdout.strip()
-            if proc.returncode != 0 and proc.stderr.strip():
-                return HookResult(
-                    success=False,
-                    error=proc.stderr.strip(),
-                    output=output,
-                )
-
-            # Parse optional JSON directive from first line
-            if output:
-                first_line = output.split("\n")[0]
-                if first_line.startswith("{"):
-                    try:
-                        data = json.loads(first_line)
-                        output = "\n".join(output.split("\n")[1:])
-                        return HookResult(
-                            success=True,
-                            output=output,
-                            allow=data.get("allow", True),
-                            env_updates=data.get("env", {}),
-                        )
-                    except json.JSONDecodeError:
-                        pass
-
-            return HookResult(success=True, output=output)
-
+            return self._parse_script_output(
+                proc.stdout, proc.returncode, proc.stderr, event
+            )
         except subprocess.TimeoutExpired:
             return HookResult(success=False, error=f"Hook '{event}' timed out after 30s")
         except FileNotFoundError:
@@ -178,7 +187,7 @@ class HookRunner:
                            full_env: dict) -> HookResult:
         """Execute a ``.py`` hook script with the current Python interpreter.
 
-        The script receives all ``DSC_*`` environment variables and can
+        The script receives all ``LDC_*`` environment variables and can
         return JSON on its first stdout line for execution control
         (same protocol as shell hooks).
         """
@@ -193,32 +202,9 @@ class HookRunner:
                 timeout=30,
                 env=merged_env,
             )
-            output = proc.stdout.strip()
-            if proc.returncode != 0 and proc.stderr.strip():
-                return HookResult(
-                    success=False,
-                    error=proc.stderr.strip(),
-                    output=output,
-                )
-
-            # Parse optional JSON directive from first line
-            if output:
-                first_line = output.split("\n")[0]
-                if first_line.startswith("{"):
-                    try:
-                        data = json.loads(first_line)
-                        output = "\n".join(output.split("\n")[1:])
-                        return HookResult(
-                            success=True,
-                            output=output,
-                            allow=data.get("allow", True),
-                            env_updates=data.get("env", {}),
-                        )
-                    except json.JSONDecodeError:
-                        pass
-
-            return HookResult(success=True, output=output)
-
+            return self._parse_script_output(
+                proc.stdout, proc.returncode, proc.stderr, script_path.name
+            )
         except subprocess.TimeoutExpired:
             return HookResult(success=False, error=f"Python hook '{script_path.name}' timed out after 30s")
         except Exception as e:

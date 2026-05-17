@@ -4,7 +4,7 @@ import json
 import logging
 from dataclasses import dataclass, field, fields
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from ._data_dir import data_path, legacy_path
 
@@ -47,7 +47,7 @@ class UsageRecord:
 
         Rates (per 1K tokens, USD):
           deepseek-v4-flash : $0.000140 in / $0.000280 out
-          deepseek-v4-pro   : $0.001740 in / $0.003480 out  (75% discount until 2026-05-31)
+          deepseek-v4-pro   : $0.001740 in / $0.003480 out  (75% discount — verify expiry at api-docs.deepseek.com)
           deepseek-chat     : legacy alias for deepseek-v4-flash
           deepseek-reasoner : legacy alias for deepseek-v4-flash (thinking mode)
         Prices sourced from api-docs.deepseek.com/quick_start/pricing (2026-04-26)
@@ -79,7 +79,7 @@ class CostTracker:
         self._written_count: int = 0  # how many records already flushed to disk
 
     def record_usage(self, model: str, input_tokens: int, output_tokens: int,
-                     cost: Optional[float] = None) -> UsageRecord:
+                     cost: float | None = None) -> UsageRecord:
         rec = UsageRecord(
             model=model,
             input_tokens=input_tokens,

@@ -20,7 +20,6 @@ import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 
 # ------------------------------------------------------------------ #
@@ -34,7 +33,7 @@ class VerificationResult:
     passed: bool
     stage: str                   # "syntax" | "lint" | "test" | "consistency" | "task"
     message: str                 # human-readable result
-    fix_hint: Optional[str] = None  # what the model should do to fix it
+    fix_hint: str | None = None  # what the model should do to fix it
     raw_output: str = ""         # full tool output for context
     duration_ms: float = 0.0
 
@@ -80,7 +79,7 @@ def verify_syntax(file_path: str) -> VerificationResult:
         )
 
 
-def verify_lint(file_path: str, cwd: Optional[str] = None, project_root: Optional[str] = None) -> Optional[VerificationResult]:
+def verify_lint(file_path: str, cwd: str | None = None, project_root: str | None = None) -> VerificationResult | None:
     """Run ruff/flake8 on the changed file. Returns None if no linter is available.
 
     Linters are invoked from *project_root* (when provided) so they pick up
@@ -130,7 +129,7 @@ def verify_lint(file_path: str, cwd: Optional[str] = None, project_root: Optiona
     return None  # no linter available — not a failure
 
 
-def verify_consistency(file_path: str, project_root: str) -> Optional[VerificationResult]:
+def verify_consistency(file_path: str, project_root: str) -> VerificationResult | None:
     """Check that the file follows project conventions.
 
     Currently checks:
@@ -245,7 +244,7 @@ def run_verify_pipeline(
     run_lint: bool = True,
     run_consistency: bool = True,
     run_tests: bool = False,
-    test_runner_cmd: Optional[str] = None,
+    test_runner_cmd: str | None = None,
 ) -> list[VerificationResult]:
     """Run all applicable verification stages on a file.
 

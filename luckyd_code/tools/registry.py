@@ -1,5 +1,5 @@
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 # Tools in this set are read-only and safe to cache.
 # Write/Bash/Git tools are explicitly excluded — their results must never be stale.
@@ -25,13 +25,13 @@ class Tool:
 
     name: str = ""
     description: str = ""
-    parameters: Dict[str, Any] = {}
+    parameters: dict[str, Any] = {}
     permission_risk: str = "safe"  # safe | medium | high
 
     def run(self, **kwargs) -> str:
         raise NotImplementedError
 
-    def to_openai_tool(self) -> Dict[str, Any]:
+    def to_openai_tool(self) -> dict[str, Any]:
         return {
             "type": "function",
             "function": {
@@ -54,17 +54,17 @@ class ToolRegistry:
     """
 
     def __init__(self, cache_ttl: float = _DEFAULT_CACHE_TTL):
-        self._tools: Dict[str, Tool] = {}
-        self._cache: Dict[str, _CacheEntry] = {}
+        self._tools: dict[str, Tool] = {}
+        self._cache: dict[str, _CacheEntry] = {}
         self._cache_ttl = cache_ttl
 
     def register(self, tool: Tool) -> None:
         self._tools[tool.name] = tool
 
-    def get(self, name: str) -> Optional[Tool]:
+    def get(self, name: str) -> Tool | None:
         return self._tools.get(name)
 
-    def list_tools(self) -> list[Dict[str, Any]]:
+    def list_tools(self) -> list[dict[str, Any]]:
         return [t.to_openai_tool() for t in self._tools.values()]
 
     # ------------------------------------------------------------------ #
@@ -72,12 +72,12 @@ class ToolRegistry:
     # ------------------------------------------------------------------ #
 
     @staticmethod
-    def _cache_key(name: str, arguments: Dict[str, Any]) -> str:
+    def _cache_key(name: str, arguments: dict[str, Any]) -> str:
         """Stable cache key: tool name + sorted argument pairs."""
         arg_repr = ",".join(f"{k}={v!r}" for k, v in sorted(arguments.items()))
         return f"{name}|{arg_repr}"
 
-    def _get_cached(self, key: str) -> Optional[str]:
+    def _get_cached(self, key: str) -> str | None:
         entry = self._cache.get(key)
         if entry is None:
             return None
@@ -104,7 +104,7 @@ class ToolRegistry:
             self._last_evict = now
         self._cache[key] = _CacheEntry(value, self._cache_ttl)
 
-    def invalidate(self, tool_name: Optional[str] = None) -> int:
+    def invalidate(self, tool_name: str | None = None) -> int:
         """Invalidate cache entries.
 
         Args:
@@ -128,7 +128,7 @@ class ToolRegistry:
     #  Execution
     # ------------------------------------------------------------------ #
 
-    def execute(self, name: str, arguments: Dict[str, Any], check_perm=None) -> str:
+    def execute(self, name: str, arguments: dict[str, Any], check_perm=None) -> str:
         tool = self.get(name)
         if not tool:
             return f"Error: unknown tool '{name}'"

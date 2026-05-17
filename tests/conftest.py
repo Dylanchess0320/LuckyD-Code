@@ -83,10 +83,10 @@ def temp_dir():
 
 @pytest.fixture
 def temp_data_dir(monkeypatch, temp_dir):
-    """Temporary data directory, replacing ~/.deepseek-code/."""
+    """Temporary data directory, replacing ~/.luckyd-code/."""
     from luckyd_code import _data_dir
 
-    monkeypatch.setattr(_data_dir, "DATA_DIR", temp_dir / ".deepseek-code")
+    monkeypatch.setattr(_data_dir, "DATA_DIR", temp_dir / ".luckyd-code")
     monkeypatch.setattr(_data_dir, "_LEGACY_DIR", temp_dir / ".claude")
     (_data_dir.DATA_DIR).mkdir(parents=True, exist_ok=True)
     yield _data_dir.DATA_DIR
@@ -94,10 +94,10 @@ def temp_data_dir(monkeypatch, temp_dir):
 
 @pytest.fixture
 def temp_project_dir(temp_dir):
-    """Temporary project directory with .deepseek-code/ subdir."""
+    """Temporary project directory with .luckyd-code/ subdir."""
     proj = temp_dir / "project"
     proj.mkdir()
-    (proj / ".deepseek-code").mkdir()
+    (proj / ".luckyd-code").mkdir()
     return proj
 
 

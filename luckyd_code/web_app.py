@@ -2,7 +2,7 @@
 
 import time
 from collections import defaultdict
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -20,13 +20,13 @@ from .web_routes import WebAppState
 logger = get_logger()
 
 
-def create_app(config: Optional[Config] = None) -> FastAPI:
+def create_app(config: Config | None = None) -> FastAPI:
     if config is None:
         config = Config()
         try:
             config.validate()
         except ValueError as e:
-            logger.warning(f"Config validation: {e}")
+            logger.warning("Config validation: %s", e)
 
     registry = get_default_registry()
 
@@ -84,7 +84,7 @@ def create_app(config: Optional[Config] = None) -> FastAPI:
                 "role": "user",
                 "content": f"<project-context>\n{project_context}\n</project-context>",
             })
-            logger.info(f"Project indexed ({project_context.count(chr(10)) + 1} items)")
+            logger.info("Project indexed (%d items)", project_context.count(chr(10)) + 1)
 
     app = FastAPI(title="LuckyD Code")
 

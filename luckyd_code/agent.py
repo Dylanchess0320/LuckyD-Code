@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .config import Config
 from .context import ConversationContext
@@ -16,7 +16,7 @@ class SubAgent:
     """A lightweight agent that runs independently with its own context."""
 
     def __init__(self, config: Config, task: str,
-                 tools: Optional[List[Dict[str, Any]]] = None):
+                 tools: list[dict[str, Any]] | None = None):
         self.config = config
         self.task = task
         self.tools = tools

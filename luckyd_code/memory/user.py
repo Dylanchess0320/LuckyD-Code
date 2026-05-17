@@ -16,7 +16,7 @@ import re
 import threading
 import time
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from .._data_dir import data_path
 
@@ -114,7 +114,7 @@ class UserMemory:
         filepath.write_text(meta + content, encoding="utf-8")
         return str(filepath)
 
-    def load(self, name: str) -> Optional[str]:
+    def load(self, name: str) -> str | None:
         """Load a user memory by name, updating last_accessed."""
         safe_name = _sanitize(name)
         filepath = self._mem_dir / f"{safe_name}.md"
@@ -313,7 +313,7 @@ def _make_snippet(content: str, query_lower: str, context_chars: int = 120) -> s
 
 # ── module-level singleton ───────────────────────────────────────────────────
 
-_user_memory: Optional[UserMemory] = None
+_user_memory: UserMemory | None = None
 _user_memory_lock = threading.Lock()
 
 

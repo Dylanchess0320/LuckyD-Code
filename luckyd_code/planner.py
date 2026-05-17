@@ -8,7 +8,7 @@ as structured Markdown files in the project data directory for persistence acros
 import json
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import Optional
+from ._data_dir import project_data_path
 
 
 # ------------------------------------------------------------------ #
@@ -62,8 +62,6 @@ class Plan:
 #  Storage helpers
 # ------------------------------------------------------------------ #
 
-from ._data_dir import project_data_path  # noqa: E402
-
 
 def _plans_dir() -> Path:
     p = project_data_path("plans")
@@ -93,7 +91,7 @@ def save_plan(plan: Plan) -> str:
     return str(_plan_path(plan.name))
 
 
-def load_plan(name: str) -> Optional[Plan]:
+def load_plan(name: str) -> "Plan | None":
     """Load a plan from JSON (preferred) or fall back to Markdown."""
     json_path = _plan_json_path(name)
     if json_path.exists():
@@ -270,7 +268,7 @@ def ai_create_plan(name: str, goal: str, config) -> Plan:  # pragma: no cover
 #  Interactive plan approval and execution
 # ------------------------------------------------------------------ #
 
-def plan_and_approve(goal: str, config, session=None) -> Optional["Plan"]:  # pragma: no cover
+def plan_and_approve(goal: str, config, session=None) -> "Plan | None":  # pragma: no cover
     """Generate a plan with AI, show it, and ask the user to approve it.
 
     Returns the approved ``Plan`` if the user confirms, or ``None`` if

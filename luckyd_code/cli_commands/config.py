@@ -40,12 +40,14 @@ def handle_config_command(repl, args):
             return
 
         if args[1] == "provider":
-            if args[2] != "deepseek":
-                console.print("[red]Provider must be 'deepseek'[/red]")
+            from ..config import _PROVIDER_URLS
+            if args[2] not in _PROVIDER_URLS:
+                valid = ", ".join(sorted(_PROVIDER_URLS.keys()))
+                console.print(f"[red]Unknown provider '{args[2]}'. Valid: {valid}[/red]")
                 return
             repl.config.provider = args[2]
-            repl.config.base_url = "https://api.deepseek.com/v1"
-            env_key = os.environ.get("DEEPSEEK_API_KEY")
+            repl.config.base_url = _PROVIDER_URLS[args[2]]
+            env_key = os.environ.get(f"{args[2].upper()}_API_KEY")
             if env_key:
                 repl.config.api_key = env_key
             repl.config.save()

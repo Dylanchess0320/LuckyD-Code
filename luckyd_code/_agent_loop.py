@@ -23,13 +23,15 @@ import json
 import logging
 import os
 from collections import deque
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Callable, Deque, Dict, List, Optional, Any
+from typing import Any
 
 from .api import stream_chat, _repair_json
 from .context import ConversationContext
 from .memory.manager import MemoryManager
 from .memory.user import get_user_memory, UserMemory
+from .model_registry import ALL_MODELS_FLAT as _ALL_MODELS_FLAT_ESC
 
 _log = logging.getLogger(__name__)
 
@@ -43,7 +45,6 @@ _STUCK_WINDOW           = 3       # identical tool-call hashes in a row = stuck
 _TURN_BUDGET_WARN       = 3       # inject budget warning when ≤ N turns remain
 # Model escalation ladder — used when verify keeps failing.
 # Derived from model_registry models ordered by capability (cheapest first).
-from .model_registry import ALL_MODELS_FLAT as _ALL_MODELS_FLAT_ESC  # noqa: E402
 _ESCALATION_LADDER = [m.id for m in _ALL_MODELS_FLAT_ESC]
 
 
@@ -69,12 +70,12 @@ class RunConfig:
         verify_edits: bool = False,
         max_verify_retries: int = _MAX_VERIFY_RETRIES,
         run_tests: bool = False,
-        test_runner_cmd: Optional[str] = None,
+        test_runner_cmd: str | None = None,
         project_root: str = "",
-        on_text: Optional[Callable[[str], None]] = None,
-        on_tool_start: Optional[Callable[[str, int, int], None]] = None,
-        on_tool_end: Optional[Callable[[str, str], None]] = None,
-        on_verify: Optional[Callable[[str], None]] = None,
+        on_text: Callable[[str], None] | None = None,
+        on_tool_start: Callable[[str, int, int], None] | None = None,
+        on_tool_end: Callable[[str, str], None] | None = None,
+        on_verify: Callable[[str], None] | None = None,
         auto_save_memory: bool = True,
     ):
         self.max_turns           = max_turns
@@ -89,8 +90,8 @@ class RunConfig:
         self.on_tool_end         = on_tool_end
         self.on_verify           = on_verify
         self.auto_save_memory    = auto_save_memory
-        self.memory_manager: Optional[MemoryManager] = None
-        self.user_memory: Optional[UserMemory] = None
+        self.memory_manager: MemoryManager | None = None
+        self.user_memory: UserMemory | None = None
 
 
 class LoopResult:
@@ -104,7 +105,7 @@ class LoopResult:
         self.tool_calls_executed: int = 0
         self.files_modified: list[str] = []
         self.verification_passed: bool = True
-        self.escalated_model: Optional[str] = None
+        self.escalated_model: str | None = None
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
@@ -130,7 +131,7 @@ def _tool_call_hash(tc: dict) -> str:
     return hashlib.md5(f"{name}:{args}".encode("utf-8")).hexdigest()
 
 
-def _verify_write(file_path: str) -> Optional[str]:
+def _verify_write(file_path: str) -> str | None:
     """Confirm a write actually landed — return error string or None if ok."""
     try:
         stat = os.stat(file_path)
@@ -143,7 +144,7 @@ def _verify_write(file_path: str) -> Optional[str]:
         return f"Could not verify write for {file_path}: {e}"
 
 
-def _escalate_model(current_model: str) -> Optional[str]:
+def _escalate_model(current_model: str) -> str | None:
     """Return the next model up the escalation ladder, or None if at the top."""
     try:
         idx = _ESCALATION_LADDER.index(current_model)
@@ -185,8 +186,8 @@ def _execute_tool_calls_parallel(
     pending_tool_calls: list,
     registry,
     context: ConversationContext,
-    on_start: Optional[Callable[[str, int, int], None]] = None,
-    on_end: Optional[Callable[[str, str], None]] = None,
+    on_start: Callable[[str, int, int], None] | None = None,
+    on_end: Callable[[str, str], None] | None = None,
 ) -> list[str]:
     """Execute tool calls, parallelising independent read-only ones.
 
@@ -380,7 +381,7 @@ def _context_text_for_memory(context: ConversationContext) -> str:
 
 def _auto_save_turn_memory(
     mm: MemoryManager,
-    um: Optional[UserMemory],
+    um: UserMemory | None,
     context: ConversationContext,
     turn: int,
     max_turns: int,
@@ -447,7 +448,7 @@ def _stream_turn(
             if rc.on_text:
                 rc.on_text(data)
         elif event_type == "done":
-            # FIX: data is (content, reasoning) — capture both, not just data[0]
+            # data is (content, reasoning) — capture both
             turn_text, tool_reasoning = data[0], data[1]
         elif event_type == "tool_calls":
             pending_tool_calls, tool_reasoning = data
@@ -468,7 +469,7 @@ def _process_tool_calls_turn(
     active_model: str,
     rc: RunConfig,
     result: LoopResult,
-    recent_hashes: Deque[str],
+    recent_hashes: deque[str],
 ) -> tuple[bool, str]:
     """Handle tool calls: stuck detection, execution, verification.
 
@@ -532,12 +533,12 @@ def _process_tool_calls_turn(
 def run_agent_loop(
     context: ConversationContext,
     config,
-    tools: List[Dict[str, Any]],
+    tools: list[dict[str, Any]],
     registry,
     max_turns: int = 10,
     label: str = "agent",
-    on_text: Optional[Callable[[str], None]] = None,
-    run_config: Optional[RunConfig] = None,
+    on_text: Callable[[str], None] | None = None,
+    run_config: RunConfig | None = None,
 ) -> str:
     """Run the agentic loop with verification and recovery.
 
@@ -607,7 +608,7 @@ def run_agent_loop(
     active_model: str = config.model
 
     # Stuck-loop detection: track hashes of recent tool-call batches
-    recent_hashes: Deque[str] = deque(maxlen=_STUCK_WINDOW)
+    recent_hashes: deque[str] = deque(maxlen=_STUCK_WINDOW)
 
     # Budget warning: only inject once to avoid duplicate messages
     _budget_warning_sent = False

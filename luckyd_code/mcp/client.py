@@ -8,7 +8,7 @@ import json
 import logging
 import subprocess
 import time
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 logger = logging.getLogger("luckyd_code.mcp")
 
@@ -20,7 +20,7 @@ class MCPServer:
         self.name = name
         self.command = command
         self.args = args or []
-        self.process: Optional[subprocess.Popen] = None
+        self.process: subprocess.Popen | None = None
         self.tools: list[dict] = []
         self._request_id = 0
         self._max_retries = 2

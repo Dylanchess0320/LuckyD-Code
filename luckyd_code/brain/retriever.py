@@ -1,7 +1,7 @@
 """Retriever — semantic search over code chunks with fallback to substring search."""
 
 import os
-from typing import Any, Optional
+from typing import Any
 
 from ..log import get_logger
 
@@ -47,7 +47,7 @@ class Retriever:
         self,
         query: str,
         k: int = 10,
-        file_filter: Optional[str] = None,
+        file_filter: str | None = None,
         min_score: float = 0.0,
     ) -> list[dict[str, Any]]:
         indexer = self._get_indexer()
@@ -118,7 +118,7 @@ class Retriever:
         self,
         query: str,
         k: int,
-        file_filter: Optional[str],
+        file_filter: str | None,
     ) -> list[dict[str, Any]]:
         try:
             import rank_bm25
@@ -166,7 +166,7 @@ class Retriever:
         self,
         query: str,
         k: int,
-        file_filter: Optional[str],
+        file_filter: str | None,
     ) -> list[dict[str, Any]]:
         graph = self._get_graph()
         if not graph.nodes:

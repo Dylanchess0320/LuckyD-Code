@@ -37,6 +37,15 @@ concerns. Answer the question the user actually asked.
 CONFIG_FILE = data_path("config.json")
 _LEGACY_CONFIG_FILE = legacy_path("config.json")
 
+# Single source of truth for supported providers and their default base URLs.
+_PROVIDER_URLS: dict[str, str] = {
+    "deepseek": "https://api.deepseek.com/v1",
+    "openai": "https://api.openai.com/v1",
+    "groq": "https://api.groq.com/openai/v1",
+    "together": "https://api.together.xyz/v1",
+    "ollama": "http://localhost:11434/v1",
+}
+
 
 def load_config_file() -> dict[str, Any]:
     """Load persistent config from the data directory.
@@ -49,7 +58,7 @@ def load_config_file() -> dict[str, Any]:
             try:
                 return json.loads(path.read_text(encoding="utf-8"))
             except (json.JSONDecodeError, OSError) as e:
-                get_logger().warning(f"Could not load config file: {e}")
+                get_logger().warning("Could not load config file: %s", e)
     return {}
 
 
@@ -59,7 +68,7 @@ def save_config_file(config: dict):
     try:
         CONFIG_FILE.write_text(json.dumps(config, indent=2), encoding="utf-8")
     except OSError as e:
-        get_logger().warning(f"Could not save config file: {e}")
+        get_logger().warning("Could not save config file: %s", e)
 
 
 class Config:
@@ -106,17 +115,9 @@ class Config:
         """Validate config and raise ValueError with clear message on failure."""
         errors = []
 
-        # Supported providers and their default base URLs
-        _provider_urls = {
-            "deepseek": "https://api.deepseek.com/v1",
-            "openai": "https://api.openai.com/v1",
-            "groq": "https://api.groq.com/openai/v1",
-            "together": "https://api.together.xyz/v1",
-            "ollama": "http://localhost:11434/v1",
-        }
-        if self.provider not in _provider_urls:
+        if self.provider not in _PROVIDER_URLS:
             errors.append(
-                f"provider must be one of {sorted(_provider_urls.keys())} (got: {self.provider})"
+                f"provider must be one of {sorted(_PROVIDER_URLS.keys())} (got: {self.provider})"
             )
 
         if not self.api_key:
@@ -177,14 +178,7 @@ class Config:
                 # Only override base_url if none was persisted — derive it
                 # from the provider name rather than hardcoding DeepSeek.
                 if "base_url" not in load_config_file():
-                    _provider_urls = {
-                        "deepseek": "https://api.deepseek.com/v1",
-                        "openai": "https://api.openai.com/v1",
-                        "groq": "https://api.groq.com/openai/v1",
-                        "together": "https://api.together.xyz/v1",
-                        "ollama": "http://localhost:11434/v1",
-                    }
-                    cfg.base_url = _provider_urls.get(
+                    cfg.base_url = _PROVIDER_URLS.get(
                         cfg.provider, cfg.base_url
                     )
                 # Re-resolve key now that provider is set from args
@@ -197,7 +191,7 @@ class Config:
 # ---------------------------------------------------------------------------
 
 def get_api_key() -> str:
-    """Return the resolved DeepSeek API key."""
+    """Return the resolved API key for the configured provider."""
     return Config()._resolve_api_key()
 
 

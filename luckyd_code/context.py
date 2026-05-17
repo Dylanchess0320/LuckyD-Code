@@ -1,7 +1,13 @@
+"""Conversation context management with token-aware compaction."""
 import logging
-from typing import List, Dict, Any, Optional
+from typing import Any
 
 _log = logging.getLogger(__name__)
+
+# Safety multiplier applied to tiktoken counts to account for the difference
+# between OpenAI's cl100k_base encoding and DeepSeek's native tokenizer.
+# A 5% overhead prevents hitting the context window before compaction triggers.
+_TOKEN_SAFETY_FACTOR = 1.05
 
 
 def _get_accurate_token_count(text: str) -> int:
@@ -12,11 +18,10 @@ def _get_accurate_token_count(text: str) -> int:
     may be slightly off. We apply a 15% safety multiplier to avoid hitting
     the context window before compaction triggers.
     """
-    _DEEPSEEK_SAFETY_FACTOR = 1.05
     try:
         import tiktoken
         enc = tiktoken.get_encoding("cl100k_base")
-        return int(len(enc.encode(text)) * _DEEPSEEK_SAFETY_FACTOR)
+        return int(len(enc.encode(text)) * _TOKEN_SAFETY_FACTOR)
     except Exception:
         # Code is 2-3x more token-dense than prose due to symbols/indentation
         if any(c in text for c in '{}(\n') or text.count('    ') > 2:
@@ -29,7 +34,7 @@ class ConversationContext:
 
     def __init__(self, system_prompt: str, max_messages: int = 100,
                  config=None, model: str = "deepseek-v4-flash"):
-        self.messages: List[Dict[str, Any]] = [
+        self.messages: list[dict[str, Any]] = [
             {"role": "system", "content": system_prompt}
         ]
         self.max_messages = max_messages
@@ -41,14 +46,14 @@ class ConversationContext:
         # per-request token costs dramatically for long sessions.
         self._token_compact_threshold = 150_000
 
-    def add_user_message(self, content: str):
+    def add_user_message(self, content: str) -> None:
         self.messages.append({"role": "user", "content": content})
         self._maybe_trim()
         # Token-aware auto-compaction: prevent silent context window overflow
         if self._config is not None and self.estimate_tokens() > self._token_compact_threshold:
             self.compact(self._config, self._model, keep_last=5)
 
-    def add_assistant_message(self, content: Optional[str] = None, tool_calls: Optional[List[Dict[str, Any]]] = None, reasoning_content: Optional[str] = None):
+    def add_assistant_message(self, content: str | None = None, tool_calls: list[dict[str, Any]] | None = None, reasoning_content: str | None = None) -> None:
         msg: dict[str, Any] = {"role": "assistant"}
         if content is not None:
             msg["content"] = content
@@ -67,7 +72,7 @@ class ConversationContext:
         self.messages.append(msg)
         self._maybe_trim()
 
-    def add_tool_result(self, tool_call_id: str, tool_name: str, result: str):
+    def add_tool_result(self, tool_call_id: str, tool_name: str, result: str) -> None:
         self.messages.append({
             "role": "tool",
             "tool_call_id": tool_call_id,
@@ -75,13 +80,13 @@ class ConversationContext:
         })
         self._maybe_trim()
 
-    def get_messages(self) -> List[Dict[str, Any]]:
+    def get_messages(self) -> list[dict[str, Any]]:
         return self.messages
 
     @staticmethod
     def _drop_orphaned_tool_messages(
-        messages: List[Dict[str, Any]],
-    ) -> List[Dict[str, Any]]:
+        messages: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
         """Remove tool-result messages whose parent assistant tool_call is absent.
 
         This keeps the message list valid for the DeepSeek API, which requires
@@ -89,7 +94,7 @@ class ConversationContext:
         contains a matching ``tool_call_id`` in its ``tool_calls`` list.
         """
         valid_parent_ids: set = set()
-        filtered: List[Dict[str, Any]] = []
+        filtered: list[dict[str, Any]] = []
         for msg in messages:
             role = msg.get("role")
             if role == "assistant":
@@ -144,7 +149,7 @@ class ConversationContext:
             total += 5
         return total
 
-    def reset(self, system_prompt: Optional[str] = None):
+    def reset(self, system_prompt: str | None = None) -> None:
         if system_prompt:
             self.messages = [{"role": "system", "content": system_prompt}]
         else:
@@ -152,7 +157,7 @@ class ConversationContext:
             self.messages = [system]
 
     def compact(self, config, model: str, keep_last: int = 5,
-                on_compact=None) -> str:
+                on_compact=None) -> str:  # noqa: ANN001
         """Compact conversation by summarizing older messages using the model.
 
         If *on_compact* is a callable, it is invoked with
@@ -186,7 +191,6 @@ class ConversationContext:
             # Use the configured model for compaction, falling back to Flash.
             # Always prefer Flash — it's fast and cheap for summarisation.
             flash_id = "deepseek-v4-flash"
-            # FIX: removed dead duplicate assignment (previous line was always flash_id regardless)
             compact_model = getattr(config, "model", flash_id) or flash_id
             # Override with Flash when the configured model is a reasoner —
             # summarisation doesn't benefit from chain-of-thought.

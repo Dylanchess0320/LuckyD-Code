@@ -14,7 +14,7 @@ import os
 import threading
 import time
 from pathlib import Path
-from typing import Callable, Optional
+from collections.abc import Callable
 
 from .log import get_logger
 
@@ -27,12 +27,12 @@ class FileWatcher:
     """
 
     def __init__(self, root: str = "", debounce_seconds: float = 3.0,
-                 on_change: Optional[Callable[[list[str]], None]] = None):
+                 on_change: Callable[[list[str]], None] | None = None):
         self.root = Path(root or os.getcwd()).resolve()
         self.debounce_seconds = debounce_seconds
         self.on_change = on_change
         self._watchdog = None
-        self._thread: Optional[threading.Thread] = None
+        self._thread: threading.Thread | None = None
         self._stop_event = threading.Event()
         self._lock = threading.Lock()
         self._pending: set[str] = set()
@@ -40,7 +40,7 @@ class FileWatcher:
         self._poll_interval = 1.0  # seconds between polls in fallback mode
         self._use_watchdog = False
         self._paused = False
-        self._debounce_timer: Optional[threading.Timer] = None
+        self._debounce_timer: threading.Timer | None = None
 
         # Build the set of watched file extensions
         self._watched_exts = {

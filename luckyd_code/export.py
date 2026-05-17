@@ -2,10 +2,9 @@
 
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 
-def export_markdown(messages: list, filepath: Optional[str] = None) -> str:
+def export_markdown(messages: list, filepath: str | None = None) -> str:
     """Export conversation messages as markdown.
 
     Args:
@@ -52,7 +51,7 @@ def export_markdown(messages: list, filepath: Optional[str] = None) -> str:
     return output
 
 
-def export_html(messages: list, filepath: Optional[str] = None,
+def export_html(messages: list, filepath: str | None = None,
                 title: str = "Conversation Export") -> str:
     """Export conversation messages as a standalone HTML page.
 

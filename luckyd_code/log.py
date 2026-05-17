@@ -1,4 +1,4 @@
-"""Structured logging for DeepSeek Code."""
+"""Structured logging for LuckyD Code."""
 
 import sys
 import logging
@@ -42,9 +42,9 @@ def setup_logging(level: str = "INFO", log_file: str | None = None) -> logging.L
             datefmt="%H:%M:%S",
         ))
         logger.addHandler(fh)
-        logger.info(f"Logging initialized: {log_path}")
+        logger.info("Logging initialized: %s", log_path)
     except Exception as e:
-        logger.warning(f"Could not create log file: {e}")
+        logger.warning("Could not create log file: %s", e)
 
     _initialized = True
     return logger

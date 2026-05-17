@@ -347,7 +347,7 @@ def handle_command(repl, cmd: str):
             desktop = Path.home() / "OneDrive" / "Desktop"
             ts = datetime.now().strftime("%Y%m%d_%H%M%S")
             ext = "md" if fmt == "md" else "html"
-            filepath = str(desktop / f"deepseek_export_{ts}.{ext}")
+            filepath = str(desktop / f"luckyd_export_{ts}.{ext}")
         if fmt == "md":
             from ..export import export_markdown
             result = export_markdown(repl.context.messages, filepath)

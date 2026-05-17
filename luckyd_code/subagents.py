@@ -33,8 +33,8 @@ from __future__ import annotations
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
+
 from pathlib import Path
-from typing import Optional
 
 from .context import ConversationContext
 from ._agent_loop import run_agent_loop
@@ -90,7 +90,7 @@ class SubagentResult:
     """Output from running one subagent."""
     name: str
     output: str
-    error: Optional[str] = None
+    error: str | None = None
     success: bool = True
 
 
@@ -105,7 +105,7 @@ class SubagentRegistry:
     Call :meth:`reload` to pick up new files at runtime.
     """
 
-    def __init__(self, project_root: Optional[str] = None):
+    def __init__(self, project_root: str | None = None):
         self._root = Path(project_root or ".").resolve()
         self._agents_dir: Path = self._root / _CONFIG_ROOT / _AGENTS_DIR_NAME
         self._registry: dict[str, SubagentConfig] = {}
@@ -150,7 +150,7 @@ class SubagentRegistry:
     #  CRUD
     # ------------------------------------------------------------------ #
 
-    def get(self, name: str) -> Optional[SubagentConfig]:
+    def get(self, name: str) -> SubagentConfig | None:
         """Return a named agent or None if not registered."""
         self._ensure_loaded()
         return self._registry.get(name)
@@ -271,7 +271,7 @@ class SubagentRunner:
     def run_parallel(
         self,
         tasks: list[tuple[str, str]],
-        max_workers: Optional[int] = None,
+        max_workers: int | None = None,
     ) -> list[SubagentResult]:
         """Run multiple agents concurrently.
 

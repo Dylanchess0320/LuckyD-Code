@@ -16,8 +16,6 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Optional
-
 from .registry import Tool
 from .shell_detect import resolve_shell, ShellInfo
 from ..settings import load_settings
@@ -28,7 +26,7 @@ def _get_cwd() -> Path:
     return Path.cwd()
 
 # Cached shell detection result (reset on /config set shell)
-_SHELL_CACHE: Optional[ShellInfo] = None
+_SHELL_CACHE: ShellInfo | None = None
 
 
 def _get_shell() -> ShellInfo:

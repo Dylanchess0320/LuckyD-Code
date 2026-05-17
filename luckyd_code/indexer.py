@@ -3,7 +3,7 @@
 import os
 import json
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from .log import get_logger
 
@@ -134,7 +134,7 @@ def scan_project(root: Path, max_depth: int = 3, max_items: int = 80) -> dict:
     return info
 
 
-def _detect_language(ext: str) -> Optional[str]:
+def _detect_language(ext: str) -> str | None:
     mapping = {
         ".py": "Python", ".pyi": "Python",
         ".js": "JavaScript", ".jsx": "JavaScript/JSX",
@@ -266,7 +266,7 @@ def format_project_context(info: dict) -> str:
     return "\n".join(parts)
 
 
-def index_project(project_dir: str = None) -> str:
+def index_project(project_dir: str | None = None) -> str:
     """Scan a project and return formatted context. Runs in <1s."""
     if project_dir:
         root = Path(project_dir).resolve()

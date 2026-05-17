@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 
@@ -174,7 +174,7 @@ def _call_llm(
         return f"ERROR: {e}"
 
 
-def _parse_diagnosis_json(raw: str) -> Optional[dict[str, Any]]:
+def _parse_diagnosis_json(raw: str) -> dict[str, Any] | None:
     """Extract JSON from an LLM response that may have markdown fences."""
     if not raw or raw.startswith("ERROR:"):
         return None
@@ -212,7 +212,7 @@ def analyze_error(
     base_url: str = "https://api.deepseek.com/v1",
     model: str = "deepseek-v4-flash",
     project_root: str = "",
-) -> Optional[Diagnosis]:
+) -> Diagnosis | None:
     """Analyze an error with LLM-powered root cause diagnosis.
 
     Args:

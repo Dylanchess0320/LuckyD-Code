@@ -20,7 +20,7 @@ import re
 import threading
 import time
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from .._data_dir import data_path
 
@@ -47,7 +47,7 @@ def _get_st_model():  # pragma: no cover
 class MemoryManager:
     """Project-scoped persistent memory with CRUD, search, and auto-summary."""
 
-    def __init__(self, project_dir: Optional[str] = None):
+    def __init__(self, project_dir: str | None = None):
         self.project_dir = project_dir or os.getcwd()
         self.project_name = Path(self.project_dir).name
         self.mem_dir = data_path("projects", self.project_name, "memory")
@@ -89,7 +89,7 @@ class MemoryManager:
         self._update_index(name, filename, content)
         return str(filepath)
 
-    def load_memory(self, name: str, memory_type: str = "general") -> Optional[str]:
+    def load_memory(self, name: str, memory_type: str = "general") -> str | None:
         """Load a specific memory by name and type.
 
         Updates the accessed timestamp and access count on read.
@@ -118,7 +118,7 @@ class MemoryManager:
             return True
         return False
 
-    def list_memories(self, memory_type: Optional[str] = None) -> list[dict]:
+    def list_memories(self, memory_type: str | None = None) -> list[dict]:
         """List all memories, optionally filtered by type. Returns list of {name, type, path, importance}."""
         results = []
         pattern = f"{memory_type}_*.md" if memory_type else "*.md"
@@ -433,7 +433,7 @@ class MemoryManager:
 #  Module-level convenience API (backwards-compatible)
 # ------------------------------------------------------------------ #
 
-_DEFAULT_MANAGER: Optional[MemoryManager] = None
+_DEFAULT_MANAGER: MemoryManager | None = None
 _MANAGER_LOCK = threading.Lock()
 
 

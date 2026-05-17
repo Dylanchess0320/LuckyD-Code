@@ -4,7 +4,6 @@ import logging
 import os
 import sys
 import time as _time
-from typing import Optional
 
 from rich.console import Console
 
@@ -190,7 +189,7 @@ def init_prompt_session():
         return None
 
 
-def read_input(session) -> Optional[str]:
+def read_input(session) -> str | None:
     """Read a line of input from the user."""
     if session:
         try:

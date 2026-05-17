@@ -3,7 +3,6 @@
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
 
 SELF_IMPROVE_PROMPT = """You are in SELF-IMPROVEMENT MODE. Your task is to analyze and improve the LuckyD Code project's own source code.
 
@@ -112,10 +111,10 @@ class ImprovementReport:
     files_changed: list[str] = field(default_factory=list)
     diff_summary: str = ""
     commit_hash: str = ""
-    error: Optional[str] = None
+    error: str | None = None
 
 
-def _git(*args: str, cwd: Optional[str] = None) -> str:
+def _git(*args: str, cwd: str | None = None) -> str:
     """Run a git command and return stdout."""
     try:
         result = subprocess.run(
@@ -141,7 +140,7 @@ class ImprovementTracker:
         report = tracker.report()            # git diff + optional commit
     """
 
-    def __init__(self, cwd: Optional[str] = None):
+    def __init__(self, cwd: str | None = None):
         self.cwd = cwd or str(Path.cwd())
         self._branch = _git("rev-parse", "--abbrev-ref", "HEAD", cwd=self.cwd)
         self._start_hash = _git("rev-parse", "--short", "HEAD", cwd=self.cwd)

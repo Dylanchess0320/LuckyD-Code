@@ -1,6 +1,6 @@
 """LuckyD Code — AI coding assistant in your terminal."""
 
-__version__ = "1.2.2"
+__version__ = "1.2.3"
 __author__ = "LuckyD Code"
 __license__ = "MIT"
 

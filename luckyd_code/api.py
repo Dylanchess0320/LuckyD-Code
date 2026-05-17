@@ -1,9 +1,13 @@
-"""API client for DeepSeek Chat with streaming and retry logic."""
+"""API client for chat completions with streaming and retry logic.
+
+Supports DeepSeek, OpenAI, Groq, Together, and any OpenAI-compatible provider.
+"""
 
 import json
 import time
 import random
-from typing import Any, Dict, Generator, List, Optional, Tuple
+from collections.abc import Generator
+from typing import Any
 
 import httpx
 from openai import OpenAI
@@ -15,7 +19,7 @@ _RETRY_MAX = 3
 _RETRY_BASE_DELAY = 1.0
 _RETRY_MAX_DELAY = 30.0
 
-Event = Tuple[str, Any]
+Event = tuple[str, Any]
 # Event types:
 #   ("text", str)              - streamed text chunk
 #   ("tool_calls", (list, str))  - (tool_calls, reasoning_content)
@@ -76,8 +80,8 @@ def _default_test_model() -> str:  # pragma: no cover
 
 
 def _open_stream(  # pragma: no cover
-    messages: List[Dict[str, Any]],
-    tools: List[Dict[str, Any]],
+    messages: list[dict[str, Any]],
+    tools: list[dict[str, Any]],
     model: str,
     api_key: str,
     base_url: str,
@@ -108,7 +112,7 @@ def _open_stream(  # pragma: no cover
         "Content-Type": "application/json",
         "Accept": "text/event-stream",
     }
-    body: Dict[str, Any] = {
+    body: dict[str, Any] = {
         "model": model,
         "messages": _filter_messages(messages, provider),
         "max_tokens": max_tokens,
@@ -172,7 +176,7 @@ def _classify_http_error(status_code: int, detail: str) -> Exception:
     return NonRetryableError(detail)
 
 
-def _parse_sse_line(line: str) -> Optional[Dict[str, Any]]:
+def _parse_sse_line(line: str) -> dict[str, Any] | None:
     """Parse a single SSE line from a streaming response."""
     line = line.strip()
     if not line:
@@ -181,14 +185,14 @@ def _parse_sse_line(line: str) -> Optional[Dict[str, Any]]:
         return {}
     if line.startswith("data: "):
         try:
-            result: Dict[str, Any] = json.loads(line[6:])
+            result: dict[str, Any] = json.loads(line[6:])
             return result
         except json.JSONDecodeError:
             return None
     return None
 
 
-def _filter_messages(messages: List[Dict[str, Any]], provider: str = "") -> List[Dict[str, Any]]:
+def _filter_messages(messages: list[dict[str, Any]], provider: str = "") -> list[dict[str, Any]]:
     """Normalise messages for the target provider.
 
     DeepSeek: keep reasoning_content, ensure content is always set alongside it.
@@ -356,8 +360,8 @@ def _remove_trailing_commas(text: str) -> str:
 
 
 def _call_with_retry(
-    messages: List[Dict[str, Any]],
-    tools: List[Dict[str, Any]],
+    messages: list[dict[str, Any]],
+    tools: list[dict[str, Any]],
     model: str,
     api_key: str,
     base_url: str,
@@ -407,15 +411,15 @@ def _call_with_retry(
 
 
 def stream_chat(
-    messages: List[Dict[str, Any]],
-    tools: List[Dict[str, Any]],
+    messages: list[dict[str, Any]],
+    tools: list[dict[str, Any]],
     model: str,
     api_key: str,
     base_url: str = "https://api.deepseek.com/v1",
     max_tokens: int = 4096,
     temperature: float = 0.7,
     provider: str = "",
-) -> Generator[Event, None, None]:
+) -> Generator[Event, None, None]:  # type: ignore[type-arg]
     """Stream a chat completion, yielding text chunks and tool calls.
 
     Uses raw httpx (not the OpenAI SDK) so that vendor-specific fields like
@@ -440,9 +444,9 @@ def stream_chat(
         yield ("error", f"API request failed: {e}")
         return
 
-    content_parts: List[str] = []
-    reasoning_parts: List[str] = []
-    tool_call_deltas: Dict[int, Dict[str, str]] = {}
+    content_parts: list[str] = []
+    reasoning_parts: list[str] = []
+    tool_call_deltas: dict[int, dict[str, str]] = {}
 
     try:
         for raw_line in response.iter_lines():

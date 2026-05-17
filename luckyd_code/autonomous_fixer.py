@@ -102,7 +102,7 @@ def generate_fix(
 
     Args:
         diagnosis: The Diagnosis from feedback_analyzer.
-        api_key: DeepSeek API key.
+        api_key: API key for the configured provider.
         project_root: Project root directory.
         base_url: API base URL.
         model: Model to use.
@@ -400,7 +400,7 @@ def full_autonomous_pipeline(  # pragma: no cover
 
     Args:
         exc: The unhandled exception.
-        api_key: DeepSeek API key.
+        api_key: API key for the configured provider.
         project_root: Project root.
         base_url: API base URL.
         model: LLM model.

@@ -17,7 +17,7 @@ logger = get_logger()
 SKIP_DIRS = {
     ".git", "__pycache__", "node_modules", ".venv", "venv", "env",
     ".tox", ".eggs", "dist", "build", ".next", ".nuxt", "target",
-    "vendor", ".bundle", ".claude", ".deepseek-code", ".vscode", ".idea",
+    "vendor", ".bundle", ".claude", ".deepseek-code", ".luckyd-code", ".vscode", ".idea",
     ".mypy_cache", ".pytest_cache", ".ruff_cache", ".svn", ".hg",
     "egg-info", ".pixi",
 }

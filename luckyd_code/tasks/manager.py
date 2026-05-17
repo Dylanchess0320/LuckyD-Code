@@ -2,7 +2,7 @@ import uuid
 import json
 import logging
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 _logger = logging.getLogger("luckyd_code.tasks")
 
@@ -94,7 +94,7 @@ def list_tasks(status: str | None = None) -> str:
     return "\n".join(items) if items else "No matching tasks."
 
 
-def get_task(task_id: str) -> Optional[Task]:
+def get_task(task_id: str) -> Task | None:
     tasks = _load_tasks()
     if task_id not in tasks:
         return None

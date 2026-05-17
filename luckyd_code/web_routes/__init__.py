@@ -1,7 +1,7 @@
 """Shared state for web route handlers, attached to app.state.web_state."""
 
 from dataclasses import dataclass, field
-from typing import Any, Dict
+from typing import Any
 
 
 @dataclass
@@ -12,8 +12,8 @@ class WebAppState:
     registry: Any = None
     mcp: Any = None
     web_memory_mgr: Any = None
-    settings: Dict[str, Any] = field(default_factory=dict)
-    rate_limit_buckets: Dict[str, Dict[str, float]] = field(default_factory=dict)
+    settings: dict[str, Any] = field(default_factory=dict)
+    rate_limit_buckets: dict[str, dict[str, float]] = field(default_factory=dict)
     memory_module: Any = None
     brain_module: Any = None
 

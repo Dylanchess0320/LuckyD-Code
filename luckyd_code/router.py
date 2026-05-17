@@ -10,13 +10,12 @@ The router escalates up tiers as task complexity increases.
 """
 
 import hashlib
-import os as _os_router
+import os
 import re
 import atexit
 import threading
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
 from dataclasses import dataclass
-from typing import Optional
 
 from .model_registry import (
     get_models_by_tier,
@@ -98,16 +97,16 @@ def _file_size_tier(text: str) -> int:
     are opened — this prevents an adversarial user from tricking the router
     into reading arbitrary paths (e.g. ``../../.env``) embedded in their prompt.
     """
-    cwd = _os_router.path.realpath(_os_router.getcwd())
+    cwd = os.path.realpath(os.getcwd())
     paths = re.findall(r'[\w./\\-]+\.\w{1,5}', text)
     max_tier = 1
     for p in paths:
         try:
             # Resolve the candidate path and confirm it stays inside cwd
-            resolved = _os_router.path.realpath(p)
-            if not resolved.startswith(cwd + _os_router.sep) and resolved != cwd:
+            resolved = os.path.realpath(p)
+            if not resolved.startswith(cwd + os.sep) and resolved != cwd:
                 continue  # path escapes the project root — skip
-            if _os_router.path.isfile(resolved):
+            if os.path.isfile(resolved):
                 with open(resolved, errors='ignore') as fh:
                     lines = sum(1 for _ in fh)
                 if lines > 500:
@@ -268,8 +267,8 @@ def classify_tier(user_text: str, recent_tool_count: int = 0) -> int:
 
 
 def select_model(user_text: str, recent_tool_count: int = 0,
-                 preferred_model: Optional[str] = None,
-                 tier_override: Optional[int] = None) -> str:
+                 preferred_model: str | None = None,
+                 tier_override: int | None = None) -> str:
     """Select the best model based on task complexity and tool usage."""
     if tier_override is not None:
         tier = tier_override
@@ -373,7 +372,7 @@ def show_model_info() -> str:
 
 
 def show_current_routing(user_text: str, recent_tool_count: int = 0,
-                         preferred_model: Optional[str] = None) -> str:
+                         preferred_model: str | None = None) -> str:
     """Show the routing decision for a given input."""
     tier = classify_tier(user_text, recent_tool_count)
 

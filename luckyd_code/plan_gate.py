@@ -15,7 +15,6 @@ import logging
 import re
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 from .planner import ai_create_plan, save_plan
 
@@ -142,7 +141,7 @@ class PlanGate:
         self.task = task
         self.config = config
         self.interactive = interactive
-        self._result: Optional[GateResult] = None
+        self._result: GateResult | None = None
 
     # ------------------------------------------------------------------ #
     #  Core API
@@ -190,7 +189,7 @@ class PlanGate:
         ]
 
     @property
-    def plan(self) -> Optional[object]:
+    def plan(self) -> object | None:
         """Shortcut to the Plan object (None if not generated or rejected)."""
         return self._result.plan if self._result else None
 

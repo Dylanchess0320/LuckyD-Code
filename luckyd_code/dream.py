@@ -6,9 +6,6 @@ Runs during idle periods to clean accumulated session memories:
   Phase 2  Gather      — group semantically related memories by keyword overlap
   Phase 3  Consolidate — merge duplicates, resolve contradictions via LLM
   Phase 4  Prune       — archive stale / low-importance entries
-
-Inspired by the autoDream feature discovered in the Claude Code source leak,
-described as "memory consolidation modelled on human REM sleep."
 """
 
 from __future__ import annotations
@@ -16,7 +13,6 @@ from __future__ import annotations
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Optional
 
 from .memory.manager import MemoryManager
 

@@ -20,7 +20,6 @@ multiple tiers can map to the same model id without duplicating ModelDef objects
 """
 
 from dataclasses import dataclass, field
-from typing import List, Optional
 
 
 @dataclass
@@ -28,7 +27,7 @@ class ModelDef:
     id: str
     name: str
     tier: int  # primary/lowest tier this model is used for
-    strengths: List[str] = field(default_factory=list)
+    strengths: list[str] = field(default_factory=list)
     context_window: int = 1_000_000
     cost_per_1k_input: float = 0.0
     cost_per_1k_output: float = 0.0
@@ -77,7 +76,7 @@ for _tier, _mid in TIER_MODEL_MAP.items():
     _MODEL_TIERS.setdefault(_mid, []).append(_tier)
 
 
-def get_model_by_id(model_id: str) -> Optional[ModelDef]:
+def get_model_by_id(model_id: str) -> ModelDef | None:
     """Find a model definition by its ID."""
     for m in ALL_MODELS_FLAT:
         if m.id == model_id:

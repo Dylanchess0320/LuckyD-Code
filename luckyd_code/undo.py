@@ -3,7 +3,6 @@
 import json
 import logging
 from pathlib import Path
-from typing import Optional
 
 from ._data_dir import data_path
 
@@ -67,7 +66,7 @@ def push(file_path: str, original_content: str | None = None, action: str = ""):
     _save()
 
 
-def pop() -> Optional[UndoEntry]:
+def pop() -> UndoEntry | None:
     """Pop and return the last undo entry."""
     if _undo_stack:
         entry = _undo_stack.pop()
@@ -76,7 +75,7 @@ def pop() -> Optional[UndoEntry]:
     return None
 
 
-def peek() -> Optional[UndoEntry]:
+def peek() -> UndoEntry | None:
     """Peek at the last undo entry without popping."""
     if _undo_stack:
         return _undo_stack[-1]

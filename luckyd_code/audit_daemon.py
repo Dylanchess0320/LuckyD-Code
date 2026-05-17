@@ -30,7 +30,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 _log = logging.getLogger(__name__)
 
@@ -107,7 +107,7 @@ class AuditDaemon:
         self,
         config,
         project_root: str,
-        interval_minutes: Optional[int] = None,
+        interval_minutes: int | None = None,
     ):
         self.config = config
         self.project_root = Path(project_root).resolve()
@@ -125,11 +125,11 @@ class AuditDaemon:
         self._log_file = self.project_root / "luckyd_code" / "audit.log"
 
         # In-memory state
-        self.last_audit_time: Optional[datetime.datetime] = None
+        self.last_audit_time: datetime.datetime | None = None
         self.improvement_count: int = 0
 
         # autoDream — lazy-initialised when a MemoryManager is available
-        self._memory_manager: Optional[object] = None
+        self._memory_manager: object | None = None
         self._dream_idle_cycles: int = 0   # counts healthy cycles before dreaming
         self._DREAM_EVERY_N_IDLE: int = 3  # dream after this many healthy cycles
 
@@ -601,7 +601,7 @@ class AuditDaemon:
 
         return metrics
 
-    def _run_pytest(self) -> Optional[float]:
+    def _run_pytest(self) -> float | None:
         """Run pytest in quiet mode and return pass rate (0.0–1.0), or None on failure.
 
         Returns None if pytest cannot run (timeout, missing, subprocess error)
@@ -735,7 +735,7 @@ class AuditDaemon:
             _log.warning("git status check failed (assuming clean): %s", exc)
             return True
 
-    def _rollback(self, agent_new_files: Optional[list] = None) -> None:
+    def _rollback(self, agent_new_files: list | None = None) -> None:
         """Roll back changes made by the agent.
 
         Restores tracked files via ``git checkout -- .`` and removes only

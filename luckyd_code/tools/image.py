@@ -11,7 +11,6 @@ vision-capable model at the configured provider will work.
 import base64
 import io
 from pathlib import Path
-from typing import Optional
 
 from PIL import Image as PILImage
 
@@ -31,7 +30,7 @@ def _encode_image(path: str) -> str:
     return f"data:image/jpeg;base64,{base64.b64encode(buf.getvalue()).decode()}"
 
 
-def _ocr_text(path: str) -> Optional[str]:
+def _ocr_text(path: str) -> str | None:
     """Try OCR via pytesseract.  Returns None if not installed."""
     try:
         import pytesseract

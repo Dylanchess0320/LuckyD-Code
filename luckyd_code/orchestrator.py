@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from rich.console import Console
 
@@ -25,8 +25,8 @@ def _truncate_to_tokens(text: str, max_tokens: int = 600) -> str:
     falls back to a 4-chars-per-token heuristic so the function always works
     even in environments without the optional tiktoken dependency.
 
-    1500 tokens (≈6 000 chars) is the default — enough to convey full research
-    findings without blowing the coder’s context budget.
+    600 tokens (≈2 400 chars) is the default — enough context for handoffs
+    without blowing the receiving agent's token budget.
     """
     try:
         import tiktoken
@@ -96,7 +96,7 @@ class AgentHandoff:
         self.config = config
 
     def handoff(self, role: str, task: str,
-                tools: Optional[List[Dict[str, Any]]] = None) -> str:
+                tools: list[dict[str, Any]] | None = None) -> str:
         """Hand off a task to a specialized agent."""
         role = role.lower()
         if role not in ROLE_PROMPTS:
@@ -127,7 +127,7 @@ class Coordinator:
         self.config = config
         self.handoff = AgentHandoff(config)
 
-    def orchestrate(self, task: str, roles: Optional[List[str]] = None) -> str:
+    def orchestrate(self, task: str, roles: list[str] | None = None) -> str:
         """Coordinate multiple agents for a complex task.
 
         Research and testing phases run in parallel when both are present,

@@ -198,10 +198,7 @@ def build_issue_url(
 """
 
     if diff:
-        # Truncate diff to avoid hitting URL size limits
-        diff_preview = diff[:5000]
-        if len(diff) > 5000:
-            diff_preview += "\n... (truncated)"
+        diff_preview = diff
         extra_sections += f"""
 <details>
 <summary><b>Proposed Fix (diff)</b></summary>
@@ -319,14 +316,14 @@ def _get_reporting_mode() -> str:
 
 
 def _get_api_key() -> str:
-    """Get the DeepSeek API key from config, .env, or environment."""
+    """Get the configured API key from config or environment."""
     try:
         from .config import Config  # noqa: PLC0415
         cfg = Config()
         return cfg.api_key
     except Exception:
         pass
-    return os.environ.get("DEEPSEEK_API_KEY", "")
+    return ""
 
 
 def _get_autonomous_mode() -> str:
@@ -452,8 +449,8 @@ def _ask_and_open(exc: BaseException) -> bool:  # pragma: no cover
 
                 if fix_result.diff:
                     diff_preview = fix_result.diff[:3000]
-                    if fix_result.diff:
-                        diff_preview += "\n... (truncated)" if len(fix_result.diff) > 3000 else ""
+                    if len(fix_result.diff) > 3000:
+                        diff_preview += "\n... (truncated)"
 
                 if fix_result.success:
                     if console:

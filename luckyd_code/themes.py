@@ -1,4 +1,4 @@
-"""Theme support for DeepSeek Code."""
+"""Theme support for LuckyD Code."""
 
 from rich.theme import Theme
 

@@ -14,14 +14,13 @@ Usage from CLI:
 import subprocess
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 
 # Tag prefix used to identify backup commits so we can list/restore them
 BACKUP_TAG_PREFIX = "luckyd-backup/"
 
 
-def _git(*args: str, cwd: Optional[str] = None) -> tuple[int, str, str]:
+def _git(*args: str, cwd: str | None = None) -> tuple[int, str, str]:
     """Run a git command. Returns (returncode, stdout, stderr)."""
     try:
         result = subprocess.run(
@@ -38,28 +37,28 @@ def _git(*args: str, cwd: Optional[str] = None) -> tuple[int, str, str]:
         return 1, "", str(e)
 
 
-def _is_git_repo(cwd: Optional[str] = None) -> bool:
+def _is_git_repo(cwd: str | None = None) -> bool:
     code, _, _ = _git("rev-parse", "--is-inside-work-tree", cwd=cwd)
     return code == 0
 
 
-def _has_changes(cwd: Optional[str] = None) -> bool:
+def _has_changes(cwd: str | None = None) -> bool:
     """Returns True if there are any tracked or untracked changes."""
     _, out, _ = _git("status", "--porcelain", cwd=cwd)
     return bool(out.strip())
 
 
-def _current_branch(cwd: Optional[str] = None) -> str:
+def _current_branch(cwd: str | None = None) -> str:
     _, out, _ = _git("rev-parse", "--abbrev-ref", "HEAD", cwd=cwd)
     return out or "unknown"
 
 
-def _short_hash(cwd: Optional[str] = None) -> str:
+def _short_hash(cwd: str | None = None) -> str:
     _, out, _ = _git("rev-parse", "--short", "HEAD", cwd=cwd)
     return out or "unknown"
 
 
-def create_backup(message: str = "", cwd: Optional[str] = None) -> dict:
+def create_backup(message: str = "", cwd: str | None = None) -> dict:
     """Create a git backup snapshot of the current working tree.
 
     Strategy:
@@ -96,7 +95,7 @@ def create_backup(message: str = "", cwd: Optional[str] = None) -> dict:
     # Build commit message
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     label = message.strip() or "pre-operation snapshot"
-    commit_msg = f"[dsc-backup] {label} ({ts})"
+    commit_msg = f"[luckyd-backup] {label} ({ts})"
 
     code, _, err = _git("commit", "-m", commit_msg, cwd=cwd)
     if code != 0:
@@ -115,7 +114,7 @@ def create_backup(message: str = "", cwd: Optional[str] = None) -> dict:
     return result
 
 
-def list_backups(limit: int = 10, cwd: Optional[str] = None) -> list[dict]:
+def list_backups(limit: int = 10, cwd: str | None = None) -> list[dict]:
     """Return a list of recent backup commits (newest first).
 
     Each entry: {n, hash, tag, date, subject}
@@ -154,9 +153,18 @@ def list_backups(limit: int = 10, cwd: Optional[str] = None) -> list[dict]:
             "log", f"--max-count={limit}",
             "--pretty=format:%h|%ad|%s",
             "--date=short",
-            "--grep=[dsc-backup]",
+            "--grep=[luckyd-backup]",  # new name
             cwd=cwd,
         )
+        # Also search for pre-rename commits (historical)
+        if not log_out:
+            _, log_out, _ = _git(
+                "log", f"--max-count={limit}",
+                "--pretty=format:%h|%ad|%s",
+                "--date=short",
+                "--grep=[dsc-backup]",
+                cwd=cwd,
+            )
         for i, line in enumerate(log_out.splitlines()):
             parts = line.split("|", 2)
             if len(parts) == 3:
@@ -167,11 +175,10 @@ def list_backups(limit: int = 10, cwd: Optional[str] = None) -> list[dict]:
                     "date": parts[1],
                     "subject": parts[2],
                 })
-
     return entries
 
 
-def restore_backup(ref: str, cwd: Optional[str] = None) -> dict:
+def restore_backup(ref: str, cwd: str | None = None) -> dict:
     """Restore working tree to a backup snapshot.
 
     Uses `git checkout <ref> -- .` so it only touches the working tree
