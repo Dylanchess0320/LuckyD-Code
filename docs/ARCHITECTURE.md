@@ -440,4 +440,4 @@ CLI commands live in `luckyd_code/cli_commands/`. Each command is a function tha
 
 ---
 
-*Last updated: May 2026 — LuckyD Code v1.2.2*
+*Last updated: May 2026 — LuckyD Code v1.2.3*
