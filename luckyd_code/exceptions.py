@@ -9,6 +9,18 @@ class LuckyDCodeError(Exception):
     """Base class for all LuckyD Code errors."""
 
 
+__all__ = [
+    "LuckyDCodeError",
+    "DeepSeekAPIError",
+    "AuthenticationError",
+    "RetryableError",
+    "NonRetryableError",
+    "ModelNotFoundError",
+    "ContextLengthError",
+    "ToolExecutionError",
+]
+
+
 # Backwards-compatible alias — kept so any code (or user scripts) that
 # imported DeepSeekAPIError still works without modification.
 DeepSeekAPIError = LuckyDCodeError

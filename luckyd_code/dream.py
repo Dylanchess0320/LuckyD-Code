@@ -16,6 +16,8 @@ from dataclasses import dataclass, field
 
 from .memory.manager import MemoryManager
 
+__all__ = ["DreamReport", "DreamCycle", "run_dream_cycle"]
+
 _log = logging.getLogger(__name__)
 
 # ── tunables ──────────────────────────────────────────────────────────────────

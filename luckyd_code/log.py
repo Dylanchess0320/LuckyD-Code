@@ -7,6 +7,8 @@ from datetime import datetime
 
 from ._data_dir import data_path
 
+__all__ = ["setup_logging", "get_logger"]
+
 _LOG_DIR = data_path("logs")
 _initialized = False
 

@@ -8,6 +8,8 @@ from typing import Any
 from .log import get_logger
 from ._data_dir import data_path, legacy_path
 
+__all__ = ["Config", "load_config_file", "save_config_file", "get_api_key", "get_base_url"]
+
 DEFAULT_SYSTEM_PROMPT = """You are LuckyD Code, an AI coding assistant in a terminal.
 
 Answer concisely. For code: use Bash/Read/Write/Edit/Glob/Grep tools. For questions: answer directly.

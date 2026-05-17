@@ -24,6 +24,24 @@ from .model_registry import (
     TIER_MODEL_MAP,
 )
 
+__all__ = [
+    "RoutingResult",
+    "classify_tier",
+    "classify_tier_llm",
+    "select_model",
+    "should_use_reasoner",
+    "get_tier_description",
+    "resolve_initial_route",
+    "escalate_tier",
+    "apply_effort",
+    "effort_tier_floor",
+    "show_model_info",
+    "show_current_routing",
+    "TIER_MODELS",
+    "EFFORT_SETTINGS",
+    "EFFORT_LABELS",
+]
+
 # Provider model tier → model mapping (single source of truth lives in model_registry)
 TIER_MODELS: dict[int, str] = TIER_MODEL_MAP
 

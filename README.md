@@ -258,8 +258,11 @@ luckyd_code/
 ├── 🔒  permissions/         Permission management
 ├── 🪝  hooks.py            Lifecycle hook system (pre/post tool, pre/post chat)
 ├── 🔧  autonomous_fixer.py Diagnose → patch → validate → PR pipeline
+├── 🌙  dream.py            Idle-time memory consolidation (4-phase: orient → gather → consolidate → prune)
+├── 🔬  feedback_analyzer.py LLM-powered error root-cause diagnosis
 ├── 🔄  self_improve.py     Automated code improvement engine
 ├── 📡  audit_daemon.py     Background audit and monitoring
+├── 💡  skills/             Reusable analysis helpers (code review, security review)
 │
 ├── 📁  sessions.py         Conversation save/load
 ├── ↩️  undo.py             Revert file changes
@@ -287,7 +290,7 @@ LuckyD Code supports community plugins. Drop a `.py` file into `~/.luckyd-code/p
 /plugins reload
 ```
 
-See **[docs/PLUGINS.md](docs/PLUGINS.md)** for the full guide and **[examples/plugins/](examples/plugins/)** for working examples.
+See **[docs/PLUGINS.md](docs/PLUGINS.md)** for the full guide, **[docs/SKILLS.md](docs/SKILLS.md)** for the built-in skills reference, and **[examples/plugins/](examples/plugins/)** for working examples.
 
 ---
 

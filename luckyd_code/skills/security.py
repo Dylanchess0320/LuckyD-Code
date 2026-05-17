@@ -2,6 +2,8 @@
 
 import subprocess
 
+__all__ = ["security_review"]
+
 
 def security_review() -> str:
     """Analyze pending changes for security issues."""

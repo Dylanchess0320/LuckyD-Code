@@ -8,7 +8,7 @@ from .._data_dir import data_path
 SKIP_DIRS = {
     ".git", "__pycache__", "node_modules", ".venv", "venv", "env",
     ".tox", ".eggs", "dist", "build", ".next", ".nuxt",
-    "target", "vendor", ".bundle", ".claude", ".deepseek-code", ".vscode", ".idea",
+    "target", "vendor", ".bundle", ".claude", ".vscode", ".idea",
     ".mypy_cache", ".pytest_cache", ".ruff_cache", ".ruff",
     ".svn", ".hg", "egg-info",
 }

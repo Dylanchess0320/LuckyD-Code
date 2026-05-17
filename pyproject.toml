@@ -163,6 +163,7 @@ disallow_any_generics = true        # List, Dict → List[str], Dict[str, int]
 disallow_subclassing_any = true     # don't subclass untyped third-party classes
 disallow_untyped_decorators = true  # decorators must be typed
 check_untyped_defs = true           # check bodies of unannotated functions
+disallow_untyped_defs = true        # all function defs must have type annotations
 ignore_missing_imports = true       # third-party stubs not always available
 implicit_optional = true            # foo: str = None → foo: Optional[str]
 disable_error_code = ["override"]   # wait until all overrides are typed

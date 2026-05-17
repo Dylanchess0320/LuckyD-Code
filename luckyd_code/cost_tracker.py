@@ -8,6 +8,8 @@ from typing import Any
 
 from ._data_dir import data_path, legacy_path
 
+__all__ = ["UsageRecord", "CostTracker"]
+
 COST_FILE = data_path("costs.jsonl")  # append-only, one JSON record per line
 _LEGACY_COST_FILE = legacy_path("costs.json")  # migrated on first write
 _TOTALS_FILE = data_path("costs_total.json")  # single-float running total
@@ -47,7 +49,7 @@ class UsageRecord:
 
         Rates (per 1K tokens, USD):
           deepseek-v4-flash : $0.000140 in / $0.000280 out
-          deepseek-v4-pro   : $0.001740 in / $0.003480 out  (75% discount — verify expiry at api-docs.deepseek.com)
+          deepseek-v4-pro   : $0.001740 in / $0.003480 out
           deepseek-chat     : legacy alias for deepseek-v4-flash
           deepseek-reasoner : legacy alias for deepseek-v4-flash (thinking mode)
         Prices sourced from api-docs.deepseek.com/quick_start/pricing (2026-04-26)

@@ -7,6 +7,8 @@ from functools import wraps
 from .exceptions import RetryableError, NonRetryableError, ModelNotFoundError
 from .log import get_logger
 
+__all__ = ["with_retry"]
+
 
 def with_retry(
     max_retries: int = 3,

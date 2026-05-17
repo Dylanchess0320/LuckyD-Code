@@ -2,6 +2,8 @@
 
 import subprocess
 
+__all__ = ["review_changes"]
+
 
 def review_changes() -> str:
     """Review pending git changes."""

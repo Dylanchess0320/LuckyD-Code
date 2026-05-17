@@ -18,6 +18,8 @@ import httpx
 
 from .error_reporter import sanitize_traceback
 
+__all__ = ["Diagnosis", "analyze_error"]
+
 # ------------------------------------------------------------------ #
 #  Data model
 # ------------------------------------------------------------------ #

@@ -1,0 +1,25 @@
+# CODEOWNERS — GitHub will auto-request review from these owners
+# on any pull request that touches matching files.
+#
+# Format: <path pattern>  <@username or @org/team>
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything
+*                             @Dylanchess0320
+
+# Security-sensitive files — require explicit review
+SECURITY.md                   @Dylanchess0320
+.github/workflows/            @Dylanchess0320
+.pre-commit-config.yaml       @Dylanchess0320
+.secrets.baseline             @Dylanchess0320
+.env.example                  @Dylanchess0320
+
+# Core runtime
+luckyd_code/api.py            @Dylanchess0320
+luckyd_code/config.py         @Dylanchess0320
+luckyd_code/cli_entry.py      @Dylanchess0320
+luckyd_code/router.py         @Dylanchess0320
+luckyd_code/model_registry.py @Dylanchess0320
+
+# Tests
+tests/                        @Dylanchess0320

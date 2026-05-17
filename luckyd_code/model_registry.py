@@ -21,6 +21,19 @@ multiple tiers can map to the same model id without duplicating ModelDef objects
 
 from dataclasses import dataclass, field
 
+__all__ = [
+    "ModelDef",
+    "FLASH",
+    "PRO",
+    "ALL_MODELS_FLAT",
+    "TIER_MODEL_MAP",
+    "get_model_by_id",
+    "get_models_by_tier",
+    "get_unique_model_count",
+    "get_models_by_strength",
+    "format_model_list",
+]
+
 
 @dataclass
 class ModelDef:

@@ -8,6 +8,8 @@ from .context import ConversationContext
 
 from ._data_dir import data_path
 
+__all__ = ["save_session", "load_session", "list_sessions", "delete_session"]
+
 SESSIONS_DIR = data_path("sessions")
 
 
