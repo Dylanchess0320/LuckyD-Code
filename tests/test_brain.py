@@ -890,8 +890,13 @@ class TestRetriever:
     def test_search_empty_no_fallback(self, monkeypatch):
         """Retriever returns empty list when nothing is available."""
         from luckyd_code.brain.retriever import Retriever
+        from luckyd_code.brain.indexer import VectorIndexer
         r = Retriever()
-        # Mock the fallback to return empty
+        # Provide an empty indexer (no data, not available)
+        empty_indexer = VectorIndexer()
+        empty_indexer.chunks = []
+        empty_indexer.is_available = False
+        monkeypatch.setattr(r, "_get_indexer", lambda: empty_indexer)
         monkeypatch.setattr(r, "_fallback_search", lambda q, k, f: [])
         results = r.search("something", k=5)
         assert results == []
