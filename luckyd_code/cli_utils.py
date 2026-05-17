@@ -157,15 +157,14 @@ def init_prompt_session():
     """Create prompt session with custom keybindings."""
     from prompt_toolkit import PromptSession
     from prompt_toolkit.history import FileHistory
-    from prompt_toolkit.completion import PathCompleter
     from .keybindings import apply_keybindings
 
     try:
         return PromptSession(
             history=FileHistory(".luckyd_history"),
             key_bindings=apply_keybindings(),
-            completer=PathCompleter(only_directories=False, expanduser=True),
             multiline=True,
+            complete_while_typing=False,
         )
     except Exception:
         _logger.debug("PromptSession creation failed, trying fallback", exc_info=True)
@@ -182,9 +181,9 @@ def init_prompt_session():
         return PromptSession(
             history=FileHistory(".luckyd_history"),
             key_bindings=apply_keybindings(),
-            completer=PathCompleter(only_directories=False, expanduser=True),
             output=Vt100_Output(sys.stdout, get_size=_get_size),
             multiline=True,
+            complete_while_typing=False,
         )
     except Exception:
         _logger.warning("Failed to create prompt session", exc_info=True)
