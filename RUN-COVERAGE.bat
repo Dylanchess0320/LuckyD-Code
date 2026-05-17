@@ -23,11 +23,16 @@ if errorlevel 1 (
 echo Dependencies OK.
 echo.
 
-:: ── Run ONLY the new gap tests first ─────────────────────────────────────────
+:: ── Run ONLY the new gap tests first (quick smoke check) ─────────────────────
 echo ============================================================
-echo  Step 1 of 2 — New gap tests (gaps_final + final_push)
+echo  Step 1 of 2 — New gap tests (gaps_1 / gaps_2 / gaps_3 / gaps_final)
 echo ============================================================
-python -m pytest tests/test_coverage_gaps_final.py tests/test_coverage_final_push.py tests/test_coverage_push3.py -v --tb=short --no-cov
+python -m pytest ^
+    tests/test_coverage_gaps_1.py ^
+    tests/test_coverage_gaps_2.py ^
+    tests/test_coverage_gaps_3.py ^
+    tests/test_coverage_gaps_final.py ^
+    -v --tb=short --no-cov
 echo.
 
 :: ── Full suite with coverage ──────────────────────────────────────────────────
