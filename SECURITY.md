@@ -1,5 +1,18 @@
 # Security Policy
 
+## ⚠️ Credential Rotation Required
+
+If you **cloned this repo before v1.2.1 (2026-05-02)**, a `DEEPSEEK_API_KEY`
+was present in git history. **Rotate it immediately** at
+<https://platform.deepseek.com/api_keys>.
+
+The key was removed from tracking in v1.2.1 (`git rm --cached .env`). The
+`.gitignore` rule for `.env` already existed but had no effect while the file
+was being tracked. All copies of this repo cloned before that release should
+be assumed to have the old key in `git log`.
+
+---
+
 ## Supported Versions
 
 | Version | Supported |

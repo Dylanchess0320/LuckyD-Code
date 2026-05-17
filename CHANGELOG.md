@@ -1,5 +1,35 @@
 # Changelog
 
+## [Unreleased] — 2026-05-17
+
+### Fixed
+- **`router.py`** — `_LLM_CLASSIFY_TIMEOUT` raised from `0.0` to `0.4` s.
+  At zero the background LLM classifier always timed out on the first call,
+  making smart routing heuristic-only until a cached result existed. 0.4 s
+  gives the fast flash model enough time to respond on a normal connection
+  while remaining imperceptible to the user.
+
+### Changed
+- **`tests/test_coverage_gaps_*.py`** — module docstrings updated to describe
+  *what* each test class covers rather than labelling the files as
+  "batch 1/2/3/final gap-fillers". Coverage tests that were written to chase
+  a number now self-document their intent.
+- **`pyproject.toml` [tool.mypy]** — tightened type-checking: added
+  `warn_unused_ignores`, `no_implicit_reexport`, `disallow_any_generics`,
+  `disallow_subclassing_any`, `disallow_untyped_decorators`, and
+  `check_untyped_defs`. CLI entry-points and optional-dep modules explicitly
+  excluded so the stricter checks apply only to the core library.
+- **`Makefile`** — `lint` target no longer passes `--ignore-missing-imports`
+  (now set in `pyproject.toml`); added `typecheck` alias and `secrets-scan`
+  target (`gitleaks detect --source .`) for one-time history audit.
+
+### Security
+- **`SECURITY.md`** — added a prominent ⚠️ banner at the top reminding cloners
+  from before v1.2.1 to rotate their `DEEPSEEK_API_KEY`.
+- **`.pre-commit-config.yaml`** — added `gitleaks` pre-commit hook (v8.18.2)
+  that scans staged files on every commit, preventing a recurrence of the
+  v1.2.1 key-commit incident.
+
 ## [1.2.2] — 2026-05-06
 
 ### Changed

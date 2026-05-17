@@ -1,20 +1,7 @@
-"""Final coverage gap-fillers — fixed for path-traversal guard and httpx mock.
+"""File ops, readme_gen, project_gen, feedback_analyzer, orchestrator branch coverage.
 
-Covers:
-  - tools/file_ops.py  (19 missed): ReadTool, WriteTool, EditTool, Grep/Glob
-  - tools/readme_gen.py (14 missed): _collect_files helpers, run() edge paths
-  - tools/project_gen.py (7 missed): run() error paths
-  - feedback_analyzer.py (14 missed): misc branches
-  - orchestrator.py (6 missed): _truncate_to_tokens, tester-only path
-
-FIX STRATEGY
------------
-* file_ops — use ``monkeypatch.chdir(tmp_path)`` so that
-  validate_file_path() considers tmp_path the allowed root and every file
-  written inside it passes the security check without any mocking of the
-  guard itself.
-* feedback_analyzer HTTP error — use a plain _Resp class (not MagicMock)
-  for the httpx.HTTPStatusError response, avoiding the None-text bug.
+Consolidated into test_coverage_gaps_1.py — this file retains the tests for
+historical reference; all classes here are the authoritative copies.
 """
 
 from __future__ import annotations

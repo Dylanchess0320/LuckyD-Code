@@ -74,10 +74,14 @@ VERY_LONG_PROMPT_CHARS = 800
 TOOL_CALL_THRESHOLD = 3        # After N tool calls, escalate to tier 3
 HEAVY_TOOL_CALL_THRESHOLD = 8  # After N tool calls, escalate to tier 4
 
-# LLM classifier timeout — set to zero to skip the background API call entirely.
-# The heuristic classifier is free and fast; the LLM classifier was a marginal
-# accuracy improvement at the cost of a full API round-trip per unique prompt.
-_LLM_CLASSIFY_TIMEOUT = 0.0
+# LLM classifier timeout — how long the main thread waits for the background
+# LLM classification call before falling back to the heuristic result.
+# At 0.0 s the background thread fires but the result is *always* discarded
+# on the first call (only cached copies are useful), making smart routing
+# heuristic-only in practice. 0.4 s gives the fast flash model enough time
+# to respond on a low-latency connection while still being imperceptible to
+# the user. Raise to 1.0–2.0 s on high-latency API endpoints.
+_LLM_CLASSIFY_TIMEOUT = 0.4
 
 # Shared thread pool for background LLM classification calls (daemon so it
 # doesn't block process exit).

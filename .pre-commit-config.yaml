@@ -25,6 +25,15 @@ repos:
             tests/.*\.py
           )$
 
+  # Lightweight secret scanner — runs on every commit (fast, no network)
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.2
+    hooks:
+      - id: gitleaks
+        name: gitleaks (staged files)
+        description: Detect hardcoded secrets in staged content
+        # gitleaks is configured via .gitleaks.toml in the repo root
+
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:

@@ -1,12 +1,7 @@
-"""Targeted coverage gap-fillers — Batch 3.
+"""Memory manager, self_improve, analytics ProjectMetrics, brain graph, verify branch coverage.
 
-Covers uncovered branches in:
-  - memory/manager.py (module-level API, load_claude_md, save_claude_md,
-                       load_memory_index, get_project_memory_dir)
-  - self_improve.py (ImprovementTracker.report with stash, _git helper)
-  - analytics/scanner.py (scan_project edge cases, ProjectMetrics properties)
-  - brain/graph.py (load with list edges, summarize empty by_file)
-  - verify.py (verify_consistency init.py circular check, verify_lint cwd)
+Consolidated into test_coverage_gaps_1.py — this file retains the tests for
+historical reference; all classes here are the authoritative copies.
 """
 
 from __future__ import annotations

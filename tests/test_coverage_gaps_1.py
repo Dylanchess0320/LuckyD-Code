@@ -1,13 +1,8 @@
-"""Targeted coverage gap-fillers — Batch 1.
+"""Extended coverage tests — router, config, memory, analytics, brain, agent loop,
+api, indexer, cost_tracker, web_app, background, tools, orchestrator.
 
-Covers uncovered branches in:
-  - router.py (classify_tier_llm, resolve_initial_route, escalate_tier,
-               get_tier_description, show_current_routing, effort_tier_floor,
-               show_model_info, RoutingResult)
-  - config.py (from_args provider, get_api_key, get_base_url)
-  - memory/user.py (UserMemory CRUD, search, decay, get_relevant, singleton)
-  - analytics/scanner.py (comment lines, detect_language extras, scan_file edge)
-  - brain/graph.py (find_dependents, get_related depth, summarize max_modules)
+These tests were consolidated from per-module gap-fill runs into one file that
+documents *which branch* each class covers, making future maintenance easier.
 """
 
 from __future__ import annotations

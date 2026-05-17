@@ -1,15 +1,7 @@
-"""Targeted coverage gap-fillers — Batch 2.
+"""Agent loop, api, indexer, cost_tracker, web_app, background branch coverage.
 
-Covers uncovered branches in:
-  - _agent_loop.py (budget warning, multimodal context, auto-save branches,
-                   _ingest_tool_result Write/Edit path, verification failure)
-  - api.py (_parse_stream_error, _close_unclosed_string, _count_unquoted,
-            stream_chat reasoning yield, _call_with_retry retry logic)
-  - indexer.py (_extract_deps Cargo.toml, format_project_context,
-                _is_ignored glob patterns, index_project non-existent)
-  - cost_tracker.py (legacy migration, totals sidecar, record_usage explicit cost)
-  - web_app.py (get_app caching, merged memory injection)
-  - background.py (missing background dir on load_history)
+Consolidated into test_coverage_gaps_1.py — this file retains the tests for
+historical reference; all classes here are the authoritative copies.
 """
 
 from __future__ import annotations

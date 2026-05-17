@@ -148,15 +148,34 @@ exclude_lines = [
 
 [tool.mypy]
 python_version = "3.10"
+# Strict mode is enabled selectively below — turning on all strict flags at
+# once would require fixing hundreds of existing annotations. The approach
+# here is to enable the highest-value checks now and work toward full strict
+# incrementally (tracked in TODO.md).
 strict = false
+# --- High-value checks enabled now ---
 warn_return_any = true
 warn_unused_configs = true
 warn_redundant_casts = true
-ignore_missing_imports = true
-implicit_optional = true
-disable_error_code = ["override"]
+warn_unused_ignores = true          # catch stale # type: ignore comments
+no_implicit_reexport = true         # explicit __all__ required for public API
+disallow_any_generics = true        # List, Dict → List[str], Dict[str, int]
+disallow_subclassing_any = true     # don't subclass untyped third-party classes
+disallow_untyped_decorators = true  # decorators must be typed
+check_untyped_defs = true           # check bodies of unannotated functions
+ignore_missing_imports = true       # third-party stubs not always available
+implicit_optional = true            # foo: str = None → foo: Optional[str]
+disable_error_code = ["override"]   # wait until all overrides are typed
 exclude = [
     "tests/",
     "__pycache__/",
     ".venv/",
+    # CLI entry-points are imperative scripts; full typing deferred
+    "luckyd_code/cli\\.py",
+    "luckyd_code/cli_entry\\.py",
+    "luckyd_code/cli_utils\\.py",
+    "luckyd_code/cli_commands/",
+    # Optional extras that require heavy third-party stubs
+    "luckyd_code/brain/embedder\\.py",
+    "luckyd_code/tools/browser\\.py",
 ]
