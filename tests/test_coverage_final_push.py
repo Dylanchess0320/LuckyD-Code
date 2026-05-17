@@ -469,7 +469,7 @@ class TestSmellsRemainingBranches:
     def test_long_file_smell(self):
         """Lines 94-95 approx: file with > 500 lines triggers LongFile smell."""
         from luckyd_code.analytics.smells import detect_smells
-        fm = self._make_file_metrics(lines_code=600)
+        fm = self._make_file_metrics(lines_code=600, lines_total=600)
         pm = self._make_pm(file_metrics=[fm])
         smells = detect_smells(pm)
         kinds = [s.kind for s in smells]
