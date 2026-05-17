@@ -94,7 +94,7 @@ class ToolRegistry:
         # entries indefinitely.
         now = time.monotonic()
         should_evict = (
-            len(self._cache) % 100 == 0          # every 100th insert (large cache)
+            (len(self._cache) + 1) % 100 == 0    # every 100th insert (large cache)
             or getattr(self, "_last_evict", 0) + 60 < now  # time-based fallback
         )
         if should_evict:
