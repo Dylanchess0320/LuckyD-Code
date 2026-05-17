@@ -9,7 +9,7 @@ chcp 65001 >nul 2>&1
 cls
 echo.
 echo   ================================================
-echo    LuckyD Code  v1.2.4
+echo    LuckyD Code  v1.3.1
 echo    AI coding assistant powered by DeepSeek API
 echo   ================================================
 echo.
