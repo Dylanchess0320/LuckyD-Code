@@ -542,15 +542,19 @@ class TestToolRegistry:
         assert "Error executing" in result
 
     def test_cache_eviction_on_large_cache(self):
-        """Eviction runs every 100 inserts."""
+        """Eviction runs every 100 inserts — expired entries are swept out."""
         reg = self._registry(ttl=0.001)
-        # Insert 100 entries via the low-level method to trigger eviction
-        for i in range(100):
+        # Insert 99 entries with a tiny TTL, then sleep so they expire.
+        for i in range(99):
             reg._set_cached(f"Read|k={i!r}", f"val{i}")
-        time.sleep(0.01)  # let all entries expire
-        reg._set_cached("Read|k=100", "trigger eviction")
-        # After eviction old expired entries should be gone
-        assert len(reg._cache) <= 2
+        time.sleep(0.02)  # let all 99 entries expire
+        # The 100th insert (total cache size becomes 100) hits the
+        # (len+1) % 100 == 0 boundary and triggers the eviction sweep,
+        # clearing all 99 expired entries so only this one survives.
+        reg._set_cached("Read|k=99", "trigger eviction")
+        # Only the freshly inserted (non-expired) entry should remain.
+        assert len(reg._cache) == 1
+        assert reg._get_cached("Read|k=99") == "trigger eviction"
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
