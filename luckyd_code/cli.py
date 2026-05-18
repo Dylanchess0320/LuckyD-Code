@@ -4,6 +4,7 @@ import signal
 import subprocess
 import sys
 import io
+import threading
 import time
 from pathlib import Path
 
@@ -63,7 +64,7 @@ class Repl:
         self.memory_mgr = MemoryManager()
         self.hooks = get_hook_runner()
         self.cost_tracker = CostTracker()
-        self.file_watcher = None
+        self.file_watcher: Any = None
         self._stop_requested = False
         self._first_sigint_at = 0.0
         # Reasoning content captured from the last "done" stream event.
@@ -71,8 +72,8 @@ class Repl:
         self._pending_reasoning: str = ""
         # Whether to run the background audit daemon alongside the REPL
         self._daemon_enabled: bool = daemon
-        self._audit_daemon_thread = None
-        self._audit_daemon = None
+        self._audit_daemon_thread: threading.Thread | None = None
+        self._audit_daemon: Any = None
         set_repl(self)
 
         # Load theme
@@ -86,7 +87,7 @@ class Repl:
         global console
         console = _new_console
 
-    def run(self):
+    def run(self) -> None:
         # Clear the terminal so output starts at the top
         console.clear()
         self._running = True
@@ -177,12 +178,12 @@ class Repl:
         self.hooks.run_hook("onSessionEnd")
         self._cleanup()
 
-    def _init_mcp(self):
+    def _init_mcp(self) -> None:
         """Initialize MCP servers from settings."""
         settings = cfg.load_settings()
         self.mcp.load_from_config(settings)
 
-    def _load_memory(self):
+    def _load_memory(self) -> None:
         md = memory.load_claude_md()
 
         # Merge session memories into the project memory block so the model
@@ -241,7 +242,7 @@ class Repl:
         except Exception:
             get_logger().warning("Failed to check recovery file", exc_info=True)
 
-    def _prompt_for_api_key(self):
+    def _prompt_for_api_key(self) -> None:
         """Prompt user to enter a new API key and save it to .env."""
         from .cli_utils import read_input
         console.print("\n[bold]Enter your DEEPSEEK_API_KEY:[/bold] (or press Enter to skip)")
@@ -271,7 +272,7 @@ class Repl:
             self._rag_retriever = Retriever()
         return self._rag_retriever
 
-    def _inject_rag_context(self, force: bool = False):
+    def _inject_rag_context(self, force: bool = False) -> None:
         """Silently search for context relevant to the user's latest message and inject it."""
         try:
             user_msg = None
@@ -317,7 +318,7 @@ class Repl:
         return select_model("complex task", recent_tool_count=6,
                             preferred_model=self.config.model)
 
-    def _chat_loop(self, user_prompt: str = ""):
+    def _chat_loop(self, user_prompt: str = "") -> None:
         max_iterations = 20        # hard cap (was 100)
         max_consecutive_errors = 3  # bail if tool calls keep failing
         iteration = 0
@@ -326,8 +327,8 @@ class Repl:
         _budget_warning_sent = False
 
         # Per-turn state for auto-commit
-        all_tool_calls: list[dict] = []
-        tool_args_map: dict[str, dict] = {}  # tool_call_id → parsed args
+        all_tool_calls: list[dict[str, Any]] = []
+        tool_args_map: dict[str, dict[str, Any]] = {}  # tool_call_id → parsed args
         # Track all files modified this turn for verification
         modified_files_this_turn: list[str] = []
 
@@ -504,7 +505,9 @@ class Repl:
                 if sha:
                     console.print(f"[dim]git: auto-committed {len(modified)} file(s) [{sha}][/dim]")
 
-    def _fallback_models(self, active_model, current_tier):
+    def _fallback_models(
+        self, active_model: str, current_tier: int
+    ) -> Any:  # Generator[tuple[str, str, str], None, None]
         """Generator yielding (model, api_key, base_url) for the fallback chain."""
         from .router import DEEPSEEK_FALLBACK_MODELS
 
@@ -518,19 +521,26 @@ class Repl:
                 models_tried.add(model)
                 yield model, self.config.api_key, self.config.base_url
 
-    def _stream_with_fallback(self, messages, all_tools, active_model, current_tier):
+    def _stream_with_fallback(
+        self,
+        messages: list[dict[str, Any]],
+        all_tools: list[dict[str, Any]],
+        active_model: str,
+        current_tier: int,
+    ) -> tuple[str, list[dict[str, Any]] | None, str, str]:
         """Stream response with model fallback chain."""
         self.hooks.run_hook("preChat", {
             "model": active_model,
             "message_count": str(self.context.count_messages()),
         })
 
-        text_buffer = ""
-        pending_tool_calls = None
-        tool_reasoning = ""
-        last_error = None
-        _reasoning_started = False  # track first reasoning chunk for header
+        text_buffer: str = ""
+        pending_tool_calls: list[dict[str, Any]] | None = None
+        tool_reasoning: str = ""
+        last_error: Any = None
+        _reasoning_started: bool = False  # track first reasoning chunk for header
 
+        attempt_model: str = active_model
         for attempt_model, api_key, base_url in self._fallback_models(active_model, current_tier):
             stream_failed = False
             auth_retried = False
@@ -635,8 +645,15 @@ class Repl:
 
         return text_buffer, pending_tool_calls, tool_reasoning, attempt_model
 
-    def _execute_tool_calls(self, pending_tool_calls, tool_reasoning, text_buffer,
-                            tool_call_count, t0=0, tool_args_map: dict | None = None):
+    def _execute_tool_calls(
+        self,
+        pending_tool_calls: list[dict[str, Any]],
+        tool_reasoning: str,
+        text_buffer: str,
+        tool_call_count: int,
+        t0: float = 0,
+        tool_args_map: dict[str, Any] | None = None,
+    ) -> int:
         """Execute tool calls with permissions, hooks, and result rendering."""
         self.context.add_assistant_message(
             text_buffer or None,
@@ -703,7 +720,7 @@ class Repl:
 
         return tool_call_count
 
-    def _maybe_run_tests(self, tool_calls: list) -> str | None:
+    def _maybe_run_tests(self, tool_calls: list[dict[str, Any]]) -> str | None:
         """After Write/Edit tool calls, auto-run the test suite.
 
         Disabled by default (auto_test=False). Enable per-project via
@@ -809,7 +826,7 @@ class Repl:
         modified_files: list[str],
         project_root: str,
         max_retries: int = 3,
-    ):
+    ) -> None:
         """Run the multi-pass verification pipeline on modified files.
 
         If verification fails, injects feedback into the conversation context
@@ -865,11 +882,11 @@ class Repl:
                 )
                 # Don't break here — the model will fix on the next turn
 
-    def _handle_command(self, cmd: str):
+    def _handle_command(self, cmd: str) -> None:
         from .cli_commands.dispatcher import handle_command
         handle_command(self, cmd)
 
-    def _save_state(self):
+    def _save_state(self) -> None:
         """Save current configuration and state."""
         try:
             self.config.save()
@@ -909,7 +926,7 @@ class Repl:
             self._audit_daemon._release_lock()
             self._audit_daemon = None
 
-    def _cleanup(self):
+    def _cleanup(self) -> None:
         """Graceful cleanup on shutdown."""
         self._save_state()
         self._auto_save_conversation()
@@ -918,7 +935,7 @@ class Repl:
             self.file_watcher.stop()
         self.mcp.close_all()
 
-    def _auto_save_conversation(self):
+    def _auto_save_conversation(self) -> None:
         """Save the last N messages to a recovery file for SIGTERM protection."""
         try:
             recovery_dir = data_path()
@@ -937,7 +954,7 @@ class Repl:
         except Exception:
             get_logger().warning("Auto-save conversation failed", exc_info=True)
 
-    def _handle_signal(self, signum, frame):
+    def _handle_signal(self, signum: int, frame: Any) -> None:
         if signum == signal.SIGINT:
             now = time.time()
             # Double-tap SIGINT within 2 seconds → force exit

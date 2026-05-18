@@ -2,10 +2,11 @@
 
 import time
 from collections import defaultdict
+from collections.abc import Awaitable, Callable
 from typing import Any
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 import uvicorn
 
 # Module-level imports so test patches to luckyd_code.web_app.X still resolve
@@ -18,6 +19,9 @@ from .log import get_logger
 from .web_routes import WebAppState
 
 logger = get_logger()
+
+# Type alias for ASGI middleware call_next callables
+_CallNext = Callable[[Request], Awaitable[Response]]
 
 
 def create_app(config: Config | None = None) -> FastAPI:
@@ -43,7 +47,7 @@ def create_app(config: Config | None = None) -> FastAPI:
     _web_repl.registry = registry
     _set_repl(_web_repl)
     mcp = MCPManager()
-    settings = {}
+    settings: dict[str, Any] = {}
     try:
         from . import settings as cfg
         settings = cfg.load_settings()
@@ -92,7 +96,7 @@ def create_app(config: Config | None = None) -> FastAPI:
     web_token = settings.get("web_token", "")
     if web_token:  # pragma: no cover
         @app.middleware("http")
-        async def auth_middleware(request: Request, call_next):  # pragma: no cover
+        async def auth_middleware(request: Request, call_next: _CallNext) -> Response:  # pragma: no cover
             if request.url.path in ("/", "/manifest.json", "/sw.js",
                                     "/icon-192.png", "/icon-512.png"):
                 return await call_next(request)
@@ -102,12 +106,12 @@ def create_app(config: Config | None = None) -> FastAPI:
             return await call_next(request)
 
     # --- Rate limiting middleware (token bucket, per-IP) ---
-    rate_limit_buckets: dict = defaultdict(lambda: {"tokens": 60, "last": time.time()})
+    rate_limit_buckets: dict[str, Any] = defaultdict(lambda: {"tokens": 60, "last": time.time()})
     RATE_LIMIT_RATE = 60
     RATE_LIMIT_WINDOW = 60.0
 
     @app.middleware("http")
-    async def rate_limit_middleware(request: Request, call_next):
+    async def rate_limit_middleware(request: Request, call_next: _CallNext) -> Response:
         if request.url.path in ("/", "/manifest.json", "/sw.js",
                                 "/icon-192.png", "/icon-512.png"):
             return await call_next(request)
@@ -166,7 +170,7 @@ def get_app() -> FastAPI:
     return _app_instance
 
 
-def run_web(host: str = "127.0.0.1", port: int = 8000):  # pragma: no cover
+def run_web(host: str = "127.0.0.1", port: int = 8000) -> None:  # pragma: no cover
     """Run the web UI server.
 
     Defaults to localhost only (127.0.0.1) for security.

@@ -6,6 +6,7 @@ chat-loop orchestration rather than CLI argument parsing.
 
 import sys
 from pathlib import Path
+from typing import Any
 
 from rich.markdown import Markdown
 from rich.panel import Panel
@@ -28,8 +29,12 @@ from .budget import handle_budget_command
 from ..backup import create_backup, list_backups, restore_backup, format_backup_list
 
 
-def handle_command(repl, cmd: str):
+def handle_command(repl: Any, cmd: str) -> None:
     """Dispatch a /command to the appropriate handler."""
+    # result is used for different return types (dict, str) across branches;
+    # declare as Any up-front so mypy allows all assignments.
+    result: Any = None
+
     parts = cmd.split()
     command = parts[0].lower()
     args = parts[1:]
@@ -492,7 +497,7 @@ def handle_command(repl, cmd: str):
 
         from ..parallel_executor import ParallelExecutor
 
-        def _on_progress(role: str, status: str):
+        def _on_progress(role: str, status: str) -> None:
             icons = {"queued": "○", "running": "◉", "done": "✓", "error": "✗", "timeout": "⏱"}
             icon = icons.get(status, "·")
             colors = {"queued": "dim", "running": "cyan", "done": "green", "error": "red", "timeout": "yellow"}
@@ -723,7 +728,7 @@ def handle_command(repl, cmd: str):
             import subprocess as _subprocess
             import sys as _sys
             console.print("[yellow]Installing RAG dependencies (sentence-transformers + faiss-cpu)...[/yellow]")
-            console.print("[dim]This downloads ~500 MB — it may take a few minutes.[/dim]")
+            console.print("[dim]This downloads ~500 MB — it may take a few minutes.[/dim]")
             proc = _subprocess.run(
                 [_sys.executable, "-m", "pip", "install", "luckyd-code[rag-full]"],
             )

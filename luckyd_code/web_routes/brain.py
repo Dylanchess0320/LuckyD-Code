@@ -8,10 +8,10 @@ from fastapi.responses import JSONResponse
 try:
     from ..brain import KnowledgeGraph, Retriever, VectorIndexer, rebuild_project
 except Exception:  # pragma: no cover
-    KnowledgeGraph: Any = None
-    Retriever: Any = None
-    VectorIndexer: Any = None
-    rebuild_project: Any = None
+    KnowledgeGraph: Any = None  # type: ignore[no-redef]
+    Retriever: Any = None  # type: ignore[no-redef]
+    VectorIndexer: Any = None  # type: ignore[no-redef]
+    rebuild_project: Any = None  # type: ignore[no-redef]
 
 router = APIRouter()
 

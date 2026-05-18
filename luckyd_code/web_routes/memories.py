@@ -6,7 +6,9 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from ..web_app import memory_module
+# Import from the memory module directly to avoid web_app re-export issues
+# (no_implicit_reexport=true means we can't do `from ..web_app import memory_module`)
+from .. import memory as memory_module
 
 router = APIRouter()
 

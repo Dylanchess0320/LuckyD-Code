@@ -5,7 +5,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 from .agent import SubAgent
 from .log import get_logger
@@ -30,10 +30,10 @@ class BackgroundTaskRunner:
 
     def submit(
         self,
-        fn: Callable,
-        *args,
+        fn: Callable[..., Any],
+        *args: Any,
         on_error: Optional[Callable[[Exception], None]] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         """Submit a callable to run in the background thread pool.
 
@@ -44,7 +44,7 @@ class BackgroundTaskRunner:
             if self._shutdown:
                 return
 
-        def _wrapper():
+        def _wrapper() -> None:
             try:
                 fn(*args, **kwargs)
             except Exception as exc:  # noqa: BLE001
@@ -70,7 +70,7 @@ class BackgroundTaskRunner:
 class BackgroundTask:
     """Represents a background task with status tracking."""
 
-    def __init__(self, task_id: str, description: str):
+    def __init__(self, task_id: str, description: str) -> None:
         self.task_id: str = task_id
         self.description: str = description
         self.status: str = "pending"  # pending, running, done, error
@@ -83,7 +83,7 @@ class BackgroundTask:
 class BackgroundAgent:
     """Manages autonomous background agents that work independently."""
 
-    def __init__(self, config):
+    def __init__(self, config: Any) -> None:
         self.config = config
         self.tasks: dict[str, BackgroundTask] = {}
         self.threads: dict[str, threading.Thread] = {}
@@ -110,7 +110,7 @@ class BackgroundAgent:
 
         return task_id
 
-    def _run_task(self, task_id: str, description: str):
+    def _run_task(self, task_id: str, description: str) -> None:
         """Run a task in the background thread."""
         with self._lock:
             self.tasks[task_id].status = "running"
@@ -134,7 +134,7 @@ class BackgroundAgent:
                 self.tasks[task_id].finished_at = datetime.now().isoformat()
             self._save_task(task_id)
 
-    def get_status(self, task_id: str | None = None) -> list[dict[str, object]]:
+    def get_status(self, task_id: str | None = None) -> list[dict[str, Any]]:
         """Get status of tasks. If task_id is None, return all."""
         with self._lock:
             if task_id:
@@ -142,7 +142,7 @@ class BackgroundAgent:
             else:
                 tasks = list(self.tasks.values())
 
-        result = []
+        result: list[dict[str, Any]] = []
         for t in tasks:
             if t is None:
                 continue
@@ -165,7 +165,7 @@ class BackgroundAgent:
                 return task.result
             return None
 
-    def _save_task(self, task_id: str):
+    def _save_task(self, task_id: str) -> None:
         """Persist task result to disk."""
         with self._lock:
             task = self.tasks.get(task_id)
@@ -188,7 +188,7 @@ class BackgroundAgent:
         except Exception:
             get_logger().warning("Failed to save background task %s", task_id, exc_info=True)
 
-    def load_history(self):
+    def load_history(self) -> None:
         """Load past background tasks from disk."""
         if not BACKGROUND_DIR.exists():
             return
