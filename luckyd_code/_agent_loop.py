@@ -150,7 +150,7 @@ def _truncate_tool_result(result: str) -> str:
     )
 
 
-def _tool_call_hash(tc: dict) -> str:
+def _tool_call_hash(tc: dict[str, Any]) -> str:
     """Stable hash of (tool_name, arguments) for stuck detection."""
     name = tc.get("function", {}).get("name", "")
     args = tc.get("function", {}).get("arguments", "")
@@ -697,6 +697,21 @@ def run_agent_loop(
             except Exception:
                 _log.warning("Final memory auto-save failed", exc_info=True)
         break
+
+    else:
+        # for-loop ran to completion without a break — agent was still making
+        # tool calls when the turn budget ran out.
+        _log.warning("[%s] Hit max turns (%d) — agent still mid-task", rc.label, rc.max_turns)
+        result.text = (
+            text_buffer.strip()
+            or f"({rc.label}: no response after {rc.max_turns} turns)"
+        )
+        result.text += (
+            f"\n\n---\n"
+            f"\u26a0\ufe0f  Reached the **{rc.max_turns}-turn limit**. "
+            f"Type **continue** to keep going."
+        )
+        return result.text
 
     result.text = text_buffer.strip() or f"({rc.label}: no response)"
     return result.text

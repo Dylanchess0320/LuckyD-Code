@@ -20,7 +20,7 @@ def get_local_settings_path() -> Path:
     return get_settings_dir() / "settings.local.json"
 
 
-def load_settings() -> dict[str, Any]:
+def load_settings() -> dict[str, object]:
     settings = {}
     for p in [get_settings_path(), get_local_settings_path()]:
         if p.exists():

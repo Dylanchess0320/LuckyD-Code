@@ -20,7 +20,7 @@ class SecurityFinding:
 # ---------------------------------------------------------------------------
 
 # (pattern_name, compiled_regex, severity)
-_PATTERNS: list[tuple[str, re.Pattern, str]] = [
+_PATTERNS: list[tuple[str, re.Pattern[str], str]] = [
     # Secrets / credentials
     ("Hardcoded API key / token",
      re.compile(r'(?i)(api[_-]?key|secret[_-]?key|access[_-]?token)\s*=\s*["\'][^"\']{8,}["\']'),

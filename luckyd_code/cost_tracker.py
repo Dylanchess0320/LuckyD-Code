@@ -36,7 +36,7 @@ class UsageRecord:
         if not self._cost_provided and (self.input_tokens > 0 or self.output_tokens > 0):
             self.estimated_cost = self._calc_cost()
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to a plain dict, excluding internal/private fields."""
         return {
             f.name: getattr(self, f.name)
@@ -174,7 +174,7 @@ class CostTracker:
             _logger.warning("Failed to persist cost records", exc_info=True)
 
     @staticmethod
-    def _migrate_legacy_json_once():
+    def _migrate_legacy_json_once() -> None:
         """One-time migration: convert costs.json → costs.jsonl."""
         if not _LEGACY_COST_FILE.exists() or COST_FILE.exists():
             return

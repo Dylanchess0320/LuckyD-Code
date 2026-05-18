@@ -111,7 +111,7 @@ class UserMemory:
 
     # ── Dict API (new) ────────────────────────────────────────────────────
 
-    def _load_json(self) -> dict:
+    def _load_json(self) -> dict[str, Any]:
         """Load the JSON dict store. Returns {} on any error."""
         if not self._json_file.exists():
             return {}
@@ -120,11 +120,11 @@ class UserMemory:
         except (json.JSONDecodeError, OSError, ValueError):
             return {}
 
-    def _save_json(self, data: dict) -> None:
+    def _save_json(self, data: dict[str, Any]) -> None:
         """Persist the JSON dict store."""
         self._json_file.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
 
-    def load(self, name: str | None = None) -> dict | str | None:
+    def load(self, name: str | None = None) -> dict[str, Any] | str | None:
         """Load memory.
 
         * No argument → dict API: return the whole stored dict.
@@ -176,7 +176,7 @@ class UserMemory:
             return True
         return False
 
-    def update(self, key: str, value: Any) -> dict:
+    def update(self, key: str, value: Any) -> dict[str, Any]:
         """Update a single key in the JSON dict store."""
         data = self._load_json()
         data[key] = value
@@ -187,7 +187,7 @@ class UserMemory:
         """Reset the JSON dict store to an empty dict."""
         self._save_json({})
 
-    def list_all(self) -> dict | list:
+    def list_all(self) -> dict[str, Any] | list[dict[str, Any]]:
         """Return all stored memories.
 
         If the JSON store is non-empty, return it as a dict.

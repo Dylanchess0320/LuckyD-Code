@@ -25,7 +25,7 @@ DEFAULT_MEMORY_MD = """# MEMORY.md
 """
 
 
-def init_project():
+def init_project() -> str:
     """Initialize the project memory file (MEMORY.md).
 
     Creates MEMORY.md if neither MEMORY.md nor CLAUDE.md exists.

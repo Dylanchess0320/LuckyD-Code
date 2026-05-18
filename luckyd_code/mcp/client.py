@@ -170,7 +170,7 @@ class MCPManager:
                 })
         return tools
 
-    def execute(self, tool_name: str, arguments: dict) -> str:
+    def execute(self, tool_name: str, arguments: dict[str, Any]) -> str:
         """Execute a tool by its full name (mcp_<name>)."""
         name = tool_name[len("mcp_"):] if tool_name.startswith("mcp_") else tool_name
         for server in self.servers:

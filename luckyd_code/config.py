@@ -49,7 +49,7 @@ _PROVIDER_URLS: dict[str, str] = {
 }
 
 
-def load_config_file() -> dict[str, Any]:
+def load_config_file() -> dict[str, object]:
     """Load persistent config from the data directory.
 
     Checks the primary location first, then falls back to the legacy
@@ -64,7 +64,7 @@ def load_config_file() -> dict[str, Any]:
     return {}
 
 
-def save_config_file(config: dict):
+def save_config_file(config: dict[str, object]):
     """Save config to the data directory."""
     CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
     try:
@@ -159,7 +159,7 @@ class Config:
         if errors:
             raise ValueError("\n".join(errors))
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, object]:
         """Export config as dict (excluding API key)."""
         return {
             "provider": self.provider,

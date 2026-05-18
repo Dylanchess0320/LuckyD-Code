@@ -122,7 +122,7 @@ class DreamCycle:
             content = self.mm.load_memory(m["name"], m["type"]) or ""
             loaded.append((m, content.lower()))
 
-        grouped: list[list[dict]] = []
+        grouped: list[list[dict[str, Any]]] = []
         assigned: set[str] = set()
 
         for i, (m_i, text_i) in enumerate(loaded):

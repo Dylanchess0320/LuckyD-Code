@@ -62,7 +62,7 @@ class SubagentConfig:
     tools: list[str] = field(default_factory=list)  # empty → all tools
 
     @classmethod
-    def from_dict(cls, data: dict) -> "SubagentConfig":
+    def from_dict(cls, data: dict[str, Any]) -> "SubagentConfig":
         """Build a SubagentConfig from a raw YAML-parsed dict."""
         return cls(
             name=str(data.get("name", "unnamed")),
@@ -73,7 +73,7 @@ class SubagentConfig:
             tools=list(data.get("tools", [])),
         )
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, object]:
         """Serialize to a plain dict (round-trips through YAML)."""
         return {
             "name": self.name,

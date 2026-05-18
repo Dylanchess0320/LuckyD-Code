@@ -176,7 +176,7 @@ class AuditDaemon:
         finally:
             self._release_lock()
 
-    def audit(self) -> dict:
+    def audit(self) -> dict[str, object]:
         """Run one full audit cycle. Returns a summary dict.
 
         Checks the PID lock so that a standalone CLI invocation (``audit run``)
@@ -388,7 +388,7 @@ class AuditDaemon:
     #  Improvement orchestration
     # ------------------------------------------------------------------ #
 
-    def _attempt_improvement(self, issue: dict, baseline_metrics: dict) -> bool:
+    def _attempt_improvement(self, issue: dict[str, Any], baseline_metrics: dict[str, Any]) -> bool:
         """Try to fix one issue. Returns True if committed successfully."""
         from .self_improve import ImprovementTracker, get_improvement_prompt
         from .verify import run_verify_pipeline, pipeline_all_passed, pipeline_feedback

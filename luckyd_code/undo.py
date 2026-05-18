@@ -17,7 +17,7 @@ class UndoEntry:
         self.original_content = original_content
         self.action = action
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "file_path": self.file_path,
             "original_content": self.original_content,
@@ -25,7 +25,7 @@ class UndoEntry:
         }
 
     @classmethod
-    def from_dict(cls, d: dict) -> "UndoEntry":
+    def from_dict(cls, d: dict[str, Any]) -> "UndoEntry":
         return cls(
             file_path=d.get("file_path", ""),
             original_content=d.get("original_content"),
@@ -109,7 +109,7 @@ def undo_last() -> str:
         return f"Undo failed: {e}"
 
 
-def get_history() -> list[dict]:
+def get_history() -> list[dict[str, Any]]:
     """Return readable history of undo entries."""
     return [
         {"file": e.file_path, "action": e.action}

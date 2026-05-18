@@ -3,7 +3,8 @@
 import time
 import random
 from functools import wraps
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from .exceptions import RetryableError, NonRetryableError, ModelNotFoundError
 from .log import get_logger
@@ -16,7 +17,7 @@ def with_retry(
     base_delay: float = 1.0,
     max_delay: float = 30.0,
     jitter: bool = True,
-):
+) -> Callable[..., Any]:
     """Decorator that retries a function on retryable errors with exponential backoff.
 
     Args:

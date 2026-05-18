@@ -52,7 +52,7 @@ IGNORED_EXTS = {
 }
 
 
-def scan_project(root: Path, max_depth: int = 3, max_items: int = 80) -> dict:
+def scan_project(root: Path, max_depth: int = 3, max_items: int = 80) -> dict[str, Any]:
     """Scan a project directory and return structured metadata."""
     root = root.resolve()
     gitignore_patterns = _load_gitignore(root)
@@ -162,7 +162,7 @@ def _detect_language(ext: str) -> str | None:
     return mapping.get(ext)
 
 
-def _detect_frameworks(config_files: dict, dep_files: list) -> list[str]:
+def _detect_frameworks(config_files: dict[str, Any], dep_files: list[str]) -> list[str]:
     frameworks = []
     for fname, deps in config_files.items():
         deps_lower = {d.lower() for d in deps}
@@ -239,7 +239,7 @@ def _extract_deps(filepath: Path, name: str) -> list[str]:
     return []
 
 
-def format_project_context(info: dict) -> str:
+def format_project_context(info: dict[str, Any]) -> str:
     """Format project info into a concise context string for the AI."""
     parts = [f"# Project: {info['name']}"]
 

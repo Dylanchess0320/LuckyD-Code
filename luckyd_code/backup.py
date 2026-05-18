@@ -58,7 +58,7 @@ def _short_hash(cwd: str | None = None) -> str:
     return out or "unknown"
 
 
-def create_backup(message: str = "", cwd: str | None = None) -> dict:
+def create_backup(message: str = "", cwd: str | None = None) -> dict[str, Any]:
     """Create a git backup snapshot of the current working tree.
 
     Strategy:
@@ -114,7 +114,7 @@ def create_backup(message: str = "", cwd: str | None = None) -> dict:
     return result
 
 
-def list_backups(limit: int = 10, cwd: str | None = None) -> list[dict]:
+def list_backups(limit: int = 10, cwd: str | None = None) -> list[dict[str, Any]]:
     """Return a list of recent backup commits (newest first).
 
     Each entry: {n, hash, tag, date, subject}
@@ -178,7 +178,7 @@ def list_backups(limit: int = 10, cwd: str | None = None) -> list[dict]:
     return entries
 
 
-def restore_backup(ref: str, cwd: str | None = None) -> dict:
+def restore_backup(ref: str, cwd: str | None = None) -> dict[str, Any]:
     """Restore working tree to a backup snapshot.
 
     Uses `git checkout <ref> -- .` so it only touches the working tree
@@ -229,7 +229,7 @@ def restore_backup(ref: str, cwd: str | None = None) -> dict:
     return result
 
 
-def format_backup_list(backups: list[dict]) -> str:
+def format_backup_list(backups: list[dict[str, Any]]) -> str:
     """Format backup list for display."""
     if not backups:
         return "No backups found. Run /backup to create one."
