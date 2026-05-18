@@ -95,10 +95,15 @@ if not exist ".env" (
     ) else (
         echo DEEPSEEK_API_KEY=sk-your-deepseek-key-here > .env
     )
-    echo   [3/3] Opening .env - paste your DeepSeek API key and save, then close Notepad.
+    echo.
+    echo   [3/3] No API key found.
     echo         Get a free key at: https://platform.deepseek.com/api_keys
     echo.
-    notepad .env
+    set /p "USER_KEY=  Paste your DeepSeek API key here (starts with sk-): "
+    if not "!USER_KEY!"=="" (
+        powershell -NoProfile -Command "(Get-Content .env) -replace 'DEEPSEEK_API_KEY=.*', ('DEEPSEEK_API_KEY=' + '!USER_KEY!') | Set-Content .env"
+        echo   API key saved.
+    )
 )
 
 REM --- API key check ---
