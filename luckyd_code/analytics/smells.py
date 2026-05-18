@@ -38,7 +38,7 @@ class SmellDetector:
     DUPLICATION_MIN_LINES = 5
     BIG_CLASS_LINES = 300
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.smells: list[Smell] = []
 
     def detect_file(self, file_path: str, content: str | None = None) -> list[Smell]:

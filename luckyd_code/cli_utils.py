@@ -43,8 +43,8 @@ def resize_terminal(cols: int = DEFAULT_COLS, rows: int = DEFAULT_ROWS) -> None:
             _logger.debug("Terminal auto-resize disabled via settings")
             return
 
-        cols = int(settings.get("terminal_columns", cols))
-        rows = int(settings.get("terminal_rows", rows))
+        cols = int(str(settings.get("terminal_columns", cols)))
+        rows = int(str(settings.get("terminal_rows", rows)))
 
         if sys.platform == "win32":
             # Only resize columns on Windows — setting 'lines' causes prompt_toolkit

@@ -172,7 +172,7 @@ class Config:
             "effort": self.effort,
         }
 
-    def save(self):
+    def save(self) -> None:
         """Persist current config (excluding API key) to config file."""
         save_config_file(self.to_dict())
 

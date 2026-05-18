@@ -80,7 +80,7 @@ class Repl:
 
         # Load theme
         settings = cfg.load_settings()
-        self.theme_name = settings.get("theme", "dark")
+        self.theme_name = str(settings.get("theme", "dark"))
         # Update console in BOTH cli.py and cli_utils.py so that all
         # Rich output (including prompts and sounds) shares the theme.
         from . import cli_utils as _cli_utils_mod
@@ -335,10 +335,10 @@ class Repl:
         modified_files_this_turn: list[str] = []
 
         settings = cfg.load_settings()
-        auto_route = settings.get("auto_route", True)
-        auto_commit_enabled = settings.get("auto_commit", True)
-        verify_enabled = settings.get("verify_edits", True)
-        verify_retries = settings.get("verify_retries", 3)
+        auto_route = bool(settings.get("auto_route", True))
+        auto_commit_enabled = bool(settings.get("auto_commit", True))
+        verify_enabled = bool(settings.get("verify_edits", True))
+        verify_retries = int(settings.get("verify_retries", 3))
         project_root = str(self.config.working_directory or os.getcwd())
 
         from .router import resolve_initial_route, escalate_tier

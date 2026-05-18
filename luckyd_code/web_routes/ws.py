@@ -56,7 +56,7 @@ async def websocket_endpoint(ws: WebSocket) -> None:  # pragma: no cover
 
                 from .. import settings as cfg
                 web_settings = cfg.load_settings()
-                auto_route = web_settings.get("auto_route", True)
+                auto_route = bool(web_settings.get("auto_route", True))
                 from ..router import resolve_initial_route, escalate_tier
                 routing = resolve_initial_route(
                     user_text, 0, config.provider, config.model, auto_route,

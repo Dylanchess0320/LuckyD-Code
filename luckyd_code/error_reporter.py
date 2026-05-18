@@ -366,10 +366,10 @@ def _ask_and_open(exc: BaseException) -> bool:  # pragma: no cover
 
         console = Console()
     except Exception:
-        console = None  # type: ignore[assignment]
+        console = None
 
     try:
-        input_fn = __builtins__["input"]
+        input_fn = __builtins__["input"]  # type: ignore[index]
     except (KeyError, TypeError):
         input_fn = input
 

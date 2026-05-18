@@ -126,7 +126,7 @@ class LoopResult:
     __slots__ = ("text", "tool_calls_executed", "files_modified",
                  "verification_passed", "escalated_model")
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.text: str = ""
         self.tool_calls_executed: int = 0
         self.files_modified: list[str] = []

@@ -48,7 +48,7 @@ class Embedder:
         if model_type is None:
             try:
                 from .. import settings as cfg
-                model_type = cfg.load_settings().get("embedding_model", "local")
+                model_type = str(cfg.load_settings().get("embedding_model", "local"))
             except Exception:
                 model_type = "local"
 

@@ -35,7 +35,7 @@ def _get_shell() -> ShellInfo:
     global _SHELL_CACHE
     if _SHELL_CACHE is None:
         settings = load_settings()
-        shell_setting = settings.get("shell", "auto")
+        shell_setting = str(settings.get("shell", "auto"))
         _SHELL_CACHE = resolve_shell(shell_setting)
     return _SHELL_CACHE
 

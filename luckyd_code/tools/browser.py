@@ -54,7 +54,7 @@ class BrowserManager:
         os.makedirs(cls._state_dir, exist_ok=True)
         return os.path.join(cls._state_dir, "state.json")
 
-    def _ensure(self, headless: bool | None = None, emulate_device: str | None = None):
+    def _ensure(self, headless: bool | None = None, emulate_device: str | None = None) -> "Page":
         if self._page is None:
             try:
                 from playwright.sync_api import sync_playwright
@@ -65,7 +65,7 @@ class BrowserManager:
                 ) from exc
             if headless is None:
                 settings = load_settings()
-                headless = settings.get("browser_headless", True)
+                headless = bool(settings.get("browser_headless", True))
             BrowserManager._headless = headless
             self._playwright = sync_playwright().start()
             self._browser = self._playwright.chromium.launch(
@@ -77,7 +77,7 @@ class BrowserManager:
             )
 
             # Build context options
-            context_opts: dict = {
+            context_opts: dict[str, object] = {
                 "viewport": {"width": 1280, "height": 720},
                 "user_agent": (
                     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -114,10 +114,10 @@ class BrowserManager:
             self._page = self._context.new_page()
         return self._page
 
-    def page(self):
+    def page(self) -> "Page":
         return self._ensure()
 
-    def restart(self, headless: bool | None = None):
+    def restart(self, headless: bool | None = None) -> None:
         """Close and reopen browser — useful for toggling headless mode."""
         self.close()
         BrowserManager._headless = headless
