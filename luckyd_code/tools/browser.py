@@ -15,8 +15,12 @@ Features:
   - Visual content extraction via screenshot
 """
 
+from __future__ import annotations
+
 import os
 import uuid
+from collections.abc import Callable
+from typing import Any
 
 from .registry import Tool
 from ..settings import load_settings
@@ -54,7 +58,7 @@ class BrowserManager:
         os.makedirs(cls._state_dir, exist_ok=True)
         return os.path.join(cls._state_dir, "state.json")
 
-    def _ensure(self, headless: bool | None = None, emulate_device: str | None = None) -> "Page":
+    def _ensure(self, headless: bool | None = None, emulate_device: str | None = None) -> Any:
         if self._page is None:
             try:
                 from playwright.sync_api import sync_playwright
@@ -114,7 +118,7 @@ class BrowserManager:
             self._page = self._context.new_page()
         return self._page
 
-    def page(self) -> "Page":
+    def page(self) -> Any:
         return self._ensure()
 
     def restart(self, headless: bool | None = None) -> None:
@@ -159,7 +163,7 @@ class BrowserManager:
             return f"Tracing saved to {trace_path}"
         return "No active tracing to stop."
 
-    def set_intercept_handler(self, handler=None):
+    def set_intercept_handler(self, handler: Callable[..., Any] | None = None) -> None:
         """Set a network route handler for the current context.
 
         handler should be a callable(route) or None to clear.
@@ -171,7 +175,7 @@ class BrowserManager:
             else:
                 self._context.unroute("**/*")
 
-    def close(self):
+    def close(self) -> None:
         if self._tracing_started:
             try:
                 self.stop_tracing()
@@ -190,7 +194,7 @@ class BrowserManager:
         BrowserManager._tracing_started = False
 
     @classmethod
-    def get(cls):
+    def get(cls) -> BrowserManager:
         if cls._instance is None:
             cls._instance = cls()
         return cls._instance
@@ -199,14 +203,14 @@ class BrowserManager:
 _manager = None
 
 
-def _get_manager():
+def _get_manager() -> BrowserManager:
     global _manager
     if _manager is None:
         _manager = BrowserManager()
     return _manager
 
 
-def make_safe_snapshot(page, max_length=8000) -> str:
+def make_safe_snapshot(page: Any, max_length: int = 8000) -> str:
     """Extract an accessibility-style snapshot from the page."""
     try:
         title = page.title()
@@ -297,7 +301,7 @@ class BrowserNavigateTool(Tool):
         "required": ["url"],
     }
 
-    def run(self, url: str) -> str:  # type: ignore[override]
+    def run(self, url: str) -> str:
         manager = _get_manager()
         page = manager.page()
         try:
@@ -323,7 +327,7 @@ class BrowserClickTool(Tool):
         "required": ["selector"],
     }
 
-    def run(self, selector: str) -> str:  # type: ignore[override]
+    def run(self, selector: str) -> str:
         manager = _get_manager()
         page = manager.page()
         try:
@@ -358,7 +362,7 @@ class BrowserTypeTool(Tool):
         "required": ["selector", "text"],
     }
 
-    def run(self, selector: str, text: str, submit: bool = False) -> str:  # type: ignore[override]
+    def run(self, selector: str, text: str, submit: bool = False) -> str:
         manager = _get_manager()
         page = manager.page()
         try:
@@ -382,7 +386,7 @@ class BrowserSnapshotTool(Tool):
         "properties": {},
     }
 
-    def run(self) -> str:  # type: ignore[override]
+    def run(self) -> str:
         manager = _get_manager()
         page = manager.page()
         try:
@@ -408,7 +412,7 @@ class BrowserScreenshotTool(Tool):
         },
     }
 
-    def run(self, path: str = "", full_page: bool = False) -> str:  # type: ignore[override]
+    def run(self, path: str = "", full_page: bool = False) -> str:
         manager = _get_manager()
         page = manager.page()
         try:
@@ -434,7 +438,7 @@ class BrowserEvaluateTool(Tool):
         "required": ["expression"],
     }
 
-    def run(self, expression: str) -> str:  # type: ignore[override]
+    def run(self, expression: str) -> str:
         manager = _get_manager()
         page = manager.page()
         try:
@@ -452,7 +456,7 @@ class BrowserCloseTool(Tool):
         "properties": {},
     }
 
-    def run(self) -> str:  # type: ignore[override]
+    def run(self) -> str:
         manager = _get_manager()
         manager.close()
         return "Browser session closed."
@@ -472,7 +476,7 @@ class OpenInBrowserTool(Tool):
         "required": ["url"],
     }
 
-    def run(self, url: str) -> str:  # type: ignore[override]
+    def run(self, url: str) -> str:
         import subprocess
         import platform
         try:
@@ -510,7 +514,7 @@ class BrowserStateTool(Tool):
         "required": ["action"],
     }
 
-    def run(self, action: str) -> str:  # type: ignore[override]
+    def run(self, action: str) -> str:
         manager = _get_manager()
         _ = manager.page()  # ensure browser is up
         if action == "save":
@@ -548,7 +552,7 @@ class BrowserEmulateTool(Tool):
         },
     }
 
-    def run(self, device: str = "", width: int = 0, height: int = 0) -> str:  # type: ignore[override]
+    def run(self, device: str = "", width: int = 0, height: int = 0) -> str:
         manager = _get_manager()
         page = manager.page()
 
@@ -557,7 +561,7 @@ class BrowserEmulateTool(Tool):
                 page.set_viewport_size({"width": 1280, "height": 720})
                 return "Viewport reset to desktop (1280x720)."
             elif device:
-                _KNOWN_DEVICES = {
+                _KNOWN_DEVICES: dict[str, dict[str, Any]] = {
                     "iPhone 12": {"viewport": {"width": 390, "height": 844}, "has_touch": True, "is_mobile": True},
                     "iPhone SE": {"viewport": {"width": 375, "height": 667}, "has_touch": True, "is_mobile": True},
                     "Pixel 5": {"viewport": {"width": 393, "height": 851}, "has_touch": True, "is_mobile": True},
@@ -614,9 +618,9 @@ class BrowserInterceptTool(Tool):
     }
 
     # Track requests for 'list' action
-    _requests: list[dict] = []
+    _requests: list[dict[str, Any]] = []
 
-    def run(self, action: str, url_pattern: str = "", status: int = 200) -> str:  # type: ignore[override]
+    def run(self, action: str, url_pattern: str = "", status: int = 200) -> str:
         manager = _get_manager()
         page = manager.page()
 
@@ -646,7 +650,7 @@ class BrowserInterceptTool(Tool):
                 return "Provide a url_pattern to mock (e.g., '**/*.png')."
             try:
 
-                def _block_route(route):
+                def _block_route(route: Any) -> None:
                     route.fulfill(status=status, body="")
                 manager.set_intercept_handler(_block_route)
                 return (
@@ -684,7 +688,7 @@ class BrowserTraceTool(Tool):
         "required": ["action"],
     }
 
-    def run(self, action: str) -> str:  # type: ignore[override]
+    def run(self, action: str) -> str:
         manager = _get_manager()
         _ = manager.page()  # ensure browser is up
         if action == "start":
@@ -714,7 +718,7 @@ class BrowserToggleHeadlessTool(Tool):
         "required": ["headless"],
     }
 
-    def run(self, headless: bool) -> str:  # type: ignore[override]
+    def run(self, headless: bool) -> str:
         manager = _get_manager()
         manager.restart(headless=headless)
         mode = "headless (invisible)" if headless else "headed (visible window)"

@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from .log import get_logger
 from ._data_dir import project_data_path
@@ -20,7 +20,7 @@ def get_local_settings_path() -> Path:
     return get_settings_dir() / "settings.local.json"
 
 
-def load_settings() -> dict[str, object]:
+def load_settings() -> dict[str, Any]:
     settings = {}
     for p in [get_settings_path(), get_local_settings_path()]:
         if p.exists():
@@ -47,7 +47,7 @@ def save_setting(key: str, value: Any) -> None:
 
 def get_hooks() -> dict[str, Any]:
     settings = load_settings()
-    return settings.get("hooks", {})
+    return cast(dict[str, Any], settings.get("hooks", {}))
 
 
 def run_pre_hook(tool_name: str) -> list[str]:
