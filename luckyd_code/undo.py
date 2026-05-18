@@ -1,8 +1,11 @@
 """Undo support — track file changes and reverse them, with persistence."""
 
+from __future__ import annotations
+
 import json
 import logging
 from pathlib import Path
+from typing import Any
 
 from ._data_dir import data_path
 

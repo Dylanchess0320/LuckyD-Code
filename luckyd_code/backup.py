@@ -14,6 +14,7 @@ Usage from CLI:
 import subprocess
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 
 # Tag prefix used to identify backup commits so we can list/restore them
