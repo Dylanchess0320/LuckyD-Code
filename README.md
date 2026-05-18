@@ -78,7 +78,7 @@ From source:
 ```bash
 python main.py                    # CLI
 python main.py --web              # Web UI
-python main.py --version          # v1.3.3
+python main.py --version          # v1.3.4
 ```
 
 ---

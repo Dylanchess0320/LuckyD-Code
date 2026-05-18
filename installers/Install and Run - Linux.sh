@@ -13,7 +13,7 @@ CY='\033[0;36m'; GR='\033[0;32m'; YL='\033[0;33m'; RD='\033[0;31m'; NC='\033[0m'
 
 clear
 echo ""
-echo -e "${CY}  LuckyD Code v1.3.3${NC}"
+echo -e "${CY}  LuckyD Code v1.3.4${NC}"
 echo "  AI coding assistant powered by DeepSeek API"
 echo "  ─────────────────────────────────────────────"
 echo ""

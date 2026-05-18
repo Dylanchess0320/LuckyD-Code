@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "luckyd-code"
-version = "1.3.3"
+version = "1.3.4"
 description = "LuckyD Code — AI coding assistant powered by DeepSeek"
 readme = "README.md"
 license = { text = "AGPL-3.0-only" }

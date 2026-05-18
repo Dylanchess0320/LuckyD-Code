@@ -5,6 +5,12 @@ All notable changes to LuckyD Code will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.3.4] — 2026-05-17
+
+### Changed
+- **All version references** — bumped to v1.3.4 across `__init__.py`,
+  `pyproject.toml`, `README.md`, and the Windows installer BAT.
+
 ## [Unreleased]
 
 ### Added
