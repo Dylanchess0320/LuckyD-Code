@@ -1,7 +1,8 @@
 """Handle /sessions commands."""
+from typing import Any
 
 
-def handle_sessions_command(repl, args):
+def handle_sessions_command(repl: Any, args: list[str]) -> None:
     """Handle /sessions list|save|load|delete commands."""
     from ..cli_utils import console
     from ..sessions import save_session, load_session, list_sessions, delete_session

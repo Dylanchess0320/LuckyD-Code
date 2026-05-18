@@ -4,6 +4,7 @@ import logging
 import os
 import sys
 import time as _time
+from typing import Any
 
 from rich.console import Console
 
@@ -17,7 +18,7 @@ DEFAULT_COLS = 200
 DEFAULT_ROWS = 60
 
 
-def resize_terminal(cols: int = DEFAULT_COLS, rows: int = DEFAULT_ROWS):
+def resize_terminal(cols: int = DEFAULT_COLS, rows: int = DEFAULT_ROWS) -> None:
     """Attempt to resize the terminal window to a comfortable size.
 
     Respects user settings: set ``auto_resize_terminal`` to ``false``
@@ -61,7 +62,7 @@ def resize_terminal(cols: int = DEFAULT_COLS, rows: int = DEFAULT_ROWS):
         _logger.debug("Terminal resize not supported in this environment")
 
 
-def play_completion_sound(success: bool = True):
+def play_completion_sound(success: bool = True) -> None:
     """Play a notification sound when a response completes.
 
     Platform support:
@@ -152,7 +153,7 @@ def play_completion_sound(success: bool = True):
             _logger.debug("Terminal bell also failed")
 
 
-def init_prompt_session():
+def init_prompt_session() -> Any:
     """Create prompt session with custom keybindings."""
     from prompt_toolkit import PromptSession
     from prompt_toolkit.history import FileHistory
@@ -189,18 +190,18 @@ def init_prompt_session():
         return None
 
 
-def read_input(session) -> str | None:
+def read_input(session: Any) -> str | None:
     """Read a line of input from the user."""
     if session:
         try:
-            return session.prompt(">>> ")
+            return str(session.prompt(">>> "))
         except KeyboardInterrupt:
             return None
         except EOFError:
             return "__EOF__"
 
     try:
-        lines = []
+        lines: list[str] = []
         while True:
             line = input(">>> " if not lines else "... ")
             if line.rstrip().endswith("\\"):

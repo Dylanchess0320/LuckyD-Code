@@ -1,11 +1,13 @@
 """Effort-level CLI command — /effort."""
 
+from typing import Any
+
 from rich.table import Table
 from ..cli_utils import console
 from ..router import apply_effort, EFFORT_SETTINGS, EFFORT_LABELS
 
 
-def handle_effort_command(repl, args: list[str]) -> None:
+def handle_effort_command(repl: Any, args: list[str]) -> None:
     """/effort [low|normal|high|max] — get or set the effort level."""
 
     if not args:
@@ -28,7 +30,7 @@ def handle_effort_command(repl, args: list[str]) -> None:
     )
 
 
-def _show_effort(repl) -> None:
+def _show_effort(repl: Any) -> None:
     """Display current effort level and all options."""
     current = getattr(repl.config, "effort", "normal")
     icons = {"low": "⚡", "normal": "◎", "high": "◉", "max": "🔥"}

@@ -1,7 +1,8 @@
 """Handle /background commands."""
+from typing import Any
 
 
-def handle_background_command(repl, args):
+def handle_background_command(repl: Any, args: list[str]) -> None:
     """Handle /background start|status|result|list commands."""
     from ..cli_utils import console
 

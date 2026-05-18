@@ -15,6 +15,7 @@ import logging
 import re
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Any
 
 from .planner import ai_create_plan, save_plan
 
@@ -33,7 +34,7 @@ class GateResult:
 #  Non-interactive (daemon) path
 # ------------------------------------------------------------------ #
 
-def auto_plan(task: str, config, max_steps: int = 8) -> GateResult:
+def auto_plan(task: str, config: Any, max_steps: int = 8) -> GateResult:
     """Generate a plan without user interaction (always approves).
 
     Used by ``audit_daemon`` and other unattended callers.  Falls back
@@ -137,7 +138,7 @@ class PlanGate:
             ...
     """
 
-    def __init__(self, task: str, config, interactive: bool = False):
+    def __init__(self, task: str, config: Any, interactive: bool = False) -> None:
         self.task = task
         self.config = config
         self.interactive = interactive

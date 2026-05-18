@@ -7,6 +7,7 @@ __license__ = "AGPL-3.0-only"
 # ---------------------------------------------------------------------------
 # Core symbols — imported eagerly because they are lightweight and always used.
 # ---------------------------------------------------------------------------
+from typing import Any
 from .cli_entry import main
 from .config import Config
 from .api import stream_chat, test_connection
@@ -25,7 +26,7 @@ from .model_registry import get_models_by_tier
 _LAZY_SUBPACKAGES = {"memory", "settings", "tools", "brain"}
 
 
-def __getattr__(name: str):
+def __getattr__(name: str) -> Any:
     if name in _LAZY_SUBPACKAGES:
         import importlib
         module = importlib.import_module(f".{name}", package=__name__)

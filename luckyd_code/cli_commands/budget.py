@@ -1,9 +1,11 @@
 """Token budget CLI command — /budget."""
 
+from typing import Any
+
 from ..cli_utils import console
 
 
-def handle_budget_command(repl, args: list[str]) -> None:
+def handle_budget_command(repl: Any, args: list[str]) -> None:
     """/budget [tokens] — get or set the per-turn output token cap."""
 
     if not args:
@@ -43,7 +45,7 @@ def handle_budget_command(repl, args: list[str]) -> None:
     console.print("[dim]Takes effect on your next message.[/dim]")
 
 
-def _show_budget(repl) -> None:
+def _show_budget(repl: Any) -> None:
     current = repl.config.max_tokens
     console.print(f"[cyan]Current token budget:[/cyan] {current:,} tokens per turn")
     console.print()

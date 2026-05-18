@@ -61,7 +61,7 @@ class FileWatcher:
     def is_running(self) -> bool:
         return self._running
 
-    def start(self):
+    def start(self) -> None:
         """Start watching for file changes in a background thread."""
         if self._running:
             return
@@ -86,7 +86,7 @@ class FileWatcher:
             self._running = True
             get_logger().info("File watcher started (polling) on %s", self.root)
 
-    def stop(self):
+    def stop(self) -> None:
         """Stop watching."""
         self._running = False
         self._stop_event.set()
@@ -105,11 +105,11 @@ class FileWatcher:
 
         get_logger().info("File watcher stopped")
 
-    def pause(self):
+    def pause(self) -> None:
         """Temporarily pause reindex on changes."""
         self._paused = True
 
-    def resume(self):
+    def resume(self) -> None:
         """Resume reindex after pause."""
         self._paused = False
 
@@ -241,7 +241,7 @@ class FileWatcher:
         if batch:
             self._fire(batch)
 
-    def _fire(self, changed_files: list[str]):  # pragma: no cover
+    def _fire(self, changed_files: list[str]) -> None:  # pragma: no cover
         """Trigger reindex with the list of changed files."""
         if not changed_files:
             return

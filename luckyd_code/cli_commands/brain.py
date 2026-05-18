@@ -1,12 +1,14 @@
 """Handle /brain commands."""
 
+from typing import Any
+
 import os
 import time as _time
 
 from ..brain import Retriever, VectorIndexer, rebuild_project
 
 
-def handle_brain_command(repl, args):
+def handle_brain_command(repl: Any, args: list[str]) -> None:
     """Handle /brain rebuild|stats|status commands."""
     from ..cli_utils import console
 

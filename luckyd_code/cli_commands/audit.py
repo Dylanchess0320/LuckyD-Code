@@ -10,11 +10,12 @@ Subcommands
 from __future__ import annotations
 
 import json
+from typing import Any
 
 from ..cli_utils import console
 
 
-def handle_audit_command(repl, args: list[str]) -> None:
+def handle_audit_command(repl: Any, args: list[str]) -> None:
     """Dispatch /audit <subcommand> [options]."""
     sub = args[0].lower() if args else "help"
 
@@ -37,7 +38,7 @@ def handle_audit_command(repl, args: list[str]) -> None:
 #  /audit run
 # ------------------------------------------------------------------ #
 
-def _audit_run(repl) -> None:
+def _audit_run(repl: Any) -> None:
     """Run one synchronous audit cycle in the foreground."""
     from pathlib import Path
     from ..audit_daemon import AuditDaemon
@@ -83,7 +84,7 @@ def _audit_run(repl) -> None:
 #  /audit status
 # ------------------------------------------------------------------ #
 
-def _audit_status(repl) -> None:
+def _audit_status(repl: Any) -> None:
     """Print human-readable daemon status."""
     from pathlib import Path
     from ..audit_daemon import AuditDaemon
@@ -100,7 +101,7 @@ def _audit_status(repl) -> None:
 #  /audit metrics
 # ------------------------------------------------------------------ #
 
-def _audit_metrics(repl) -> None:
+def _audit_metrics(repl: Any) -> None:
     """Dump full metrics history as pretty-printed JSON."""
     from pathlib import Path
     from ..audit_daemon import AuditDaemon

@@ -2,11 +2,13 @@
 
 import os
 
+from typing import Any
+
 from .. import settings as cfg
 from ..api import test_connection
 
 
-def handle_config_command(repl, args):
+def handle_config_command(repl: Any, args: list[str]) -> None:
     """Handle /config list|get|set commands."""
     from ..cli_utils import console
 
@@ -42,8 +44,8 @@ def handle_config_command(repl, args):
         if args[1] == "provider":
             from ..config import _PROVIDER_URLS
             if args[2] not in _PROVIDER_URLS:
-                valid = ", ".join(sorted(_PROVIDER_URLS.keys()))
-                console.print(f"[red]Unknown provider '{args[2]}'. Valid: {valid}[/red]")
+                valid_providers = ", ".join(sorted(_PROVIDER_URLS.keys()))
+                console.print(f"[red]Unknown provider '{args[2]}'. Valid: {valid_providers}[/red]")
                 return
             repl.config.provider = args[2]
             repl.config.base_url = _PROVIDER_URLS[args[2]]
@@ -62,9 +64,9 @@ def handle_config_command(repl, args):
             return
 
         if args[1] == "shell":
-            valid = ("auto", "git_bash", "wsl", "cmd")
-            if args[2] not in valid:
-                console.print(f"[red]Shell must be one of: {', '.join(valid)}[/red]")
+            shell_choices = ("auto", "git_bash", "wsl", "cmd")
+            if args[2] not in shell_choices:
+                console.print(f"[red]Shell must be one of: {', '.join(shell_choices)}[/red]")
                 return
             from ..tools.bash import reset_shell_cache
             reset_shell_cache()

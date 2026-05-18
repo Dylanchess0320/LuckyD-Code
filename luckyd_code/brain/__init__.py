@@ -40,7 +40,7 @@ def is_rag_available() -> bool:
         return False
 
 
-def rebuild_project(project_root: str | None = None) -> dict:
+def rebuild_project(project_root: str | None = None) -> dict[str, Any]:
     """Rebuild both the vector index and the knowledge graph for a project.
 
     Args:
@@ -60,7 +60,7 @@ def rebuild_project(project_root: str | None = None) -> dict:
         indexer = VectorIndexer()
         stats = indexer.build(chunks)  # type: ignore[arg-type]
         # Track mtimes
-        from .chunker import LANGUAGE_MAP
+        from .chunker import LANGUAGE_MAP as LANGUAGE_MAP
         from .constants import should_skip
         from pathlib import Path
 

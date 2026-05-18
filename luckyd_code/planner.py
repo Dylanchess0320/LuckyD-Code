@@ -9,7 +9,7 @@ import json
 import logging
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from ._data_dir import project_data_path
 
 _log = logging.getLogger(__name__)
@@ -278,7 +278,7 @@ def ai_create_plan(name: str, goal: str, config: "_PlanConfig") -> Plan:  # prag
 #  Interactive plan approval and execution
 # ------------------------------------------------------------------ #
 
-def plan_and_approve(goal: str, config, session=None) -> "Plan | None":  # pragma: no cover
+def plan_and_approve(goal: str, config: Any, session: Any = None) -> "Plan | None":  # pragma: no cover
     """Generate a plan with AI, show it, and ask the user to approve it.
 
     Returns the approved ``Plan`` if the user confirms, or ``None`` if
@@ -317,7 +317,7 @@ def plan_and_approve(goal: str, config, session=None) -> "Plan | None":  # pragm
     return plan
 
 
-def execute_plan(plan: "Plan", task: str, config) -> str:  # pragma: no cover
+def execute_plan(plan: "Plan", task: str, config: Any) -> str:  # pragma: no cover
     """Execute an approved plan step-by-step, running each step through a SubAgent.
 
     Returns a summary string of all step outcomes.

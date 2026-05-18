@@ -1,5 +1,7 @@
 """Plugin management CLI command — /plugins."""
 
+from typing import Any
+
 from pathlib import Path
 from rich.table import Table
 from rich.panel import Panel
@@ -7,7 +9,7 @@ from ..cli_utils import console
 from ..plugins import PLUGIN_DIR, discover_plugins, load_plugin
 
 
-def handle_plugins_command(repl, args: list[str]) -> None:
+def handle_plugins_command(repl: Any, args: list[str]) -> None:
     """Handle /plugins [list|reload|dir|enable <name>]."""
     sub = args[0].lower() if args else "list"
 
@@ -40,7 +42,7 @@ def handle_plugins_command(repl, args: list[str]) -> None:
         console.print("[dim]  new     — scaffold a new plugin file[/dim]")
 
 
-def _list_plugins(repl) -> None:
+def _list_plugins(repl: Any) -> None:
     """Display all discovered plugins and their registration status."""
     paths = discover_plugins()
 
@@ -107,7 +109,7 @@ class {slug.title().replace("_", "")}Tool(Tool):
 
     def run(self, input: str = "") -> str:  # noqa: A002
         # Replace this with your actual logic
-        return f"[{self.name}] You said: {{input}}"
+        return f"[{{{{self.name}}}}] You said: {{{{input}}}}"
 
 
 def register(registry) -> None:

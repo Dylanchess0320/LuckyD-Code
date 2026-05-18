@@ -4,6 +4,7 @@ import argparse
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 # Patch asyncio to allow nested event loops. This is needed because
 # BackgroundAgent / KnowledgeGraph initialisation may start a loop before
@@ -18,7 +19,7 @@ except ImportError:
 from .config import Config
 
 
-def parse_args(argv=None):
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="LuckyD Code — AI coding assistant in your terminal",
     )
@@ -42,7 +43,7 @@ def parse_args(argv=None):
     return parser.parse_args(argv)
 
 
-def main(argv=None):
+def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
 
     # Lazy imports — only load the heavy CLI/web modules when actually running
