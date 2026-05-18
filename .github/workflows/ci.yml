@@ -30,7 +30,18 @@ jobs:
           pip install ".[dev]"
 
       - name: Run tests
-        run: pytest -v --tb=short --cov=luckyd_code --cov-report=xml
+        id: pytest
+        run: pytest -v --tb=short --cov=luckyd_code --cov-report=xml 2>&1 | tee pytest_output.txt; exit ${PIPESTATUS[0]}
+
+      - name: Autonomous fix on failure
+        if: failure() && steps.pytest.outcome == 'failure' && matrix.python-version == '3.10' && env.AUTOFIX_API_KEY != ''
+        env:
+          AUTOFIX_API_KEY: ${{ secrets.AUTOFIX_API_KEY }}
+          AUTOFIX_BASE_URL: ${{ secrets.AUTOFIX_BASE_URL || 'https://api.anthropic.com/v1' }}
+          AUTOFIX_MODEL: ${{ secrets.AUTOFIX_MODEL || 'claude-sonnet-4-20250514' }}
+          PYTEST_OUTPUT_FILE: pytest_output.txt
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/ci_autofix.py
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4

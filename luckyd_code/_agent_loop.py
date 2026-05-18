@@ -335,6 +335,8 @@ def _verify_and_recover(  # pragma: no cover
     """
     if not run_cfg.verify_edits or not files_modified:
         return True, active_model
+    if registry is None:
+        return True, active_model
 
     for retry in range(run_cfg.max_verify_retries + 1):
         all_passed, failed_files = _check_files_verification(
@@ -442,7 +444,7 @@ def _auto_save_turn_memory(
         if user_msg:
             # Save a lightweight fact the user memory can recall later
             um.save(
-                name=f"session_{turn + 1}of{max_turns}",
+                f"session_{turn + 1}of{max_turns}",
                 content=f"Turn {turn + 1}/{max_turns} — context: {user_msg[:200]}",
                 importance=3,  # moderate importance
             )
