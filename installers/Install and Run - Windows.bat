@@ -14,7 +14,7 @@ echo    AI coding assistant powered by DeepSeek API
 echo   ================================================
 echo.
 
-REM ── Python check ─────────────────────────────────────────────
+REM --- Python check ---
 python --version >nul 2>&1
 if errorlevel 1 (
     echo   [ERROR] Python not found.
@@ -25,7 +25,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-REM ── Create venv if missing ────────────────────────────────────
+REM --- Create venv if missing ---
 if not exist ".venv\Scripts\activate.bat" (
     echo   [1/3] Creating virtual environment...
     python -m venv .venv
@@ -33,7 +33,7 @@ if not exist ".venv\Scripts\activate.bat" (
 
 call .venv\Scripts\activate.bat >nul 2>&1
 
-REM ── Desktop launcher (created once) ──────────────────────────
+REM --- Desktop launcher (created once) ---
 for /f "usebackq delims=" %%D in (`powershell -NoProfile -Command "[Environment]::GetFolderPath('Desktop')"`) do set "DESKTOP_DIR=%%D"
 if not exist "%DESKTOP_DIR%\LuckyD Code.bat" (
     (
@@ -43,9 +43,18 @@ if not exist "%DESKTOP_DIR%\LuckyD Code.bat" (
     ) > "%DESKTOP_DIR%\LuckyD Code.bat"
     echo   Desktop launcher created on Desktop.
 )
-pip show rich >nul 2>&1
-if errorlevel 1 (
-    echo   [2/3] Installing dependencies ^(first run only, ~1 min^)...
+
+REM --- Marker-file check: skip pip on repeat launches ---
+set NEEDS_INSTALL=0
+if not exist ".venv\.last_install" set NEEDS_INSTALL=1
+if exist "pyproject.toml" if exist ".venv\.last_install" (
+    for /f %%A in ('powershell -NoProfile -Command "(Get-Item pyproject.toml).LastWriteTime -gt (Get-Item .venv\.last_install).LastWriteTime"') do (
+        if /i "%%A"=="True" set NEEDS_INSTALL=1
+    )
+)
+
+if "%NEEDS_INSTALL%"=="1" (
+    echo   [2/3] Installing dependencies ^(first run or update, ~1 min^)...
     echo         Upgrading pip...
     python -m pip install --upgrade pip >nul 2>&1
     echo         Installing packages...
@@ -63,16 +72,12 @@ if errorlevel 1 (
         pause
         exit /b 1
     )
+    pip install "pytest-asyncio>=0.21.0" >nul 2>&1
+    type nul > ".venv\.last_install"
     echo   [2/3] Done.
 )
 
-REM ── Dev dependencies (pytest-asyncio for test suite) ───────────
-pip show pytest-asyncio >nul 2>&1
-if errorlevel 1 (
-    pip install "pytest-asyncio>=0.21.0" >nul 2>&1
-)
-
-REM ── Optional extras (browser, RAG, game gen) — only install once ─
+REM --- Optional extras (browser, RAG, game gen) - only install once ---
 if not exist ".venv\.last_optional_install" (
     pip install -e ".[browser,rag,game]" >nul 2>&1
     type nul > ".venv\.last_optional_install"
@@ -83,7 +88,7 @@ if not exist ".venv\.last_optional_install" (
     )
 )
 
-REM ── .env setup ───────────────────────────────────────────────
+REM --- .env setup ---
 if not exist ".env" (
     if exist ".env.example" (
         copy ".env.example" ".env" >nul
@@ -96,7 +101,7 @@ if not exist ".env" (
     notepad .env
 )
 
-REM ── API key check ────────────────────────────────────────────
+REM --- API key check ---
 set KEY_OK=0
 for /f "tokens=1,* delims==" %%a in (.env) do (
     if /i "%%a"=="DEEPSEEK_API_KEY" (
@@ -114,7 +119,7 @@ if "%KEY_OK%"=="0" (
     pause
 )
 
-REM ── Launch ───────────────────────────────────────────────────
+REM --- Launch ---
 cls
 python main.py %*
 

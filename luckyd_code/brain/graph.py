@@ -174,7 +174,7 @@ class KnowledgeGraph:
     def save(self) -> None:
         BRAIN_DIR.mkdir(parents=True, exist_ok=True)
         data = {"nodes": self.nodes, "edges": self.edges, "stats": self.stats}
-        GRAPH_FILE.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        GRAPH_FILE.write_text(json.dumps(data), encoding="utf-8")
 
     def load(self) -> bool:
         if GRAPH_FILE.exists():

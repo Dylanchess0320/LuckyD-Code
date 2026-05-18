@@ -102,16 +102,26 @@ class Repl:
             "provider": self.config.provider,
         })
 
-        # Initialize everything under a single spinner
+        # Initialize everything under a single spinner.
+        # test_connection fires in a background thread so MCP + memory
+        # loading runs in parallel with the network round-trip.
         ok = False
         msg = ""
+        import concurrent.futures as _cf
+        _conn_ex = _cf.ThreadPoolExecutor(max_workers=1)
+        _conn_fut = _conn_ex.submit(test_connection, self.config.api_key, self.config.base_url)
         with console.status("Starting...", spinner="dots"):
-            # Test API connection
-            ok, msg = test_connection(self.config.api_key, self.config.base_url)
-            # Load MCP tools
             self._init_mcp()
-            # Load memory (project indexing, brain)
             self._load_memory()
+            # Collect connection result — should already be done by now
+            try:
+                ok, msg = _conn_fut.result(timeout=8)
+            except _cf.TimeoutError:
+                ok, msg = False, "Connection timed out"
+            except Exception as _e:
+                ok, msg = False, str(_e)
+            finally:
+                _conn_ex.shutdown(wait=False)
 
         if not ok:
             console.print(f"[error]API connection failed: {msg}[/error]")
