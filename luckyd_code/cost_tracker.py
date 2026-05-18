@@ -115,7 +115,7 @@ class CostTracker:
             except Exception:
                 pass
         # Slow path (first run / migration): sum the full JSONL, then persist
-        total = sum(r.get("estimated_cost", 0) for r in self._load_all())
+        total: float = sum(float(r.get("estimated_cost", 0)) for r in self._load_all())
         self._write_total(total)
         return total
 

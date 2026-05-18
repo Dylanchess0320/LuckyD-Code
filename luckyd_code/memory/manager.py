@@ -217,7 +217,7 @@ class MemoryManager:
         Returns results with an extra ``project`` key.
         """
         projects_dir = data_path("projects")
-        all_results: list[dict] = []
+        all_results: list[dict[str, Any]] = []
 
         for proj_path in projects_dir.iterdir():
             if not proj_path.is_dir():
