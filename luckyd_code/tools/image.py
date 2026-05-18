@@ -70,7 +70,7 @@ def _call_vision(image_path: str, prompt: str) -> str:
         max_tokens=1024,
         temperature=0.3,
     )
-    return response.choices[0].message.content or ""
+    return (response.choices[0].message.content or "").strip()
 
 
 # ── tool ───────────────────────────────────────────────────────────────────
