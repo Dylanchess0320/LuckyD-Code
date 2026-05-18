@@ -20,8 +20,8 @@ class MCPServer:
         self.name = name
         self.command = command
         self.args = args or []
-        self.process: subprocess.Popen | None = None
-        self.tools: list[dict] = []
+        self.process: subprocess.Popen[str] | None = None
+        self.tools: list[dict[str, Any]] = []
         self._request_id = 0
         self._max_retries = 2
 
@@ -41,7 +41,8 @@ class MCPServer:
             )
             # Poll stderr in a non-blocking way — log any startup errors
             import threading
-            def _log_stderr(proc: subprocess.Popen) -> None:
+            def _log_stderr(proc: subprocess.Popen[str]) -> None:
+                assert proc.stderr is not None
                 for line in iter(proc.stderr.readline, ""):
                     if line:
                         logger.debug("[mcp:%s] %s", self.name, line.rstrip())
@@ -114,9 +115,13 @@ class MCPServer:
             return f"MCP error: {response['error']}"
         result: dict[str, object] = cast(dict[str, object], response.get("result", {}))
         content: list[dict[str, object]] = cast(list[dict[str, object]], result.get("content", []))
-        return "\n".join(
-            c.get("text", "") for c in content if c.get("type") == "text"
-        ) or json.dumps(content)
+        text_parts: list[str] = []
+        for c in content:
+            if c.get("type") == "text":
+                text = c.get("text", "")
+                assert isinstance(text, str)
+                text_parts.append(text)
+        return "\n".join(text_parts) or json.dumps(content)
 
     def close(self) -> None:
         if self.process:
@@ -155,7 +160,7 @@ class MCPManager:
                 self.servers.append(server)
                 logger.info("MCP server '%s' loaded with %d tools", name, len(server.tools))
 
-    def get_all_tools(self) -> list[dict]:
+    def get_all_tools(self) -> list[dict[str, Any]]:
         """Get all tools from all servers as OpenAI tool definitions."""
         tools = []
         for server in self.servers:

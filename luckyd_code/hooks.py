@@ -101,7 +101,7 @@ class HookRunner:
         """
         if event not in HOOK_EVENTS:
             return []
-        hooks: dict[str, object] = self.settings.get("hooks", {})  # type: ignore[assignment]
+        hooks: dict[str, object] = self.settings.get("hooks", {})
         raw = hooks.get(event, "")
         if isinstance(raw, str):
             return [{"script": raw, "tools": ["all"]}] if raw else []

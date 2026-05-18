@@ -17,7 +17,7 @@ import re
 import threading
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from .._data_dir import data_path
 
@@ -116,7 +116,7 @@ class UserMemory:
         if not self._json_file.exists():
             return {}
         try:
-            return json.loads(self._json_file.read_text(encoding="utf-8"))
+            return cast(dict[str, Any], json.loads(self._json_file.read_text(encoding="utf-8")))
         except (json.JSONDecodeError, OSError, ValueError):
             return {}
 
@@ -144,7 +144,7 @@ class UserMemory:
         self._legacy_save(name, content, meta.get("importance", 5))
         return content
 
-    def save(self, name_or_data, content: str | None = None, importance: int = 5) -> str:
+    def save(self, name_or_data: "str | dict[str, Any]", content: str | None = None, importance: int = 5) -> str:
         """Save memory.
 
         * Dict argument  → dict API: overwrite the entire JSON store.

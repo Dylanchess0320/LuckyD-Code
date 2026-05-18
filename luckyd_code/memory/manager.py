@@ -140,7 +140,7 @@ class MemoryManager:
     #  Search
     # ------------------------------------------------------------------ #
 
-    def search_memories(self, query: str, k: int = 5) -> list[dict]:
+    def search_memories(self, query: str, k: int = 5) -> list[dict[str, Any]]:
         """Search memories by relevance.
 
         Uses semantic cosine-similarity search when ``sentence-transformers``
@@ -154,7 +154,7 @@ class MemoryManager:
         except Exception:
             return self._keyword_search(query, k)
 
-    def _semantic_search(self, query: str, k: int) -> list[dict]:  # pragma: no cover
+    def _semantic_search(self, query: str, k: int) -> list[dict[str, Any]]:  # pragma: no cover
         """Cosine-similarity search using sentence-transformers."""
         from sentence_transformers import util
 
@@ -180,7 +180,7 @@ class MemoryManager:
         results.sort(key=lambda r: float(r["score"]), reverse=True)
         return results[:k]
 
-    def _keyword_search(self, query: str, k: int) -> list[dict]:
+    def _keyword_search(self, query: str, k: int) -> list[dict[str, Any]]:
         """Simple keyword-frequency search (always available)."""
         query_lower = query.lower()
         words = query_lower.split()
@@ -207,7 +207,7 @@ class MemoryManager:
     #  Cross-project search
     # ------------------------------------------------------------------ #
 
-    def cross_project_search(self, query: str, k: int = 3) -> list[dict]:  # pragma: no cover
+    def cross_project_search(self, query: str, k: int = 3) -> list[dict[str, Any]]:  # pragma: no cover
         """Search memories across all known projects.
 
         Scans the projects/ directory for any project with a memory/
@@ -269,7 +269,7 @@ class MemoryManager:
             self._rebuild_index()
         return archived
 
-    def save_conversation_summary(self, summary: str, turn_count: int = 0):
+    def save_conversation_summary(self, summary: str, turn_count: int = 0) -> None:
         """Auto-save a conversation summary to a rotating slot.
 
         Keeps the last N summaries (default 10) by using a numbered
@@ -332,7 +332,7 @@ class MemoryManager:
                 return path.read_text(encoding="utf-8")
         return ""
 
-    def save_claude_md(self, content: str):
+    def save_claude_md(self, content: str) -> None:
         """Save the project memory file as MEMORY.md."""
         path = Path(self.project_dir) / "MEMORY.md"
         path.write_text(content, encoding="utf-8")
@@ -391,7 +391,7 @@ class MemoryManager:
             snippet = snippet + " ..."
         return snippet
 
-    def _update_index(self, name: str, filename: str, content: str):
+    def _update_index(self, name: str, filename: str, content: str) -> None:
         """Add or update an entry in MEMORY.md."""
         index_path = self.mem_dir / "MEMORY.md"
         entry = f"- [{name}]({filename}) — {content[:80].strip()}"
@@ -411,7 +411,7 @@ class MemoryManager:
         else:
             index_path.write_text(f"# Memory Index\n\n{entry}\n", encoding="utf-8")
 
-    def _rebuild_index(self):
+    def _rebuild_index(self) -> None:
         """Rebuild MEMORY.md from all memory files."""
         index_path = self.mem_dir / "MEMORY.md"
         files = sorted(self.mem_dir.glob("*.md"))

@@ -250,7 +250,7 @@ class KnowledgeGraph:
             if node.get("type") == node_type and not node.get("builtin")
         ]
 
-    def find_dependents(self, symbol_name: str, max_results: int = 15) -> list[dict]:
+    def find_dependents(self, symbol_name: str, max_results: int = 15) -> list[dict[str, Any]]:
         """Find all nodes that depend on a symbol by traversing incoming edges."""
         matches = self.search(symbol_name, max_results=5)
         if not matches:
@@ -258,7 +258,7 @@ class KnowledgeGraph:
 
         # Build a lookup of known node IDs so we can match even with incomplete IDs
         node_ids = set(self.nodes.keys())
-        dependents: list[dict] = []
+        dependents: list[dict[str, Any]] = []
         seen: set[str] = set()
 
         for match in matches:

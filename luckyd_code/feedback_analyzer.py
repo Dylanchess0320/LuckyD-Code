@@ -185,19 +185,19 @@ def _parse_diagnosis_json(raw: str) -> dict[str, Any] | None:
     m = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', raw, re.DOTALL)
     if m:
         try:
-            return dict(json.loads(m.group(1)))  # type: ignore[return-value]
+            return dict(json.loads(m.group(1)))
         except json.JSONDecodeError:
             pass
     # Try parsing the whole response as JSON
     try:
-        return dict(json.loads(raw))  # type: ignore[return-value]
+        return dict(json.loads(raw))
     except json.JSONDecodeError:
         pass
     # Try finding a bare JSON object
     m = re.search(r'\{[^{}]*"root_cause"[^{}]*\}', raw, re.DOTALL)
     if m:
         try:
-            return dict(json.loads(m.group(0)))  # type: ignore[return-value]
+            return dict(json.loads(m.group(0)))
         except json.JSONDecodeError:
             pass
     return None

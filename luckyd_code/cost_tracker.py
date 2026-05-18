@@ -4,7 +4,7 @@ import json
 import logging
 from dataclasses import dataclass, field, fields
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 from ._data_dir import data_path, legacy_path
 
@@ -194,7 +194,7 @@ class CostTracker:
         # Legacy fallback — only present before first migration
         if _LEGACY_COST_FILE.exists() and not COST_FILE.exists():
             try:
-                records = json.loads(_LEGACY_COST_FILE.read_text(encoding="utf-8"))
+                records = cast(list[dict[str, Any]], json.loads(_LEGACY_COST_FILE.read_text(encoding="utf-8")))
                 return records
             except Exception:
                 _logger.warning("Failed to load legacy cost records", exc_info=True)

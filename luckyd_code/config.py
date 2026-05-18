@@ -3,7 +3,7 @@
 import os
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from .log import get_logger
 from ._data_dir import data_path, legacy_path
@@ -58,13 +58,13 @@ def load_config_file() -> dict[str, object]:
     for path in (CONFIG_FILE, _LEGACY_CONFIG_FILE):
         if path.exists():
             try:
-                return json.loads(path.read_text(encoding="utf-8"))
+                return cast("dict[str, object]", json.loads(path.read_text(encoding="utf-8")))
             except (json.JSONDecodeError, OSError) as e:
                 get_logger().warning("Could not load config file: %s", e)
     return {}
 
 
-def save_config_file(config: dict[str, object]):
+def save_config_file(config: dict[str, object]) -> None:
     """Save config to the data directory."""
     CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
     try:
@@ -84,17 +84,17 @@ class Config:
         """
         saved = load_config_file()
 
-        self.provider: str = saved.get("provider", "deepseek")
-        self.base_url: str = saved.get("base_url", "https://api.deepseek.com/v1")
+        self.provider: str = cast(str, saved.get("provider", "deepseek"))
+        self.base_url: str = cast(str, saved.get("base_url", "https://api.deepseek.com/v1"))
         self.api_key: str = self._resolve_api_key()
-        self.model: str = saved.get("model", "deepseek-v4-flash")
-        self.max_tokens: int = saved.get("max_tokens", 4096)
-        self.temperature: float = saved.get("temperature", 0.3)
-        self.system_prompt: str = saved.get("system_prompt", DEFAULT_SYSTEM_PROMPT)
-        self.working_directory: str = saved.get("working_directory", os.getcwd())
-        self.max_context_messages: int = saved.get("max_context_messages", 40)
-        self.log_level: str = saved.get("log_level", "WARNING")
-        self.effort: str = saved.get("effort", "normal")  # low | normal | high | max
+        self.model: str = cast(str, saved.get("model", "deepseek-v4-flash"))
+        self.max_tokens: int = cast(int, saved.get("max_tokens", 4096))
+        self.temperature: float = cast(float, saved.get("temperature", 0.3))
+        self.system_prompt: str = cast(str, saved.get("system_prompt", DEFAULT_SYSTEM_PROMPT))
+        self.working_directory: str = cast(str, saved.get("working_directory", os.getcwd()))
+        self.max_context_messages: int = cast(int, saved.get("max_context_messages", 40))
+        self.log_level: str = cast(str, saved.get("log_level", "WARNING"))
+        self.effort: str = cast(str, saved.get("effort", "normal"))  # low | normal | high | max
 
     def _resolve_api_key(self) -> str:
         """Resolve the API key for the current provider.
@@ -126,7 +126,7 @@ class Config:
             return key
         return ""
 
-    def validate(self):
+    def validate(self) -> None:
         """Validate config and raise ValueError with clear message on failure."""
         errors = []
 

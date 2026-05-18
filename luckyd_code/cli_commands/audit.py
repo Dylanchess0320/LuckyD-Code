@@ -63,10 +63,10 @@ def _audit_run(repl: Any) -> None:
         console.print(f"[yellow]Audit skipped:[/yellow] {summary['skip_reason']}")
         return
 
-    metrics = summary.get("metrics", {})
+    metrics: dict[str, Any] = summary.get("metrics", {})
     attempted = summary.get("improvements_attempted", 0)
     committed = summary.get("improvements_committed", 0)
-    regressions = summary.get("regressions", [])
+    regressions: list[Any] = summary.get("regressions", [])
 
     console.print("[bold green]Audit complete[/bold green]")
     if metrics:

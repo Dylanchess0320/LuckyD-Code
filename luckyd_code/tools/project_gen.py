@@ -107,7 +107,7 @@ class ProjectGenTool(Tool):
                 ln for ln in raw.splitlines() if not ln.startswith("```")
             ).strip()
 
-        return dict(json.loads(raw))  # type: ignore[arg-type]
+        return dict(json.loads(raw))
 
     def _call_model_direct(self, description: str) -> str:
         from ..config import get_api_key, get_base_url  # noqa: PLC0415

@@ -109,7 +109,7 @@ class Sandbox:
         self.available = False
         self._check()
 
-    def _check(self):
+    def _check(self) -> None:
         available, _ = check_docker()
         self.available = available
 

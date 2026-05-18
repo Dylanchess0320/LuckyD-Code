@@ -138,7 +138,7 @@ class DockerfileGenTool(Tool):
         raw = raw.strip()
         if raw.startswith("```"):
             raw = "\n".join(ln for ln in raw.splitlines() if not ln.startswith("```")).strip()
-        return dict(json.loads(raw))  # type: ignore[return-value]
+        return dict(json.loads(raw))
 
     def _call_model_direct(self, user_msg: str) -> str:  # pragma: no cover
         from ..config import get_api_key, get_base_url  # noqa: PLC0415
