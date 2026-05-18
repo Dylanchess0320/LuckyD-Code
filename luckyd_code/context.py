@@ -133,7 +133,7 @@ class ConversationContext:
         messages: list[dict[str, Any]],
     ) -> list[dict[str, Any]]:
         """Remove tool-result messages whose parent assistant tool_call is absent."""
-        valid_parent_ids: set = set()
+        valid_parent_ids: set[str] = set()
         filtered: list[dict[str, Any]] = []
         for msg in messages:
             role = msg.get("role")
@@ -149,7 +149,7 @@ class ConversationContext:
                 filtered.append(msg)
         return filtered
 
-    def _maybe_trim(self):
+    def _maybe_trim(self) -> None:
         """Trim oldest messages if we exceed max_messages, keeping system prompt."""
         if len(self.messages) > self.max_messages:
             keep = [self.messages[0]] + self.messages[-(self.max_messages - 1):]

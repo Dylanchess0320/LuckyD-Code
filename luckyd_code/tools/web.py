@@ -319,7 +319,7 @@ class WebSearchTool(Tool):
                 title_el = (
                     block.select_one(".result__title a")
                     or block.select_one(".result__a")
-                    or block.find("a", class_=re.compile("result"))  # type: ignore[assignment]
+                    or block.find("a", class_=re.compile("result"))
                 )
                 snippet_el = (
                     block.select_one(".result__snippet")
@@ -328,7 +328,7 @@ class WebSearchTool(Tool):
 
                 if title_el:
                     title = title_el.get_text(strip=True)
-                    link = title_el.get("href", "")
+                    link = title_el.get("href", "")  # type: ignore[union-attr]
                     snippet = snippet_el.get_text(strip=True) if snippet_el else ""
                     results.append(f"{title}\n  URL: {link}\n  {snippet}")
 

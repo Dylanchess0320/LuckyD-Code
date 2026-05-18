@@ -67,7 +67,7 @@ class DreamCycle:
 
     def __init__(self, memory_manager: MemoryManager, config: Any = None) -> None:
         self.mm = memory_manager
-        self.config = config
+        self.config: Any = config
 
     # ── public entry point ────────────────────────────────────────────────────
 
@@ -100,7 +100,7 @@ class DreamCycle:
 
     # ── Phase 1: Orient ───────────────────────────────────────────────────────
 
-    def _phase_orient(self, report: DreamReport) -> list[dict]:
+    def _phase_orient(self, report: DreamReport) -> list[dict[str, Any]]:
         """Survey all stored memories. Returns the raw list for downstream phases."""
         memories = self.mm.list_memories()
         report.phase_1_memories_found = len(memories)
@@ -110,14 +110,14 @@ class DreamCycle:
     # ── Phase 2: Gather ───────────────────────────────────────────────────────
 
     def _phase_gather(
-        self, memories: list[dict], report: DreamReport
-    ) -> list[list[dict]]:
+        self, memories: list[dict[str, Any]], report: DreamReport
+    ) -> list[list[dict[str, Any]]]:
         """Group memories by keyword-overlap similarity.
 
         Each memory appears in at most one group. Groups with fewer than 2
         members are dropped (nothing to merge).
         """
-        loaded: list[tuple[dict, str]] = []
+        loaded: list[tuple[dict[str, Any], str]] = []
         for m in memories:
             content = self.mm.load_memory(m["name"], m["type"]) or ""
             loaded.append((m, content.lower()))
@@ -131,7 +131,7 @@ class DreamCycle:
                 continue
 
             words_i = set(text_i.split())
-            group = [m_i]
+            group: list[dict[str, Any]] = [m_i]
             assigned.add(key_i)
 
             for j, (m_j, text_j) in enumerate(loaded):
@@ -155,7 +155,7 @@ class DreamCycle:
     # ── Phase 3: Consolidate ──────────────────────────────────────────────────
 
     def _phase_consolidate(
-        self, groups: list[list[dict]], report: DreamReport
+        self, groups: list[list[dict[str, Any]]], report: DreamReport
     ) -> None:
         """Merge large groups via LLM call. Replaces the cluster with one memory."""
         if self.config is None:
@@ -198,7 +198,7 @@ class DreamCycle:
                 _log.warning("autoDream merge failed: %s", exc)
                 report.errors.append(f"merge: {exc}")
 
-    def _llm_merge(self, group: list[dict]) -> tuple[str, str]:
+    def _llm_merge(self, group: list[dict[str, Any]]) -> tuple[str, str]:
         """Ask the LLM to synthesise a cluster of memories into one.
 
         Returns (merged_name, merged_content).

@@ -105,7 +105,7 @@ class AuditDaemon:
 
     def __init__(
         self,
-        config,
+        config: Any,
         project_root: str,
         interval_minutes: int | None = None,
     ):
@@ -184,7 +184,7 @@ class AuditDaemon:
         When called from within ``run_forever()`` (same PID), the check is a
         no-op because ``_acquire_lock`` recognises our own PID.
         """
-        summary: dict = {
+        summary: dict[str, Any] = {
             "timestamp": datetime.datetime.now().isoformat(timespec="seconds"),
             "skipped": False,
             "skip_reason": "",
@@ -362,7 +362,7 @@ class AuditDaemon:
     #  autoDream — idle-time memory consolidation
     # ------------------------------------------------------------------ #
 
-    def _get_memory_manager(self):
+    def _get_memory_manager(self) -> Any:
         """Lazy-initialise and return the MemoryManager for this project."""
         if self._memory_manager is None:
             try:
@@ -641,7 +641,7 @@ class AuditDaemon:
             _log.error("Could not run pytest: %s", e)
             return None
 
-    def _load_metric_history(self) -> list[dict]:
+    def _load_metric_history(self) -> list[dict[str, Any]]:
         """Load all rows from time_series.jsonl."""
         if not self._ts_file.exists():
             return []
@@ -671,7 +671,7 @@ class AuditDaemon:
                 fh.write(json.dumps(row) + "\n")
 
     def _detect_regressions(
-        self, current: dict[str, float], history: list[dict]
+        self, current: dict[str, float], history: list[dict[str, Any]]
     ) -> list[str]:
         """Compare current metrics against history and flag regressions."""
         regressions: list[str] = []
@@ -735,7 +735,7 @@ class AuditDaemon:
             _log.warning("git status check failed (assuming clean): %s", exc)
             return True
 
-    def _rollback(self, agent_new_files: list | None = None) -> None:
+    def _rollback(self, agent_new_files: list[str] | None = None) -> None:
         """Roll back changes made by the agent.
 
         Restores tracked files via ``git checkout -- .`` and removes only
@@ -870,7 +870,7 @@ class AuditDaemon:
         ]
         history = self._load_metric_history()
         if history:
-            last_by_metric: dict[str, dict] = {}
+            last_by_metric: dict[str, dict[str, Any]] = {}
             for row in history:
                 last_by_metric[row["metric"]] = row
             lines.append("\n  Latest metrics:")

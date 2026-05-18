@@ -139,7 +139,7 @@ class Embedder:
                 import numpy as np
 
                 embeddings = self._model.encode(truncated, show_progress_bar=False)
-                return embeddings.tolist() if isinstance(embeddings, np.ndarray) else embeddings  # type: ignore[return-value]
+                return embeddings.tolist() if isinstance(embeddings, np.ndarray) else embeddings  # type: ignore[no-any-return]
             elif self._openai_client is not None:
                 resp = self._openai_client.embeddings.create(
                     model="text-embedding-3-small",

@@ -103,7 +103,7 @@ class RunConfig:
         on_tool_end: Callable[[str, str], None] | None = None,
         on_verify: Callable[[str], None] | None = None,
         auto_save_memory: bool = True,
-    ):
+    ) -> None:
         self.max_turns           = max_turns
         self.label               = label
         self.verify_edits        = verify_edits
@@ -186,7 +186,7 @@ def _escalate_model(current_model: str) -> str | None:
 def _ingest_tool_result(
     name: str,
     result: str,
-    args: dict,
+    args: dict[str, Any],
     tc_id: str,
     context: ConversationContext,
     modified_files: list[str],
@@ -209,7 +209,7 @@ def _ingest_tool_result(
 
 
 def _execute_tool_calls_parallel(
-    pending_tool_calls: list,
+    pending_tool_calls: list[dict[str, Any]],
     registry: ToolRegistryProtocol,
     context: ConversationContext,
     on_start: Callable[[str, int, int], None] | None = None,
@@ -225,7 +225,7 @@ def _execute_tool_calls_parallel(
     modified_files: list[str] = []
     total = len(pending_tool_calls)
 
-    def _run_one(tc: dict, idx: int) -> tuple[int, str, str, dict]:
+    def _run_one(tc: dict[str, Any], idx: int) -> tuple[int, str, str, dict[str, Any]]:
         """Execute a single tool call. Returns (orig_idx, name, result, args)."""
         name = tc["function"]["name"]
         raw_args = tc["function"]["arguments"]
@@ -241,8 +241,8 @@ def _execute_tool_calls_parallel(
         return idx, name, result, args
 
     # Separate into parallel (read-only) and sequential (write) groups
-    parallel_group: list[tuple[int, dict]] = []
-    sequential_group: list[tuple[int, dict]] = []
+    parallel_group: list[tuple[int, dict[str, Any]]] = []
+    sequential_group: list[tuple[int, dict[str, Any]]] = []
     for i, tc in enumerate(pending_tool_calls):
         name = tc["function"]["name"]
         if name in WRITE_CONFLICT_TOOLS:

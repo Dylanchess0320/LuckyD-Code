@@ -174,7 +174,7 @@ def init_prompt_session() -> Any:
         from prompt_toolkit.data_structures import Size
         import shutil
 
-        def _get_size():
+        def _get_size() -> Any:
             ts = shutil.get_terminal_size()
             return Size(rows=ts.lines, columns=ts.columns)
 

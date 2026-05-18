@@ -88,7 +88,7 @@ def _open_stream(  # pragma: no cover
     max_tokens: int,
     temperature: float,
     provider: str = "",
-):
+) -> tuple[Any, Any, Any]:
     """Open the streaming HTTP connection and validate the status code.
 
     This is a **regular function** (not a generator) so that
@@ -372,7 +372,7 @@ def _call_with_retry(
     max_tokens: int,
     temperature: float,
     provider: str = "",
-):
+) -> tuple[Any, Any, Any]:
     """Open the streaming connection with exponential-backoff retry on retryable errors.
 
     Delegates to ``_open_stream`` (a regular function) so that HTTP-level
@@ -423,7 +423,7 @@ def stream_chat(
     max_tokens: int = 4096,
     temperature: float = 0.7,
     provider: str = "",
-) -> Generator[Event, None, None]:  # type: ignore[type-arg]
+) -> Generator[Event, None, None]:
     """Stream a chat completion, yielding text chunks and tool calls.
 
     Uses raw httpx (not the OpenAI SDK) so that vendor-specific fields like

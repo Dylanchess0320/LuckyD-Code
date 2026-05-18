@@ -201,7 +201,7 @@ def _llm_classify_worker(prompt_snippet: str, config: Any) -> int:  # pragma: no
     return max(1, min(4, int(digit)))
 
 
-def classify_tier_llm(user_text: str, config) -> int:
+def classify_tier_llm(user_text: str, config: Any) -> int:
     """Classify a prompt using the LLM, without blocking the caller.
 
     Strategy:

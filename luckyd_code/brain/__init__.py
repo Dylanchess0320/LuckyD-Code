@@ -60,7 +60,7 @@ def rebuild_project(project_root: str | None = None) -> dict[str, Any]:
         indexer = VectorIndexer()
         stats = indexer.build(chunks)  # type: ignore[arg-type]
         # Track mtimes
-        from .chunker import LANGUAGE_MAP as LANGUAGE_MAP
+        from .constants import LANGUAGE_MAP
         from .constants import should_skip
         from pathlib import Path
 

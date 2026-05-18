@@ -8,7 +8,7 @@ from typing import Any, Callable
 from .exceptions import RetryableError, NonRetryableError, ModelNotFoundError
 from .log import get_logger
 
-__all__ = ["with_retry"]
+__all__ = ["with_retry", "RetryableError", "NonRetryableError", "ModelNotFoundError"]
 
 
 def with_retry(

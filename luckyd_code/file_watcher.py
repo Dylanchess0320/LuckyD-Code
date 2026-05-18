@@ -15,6 +15,7 @@ import threading
 import time
 from pathlib import Path
 from collections.abc import Callable
+from typing import Any
 
 from .log import get_logger
 
@@ -132,15 +133,15 @@ class FileWatcher:
             from watchdog.observers import Observer
             from watchdog.events import FileSystemEventHandler
 
-            class _Handler(FileSystemEventHandler):
-                def __init__(self, watcher):
+            class _Handler(FileSystemEventHandler):  # type: ignore[misc]
+                def __init__(self, watcher: "FileWatcher") -> None:
                     self.watcher = watcher
 
-                def on_modified(self, event):
+                def on_modified(self, event: Any) -> None:
                     if not event.is_directory:
                         self.watcher._on_file_changed(event.src_path)
 
-                def on_created(self, event):
+                def on_created(self, event: Any) -> None:
                     if not event.is_directory:
                         self.watcher._on_file_changed(event.src_path)
 
@@ -160,7 +161,7 @@ class FileWatcher:
     #  Fallback polling
     # ------------------------------------------------------------------ #
 
-    def _poll_loop(self):  # pragma: no cover
+    def _poll_loop(self) -> None:  # pragma: no cover
         """Polling fallback when watchdog is unavailable.
 
         Tracks mtime/size of watched files and detects changes.
@@ -212,7 +213,7 @@ class FileWatcher:
     #  Shared change handling
     # ------------------------------------------------------------------ #
 
-    def _on_file_changed(self, path: str):  # pragma: no cover
+    def _on_file_changed(self, path: str) -> None:  # pragma: no cover
         """Called by watchdog on each file change event."""
         if self._paused:
             return
@@ -233,7 +234,7 @@ class FileWatcher:
             self._debounce_timer.daemon = True
             self._debounce_timer.start()
 
-    def _debounce_fire(self):  # pragma: no cover
+    def _debounce_fire(self) -> None:  # pragma: no cover
         """Called after debounce window elapses (watchdog mode)."""
         with self._lock:
             batch = list(self._pending)

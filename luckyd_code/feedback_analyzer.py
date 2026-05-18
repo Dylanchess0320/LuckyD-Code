@@ -166,7 +166,7 @@ def _call_llm(
             resp.raise_for_status()
             data = resp.json()
             content = data["choices"][0]["message"]["content"]
-            return content.strip()
+            return str(content).strip()
     except httpx.HTTPStatusError as e:
         body = e.response.text[:500] if e.response else ""
         return f"ERROR: HTTP {e.response.status_code if e.response else '?'}: {body}"
@@ -185,19 +185,19 @@ def _parse_diagnosis_json(raw: str) -> dict[str, Any] | None:
     m = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', raw, re.DOTALL)
     if m:
         try:
-            return json.loads(m.group(1))
+            return dict(json.loads(m.group(1)))  # type: ignore[return-value]
         except json.JSONDecodeError:
             pass
     # Try parsing the whole response as JSON
     try:
-        return json.loads(raw)
+        return dict(json.loads(raw))  # type: ignore[return-value]
     except json.JSONDecodeError:
         pass
     # Try finding a bare JSON object
     m = re.search(r'\{[^{}]*"root_cause"[^{}]*\}', raw, re.DOTALL)
     if m:
         try:
-            return json.loads(m.group(0))
+            return dict(json.loads(m.group(0)))  # type: ignore[return-value]
         except json.JSONDecodeError:
             pass
     return None

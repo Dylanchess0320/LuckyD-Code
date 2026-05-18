@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+from typing import Any
 
 from .log import get_logger
 
@@ -36,7 +37,7 @@ def load_keybindings() -> dict[str, str]:
     return {}
 
 
-def _parse_key_sequence(key: str) -> tuple:
+def _parse_key_sequence(key: str) -> tuple[str, ...]:
     """Convert a key string into a tuple of prompt_toolkit key names.
 
     prompt_toolkit does not understand 'alt-X' — alt combos must be passed
@@ -61,7 +62,7 @@ def apply_keybindings() -> KeyBindings:
     # Enter submits the prompt (works even in multiline mode)
     try:
         @kb.add(*_parse_key_sequence(submit_key))
-        def _submit(event):
+        def _submit(event: Any) -> None:
             event.current_buffer.validate_and_handle()
     except Exception:
         get_logger().warning("Failed to register submit keybinding '%s'", submit_key, exc_info=True)
@@ -69,7 +70,7 @@ def apply_keybindings() -> KeyBindings:
     # Alt+Enter inserts a newline
     try:
         @kb.add(*_parse_key_sequence(newline_key))
-        def _newline(event):
+        def _newline(event: Any) -> None:
             event.current_buffer.insert_text("\n")
     except Exception:
         get_logger().warning("Failed to register newline keybinding '%s'", newline_key, exc_info=True)
