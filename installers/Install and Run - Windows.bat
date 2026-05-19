@@ -253,8 +253,6 @@ goto :done
 :do_both
 echo   Opening Web UI in a new window...
 start "LuckyD Code - Web UI" cmd /k ""%~f0" --web"
-timeout /t 3 /nobreak >nul 2>&1
-start "" http://localhost:8000
 echo   Launching CLI...
 echo.
 python main.py
